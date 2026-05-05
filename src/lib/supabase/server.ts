@@ -1,14 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { checkSupabaseEnv, MissingEnvError } from "@/lib/env";
 
-/** Server-side Supabase client for App Router. v1 has no auth, but the
-    SSR client is set up here so we can layer auth in v2 without a
-    refactor. Anon key + RLS policies enforce per-user access. */
+/** Server-side Supabase client for App Router. */
 export async function createClient() {
+  const env = checkSupabaseEnv();
+  if (!env.ok) throw new MissingEnvError(env.missing);
+
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    env.url!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
