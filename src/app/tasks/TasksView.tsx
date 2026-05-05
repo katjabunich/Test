@@ -5,12 +5,12 @@ import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import Fab from "@/components/Fab";
-import { SphereChip } from "@/components/SphereChip";
 import { isPast, isToday, today, addDays } from "@/lib/date";
 
 type Group = {
   key: string;
   label: string;
+  tone: "warn" | "muted";
   tasks: Task[];
 };
 
@@ -40,16 +40,16 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", label: "Просроченные", tasks: overdue });
-  if (todays.length) groups.push({ key: "today", label: "Сегодня", tasks: todays });
-  if (week.length) groups.push({ key: "week", label: "На этой неделе", tasks: week });
-  if (later.length) groups.push({ key: "later", label: "Позже", tasks: later });
-  if (noDate.length) groups.push({ key: "nodate", label: "Без даты", tasks: noDate });
+  if (overdue.length) groups.push({ key: "overdue", label: "Просроченные", tone: "warn", tasks: overdue });
+  if (todays.length)  groups.push({ key: "today", label: "Сегодня", tone: "muted", tasks: todays });
+  if (week.length)    groups.push({ key: "week", label: "На этой неделе", tone: "muted", tasks: week });
+  if (later.length)   groups.push({ key: "later", label: "Позже", tone: "muted", tasks: later });
+  if (noDate.length)  groups.push({ key: "nodate", label: "Без даты", tone: "muted", tasks: noDate });
   return groups;
 }
 
 export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: Sphere[] }) {
-  const [filter, setFilter] = useState<string | null>(null); // sphere_id or null=all
+  const [filter, setFilter] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
@@ -66,28 +66,17 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
     return m;
   }, [spheres]);
 
-  function openNew() {
-    setEditing(null);
-    setModalOpen(true);
-  }
-
-  function openEdit(task: Task) {
-    setEditing(task);
-    setModalOpen(true);
-  }
-
   return (
-    <div style={{ padding: "20px 16px 16px" }}>
-      <h1
-        style={{
-          fontSize: 28,
-          fontWeight: 500,
-          letterSpacing: "-0.02em",
-          margin: "0 0 16px 4px",
-        }}
-      >
-        Все задачи
-      </h1>
+    <div style={{ padding: "26px 18px 16px" }}>
+      <header style={{ marginBottom: 18, padding: "0 4px" }}>
+        <div className="label" style={{ marginBottom: 6 }}>задачи</div>
+        <h1 className="heading-display">
+          <span className="tnum">{tasks.length}</span>{" "}
+          <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>
+            всего
+          </span>
+        </h1>
+      </header>
 
       {/* Sphere filter */}
       <div
@@ -95,49 +84,52 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
           display: "flex",
           gap: 6,
           overflowX: "auto",
-          padding: "2px 4px 12px",
+          padding: "2px 4px 16px",
           marginLeft: -4,
           marginRight: -4,
+          scrollbarWidth: "none",
         }}
       >
-        <SphereChip sphere={null} selected={filter === null} onClick={() => setFilter(null)} />
+        <FilterChip
+          selected={filter === null}
+          onClick={() => setFilter(null)}
+          label="Все"
+        />
         {spheres.map((s) => (
-          <SphereChip
+          <FilterChip
             key={s.id}
-            sphere={s}
             selected={filter === s.id}
             onClick={() => setFilter(s.id)}
+            label={s.name}
+            color={s.color}
+            emoji={s.emoji ?? undefined}
           />
         ))}
       </div>
 
-      {/* Grouped list */}
       {groups.length === 0 ? (
         <div
-          style={{
-            textAlign: "center",
-            padding: "48px 20px",
-            color: "var(--text-muted)",
-            fontSize: 15,
-          }}
+          className="glass"
+          style={{ padding: "48px 22px", textAlign: "center", color: "var(--text-muted)", fontSize: 14.5 }}
         >
-          Пока пусто. Нажми + чтобы добавить.
+          {filter ? "В этой сфере пусто." : "Пока пусто. Нажми + чтобы добавить."}
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }} className="stagger">
           {groups.map((g) => (
             <section key={g.key}>
               <div
+                className="label"
                 style={{
-                  fontSize: 11,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  color: g.key === "overdue" ? "#C46E5A" : "var(--text-muted)",
-                  opacity: 0.75,
-                  margin: "0 8px 6px",
+                  margin: "0 8px 8px",
+                  color: g.tone === "warn" ? "var(--warn)" : "var(--text-muted)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                 }}
               >
-                {g.label} · {g.tasks.length}
+                <span>{g.label}</span>
+                <span className="tnum" style={{ opacity: 0.6 }}>{g.tasks.length}</span>
               </div>
               <div className="glass" style={{ padding: 4 }}>
                 {g.tasks.map((task, i) => (
@@ -145,16 +137,13 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
                     <TaskItem
                       task={task}
                       sphere={task.sphere_id ? sphereById.get(task.sphere_id) ?? null : null}
-                      onEdit={openEdit}
+                      onEdit={(t) => {
+                        setEditing(t);
+                        setModalOpen(true);
+                      }}
                     />
                     {i < g.tasks.length - 1 && (
-                      <div
-                        style={{
-                          height: 1,
-                          background: "var(--hairline)",
-                          margin: "0 14px",
-                        }}
-                      />
+                      <div style={{ height: 1, background: "var(--hairline)", margin: "0 14px" }} />
                     )}
                   </div>
                 ))}
@@ -164,7 +153,7 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
         </div>
       )}
 
-      <Fab onClick={openNew} />
+      <Fab onClick={() => { setEditing(null); setModalOpen(true); }} />
       <TaskEditModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -173,5 +162,61 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
         defaultSphereId={filter}
       />
     </div>
+  );
+}
+
+function FilterChip({
+  selected,
+  onClick,
+  label,
+  color,
+  emoji,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  label: string;
+  color?: string;
+  emoji?: string;
+}) {
+  const dotColor = color ?? "var(--text-faint)";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="tap"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "8px 13px",
+        borderRadius: 999,
+        border: selected ? `1.5px solid ${color ?? "var(--accent)"}` : "1px solid var(--hairline)",
+        background: selected
+          ? color
+            ? `${color}1F`
+            : "var(--accent-tint)"
+          : "rgba(255,255,255,0.7)",
+        color: "var(--text)",
+        fontSize: 13,
+        fontWeight: 500,
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      {color && (
+        <span
+          aria-hidden
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: dotColor,
+          }}
+        />
+      )}
+      {emoji && <span>{emoji}</span>}
+      <span>{label}</span>
+    </button>
   );
 }

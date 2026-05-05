@@ -1,69 +1,161 @@
 @import "tailwindcss";
 
 :root {
-  /* Tiffany-inspired light palette. The mint accent is reserved for
-     primary actions and active states only — see DESIGN section in plan. */
-  --bg-base:        #FCFEFD;
-  --surface:        rgba(255, 255, 255, 0.7);
+  /* Surface */
+  --bg-base:        #FBFAF7;          /* warm off-white, less clinical */
+  --bg-deep:        #F5F2EC;
+  --surface:        rgba(255,255,255,0.78);
   --surface-solid:  #FFFFFF;
-  --surface-border: rgba(255, 255, 255, 0.9);
-  --hairline:       rgba(20, 40, 40, 0.08);
+  --surface-border: rgba(255,255,255,0.96);
+  --hairline:       rgba(20,40,40,0.07);
+  --hairline-strong:rgba(20,40,40,0.12);
 
+  /* Accent — Tiffany family */
   --accent:         #0ABAB5;
+  --accent-deep:    #07918D;
   --accent-soft:    #B8E8E5;
   --accent-tint:    #E6F7F5;
-  --accent-deep:    #07918D;
+  --accent-glow:    rgba(10,186,181,0.35);
 
-  --text:           #1A1F1E;
-  --text-muted:     #6B7570;
-  --text-faint:     #A0A8A4;
+  /* Type */
+  --text:           #14181C;
+  --text-muted:     #5C6660;
+  --text-faint:     #9AA39E;
+  --text-display:   #0E1216;
 
-  --shadow-sm: 0 1px 2px rgba(10, 40, 40, 0.04);
-  --shadow-md: 0 1px 2px rgba(10, 40, 40, 0.04), 0 8px 32px rgba(10, 40, 40, 0.06);
+  /* Status */
+  --warn:           #C46E5A;
+  --warn-tint:      rgba(196,110,90,0.10);
 
+  /* Shadow */
+  --shadow-xs: 0 1px 1px rgba(10,40,40,0.04);
+  --shadow-sm: 0 1px 2px rgba(10,40,40,0.04), 0 2px 6px rgba(10,40,40,0.04);
+  --shadow-md: 0 1px 2px rgba(10,40,40,0.04), 0 12px 32px rgba(10,40,40,0.07);
+  --shadow-lg: 0 1px 3px rgba(10,40,40,0.05), 0 22px 56px rgba(10,40,40,0.10);
+  --shadow-mint: 0 1px 2px rgba(10,40,40,0.06), 0 18px 40px var(--accent-glow);
+
+  /* Geometry */
+  --radius-xs: 8px;
   --radius-sm: 12px;
   --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
   background: var(--bg-base);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
+  font-feature-settings: "ss01", "ss02", "cv11";
+  letter-spacing: -0.011em;
 }
 
 body {
-  min-height: 100vh;
+  min-height: 100dvh;
   overscroll-behavior-y: none;
 }
 
-/* Static mesh-gradient background. Soft mint pool top-right and a barely
-   pink wash bottom-left over near-white. Lives on body::before so it sits
-   behind everything and never affects layout. */
+/* Atmospheric background — three soft pools that drift very slowly,
+   creating depth without ever pulling attention. */
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: -10vmax;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 95% 0%, rgba(10, 186, 181, 0.18), transparent 70%),
-    radial-gradient(55% 45% at 5% 100%, rgba(245, 181, 168, 0.16), transparent 70%),
-    radial-gradient(70% 60% at 50% 50%, rgba(184, 232, 229, 0.10), transparent 70%),
+    radial-gradient(46% 38% at 88% 6%,  rgba(10,186,181,0.22), transparent 70%),
+    radial-gradient(38% 32% at 8% 92%,  rgba(244,180,163,0.18), transparent 72%),
+    radial-gradient(60% 50% at 50% 60%, rgba(184,232,229,0.10), transparent 70%),
     var(--bg-base);
+  filter: saturate(105%);
   pointer-events: none;
+  animation: drift 60s ease-in-out infinite alternate;
 }
 
-* {
-  box-sizing: border-box;
+@keyframes drift {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  100% { transform: translate3d(2%, -1.5%, 0) rotate(1deg); }
 }
 
+/* App container */
+main {
+  max-width: 460px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  animation: fadeUp 360ms var(--ease-out) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translate3d(0, 6px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Re-usable surfaces */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.85);
+  border-radius: var(--radius-lg);
+}
+
+.glass-soft {
+  background: var(--surface);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+}
+
+/* Type utilities */
+.tnum {
+  font-feature-settings: "tnum", "ss01";
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.heading-display {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  color: var(--text-display);
+}
+
+.heading-1 {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Buttons / inputs base */
 button {
   font-family: inherit;
   letter-spacing: inherit;
+  color: inherit;
 }
 
 input, textarea, select {
@@ -72,14 +164,41 @@ input, textarea, select {
   color: inherit;
 }
 
-/* Reusable glass surface — see GlassCard component. */
-.glass {
-  background: var(--surface);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--surface-border);
-  box-shadow:
-    var(--shadow-md),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  border-radius: var(--radius-lg);
+/* Subtle press feedback for tap targets */
+.tap {
+  transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+}
+.tap:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Stagger entry for list items */
+.stagger > * {
+  animation: itemIn 380ms var(--ease-out) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+.stagger > *:nth-child(6) { animation-delay: 200ms; }
+.stagger > *:nth-child(7) { animation-delay: 240ms; }
+.stagger > *:nth-child(n+8) { animation-delay: 280ms; }
+
+@keyframes itemIn {
+  from { opacity: 0; transform: translate3d(0, 6px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Soft pulse for habits not done today */
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(10,186,181,0); }
+  50%      { box-shadow: 0 0 0 6px rgba(10,186,181,0.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  main { animation: none; }
+  .stagger > * { animation: none; }
 }

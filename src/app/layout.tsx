@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
+
+const inter = Inter({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Дела",
@@ -22,7 +29,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#FCFEFD",
+  themeColor: "#FBFAF7",
 };
 
 export default function RootLayout({
@@ -31,18 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className="h-full antialiased">
-      <body className="min-h-full">
-        <main
-          style={{
-            maxWidth: 430,
-            margin: "0 auto",
-            minHeight: "100vh",
-            paddingBottom: "calc(96px + env(safe-area-inset-bottom))",
-          }}
-        >
-          {children}
-        </main>
+    <html lang="ru" className={`${inter.variable} h-full antialiased`}>
+      <body>
+        <main>{children}</main>
         <BottomNav />
         <RegisterSW />
       </body>

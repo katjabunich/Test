@@ -20,31 +20,32 @@ export default function HabitsView({
   const logsByHabit = groupLogsByHabit(logs);
 
   return (
-    <div style={{ padding: "20px 16px 16px" }}>
-      <h1
-        style={{
-          fontSize: 28,
-          fontWeight: 500,
-          letterSpacing: "-0.02em",
-          margin: "0 0 16px 4px",
-        }}
-      >
-        Привычки
-      </h1>
+    <div style={{ padding: "26px 18px 16px" }}>
+      <header style={{ marginBottom: 18, padding: "0 4px" }}>
+        <div className="label" style={{ marginBottom: 6 }}>привычки</div>
+        <h1 className="heading-display">
+          <span className="tnum">{habits.length}</span>{" "}
+          <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>
+            активных
+          </span>
+        </h1>
+      </header>
 
       {habits.length === 0 ? (
         <div
+          className="glass"
           style={{
+            padding: "48px 22px",
             textAlign: "center",
-            padding: "48px 20px",
             color: "var(--text-muted)",
-            fontSize: 15,
+            fontSize: 14.5,
+            lineHeight: 1.55,
           }}
         >
-          Пока пусто. Добавь привычку, чтобы видеть стрики.
+          Пока пусто. Добавь привычку — например, играть на пианино или урок голландского.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }} className="stagger">
           {habits.map((habit) => (
             <HabitCard
               key={habit.id}
