@@ -2,11 +2,16 @@
    without revealing secret values. Safe because anon keys are public anyway,
    and we only show the first/last few chars. Remove after debugging. */
 
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
+
 export const dynamic = "force-dynamic";
 
 export default async function DiagPage() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
+  const sanitized = rawUrl !== url || rawKey !== key;
   const nodeEnv = process.env.NODE_ENV;
   const vercelEnv = process.env.VERCEL_ENV;
 
@@ -112,6 +117,13 @@ export default async function DiagPage() {
       <p style={{ marginTop: 24, fontSize: 12, color: "var(--text-muted)" }}>
         Эта страница временная — нужна для диагностики деплоя. Уберу когда всё заработает.
       </p>
+      {sanitized && (
+        <p style={{ marginTop: 12, fontSize: 12, color: "#D9994E", lineHeight: 1.5 }}>
+          ⚠ Значение env-переменной содержало лишние символы (кавычки или <code>&lt;&gt;</code>) —
+          код их обрезает автоматически, но в Vercel желательно почистить вручную, чтобы
+          было корректно.
+        </p>
+      )}
     </div>
   );
 }

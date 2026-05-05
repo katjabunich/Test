@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { checkSupabaseEnv, MissingEnvError } from "@/lib/env";
+import { checkSupabaseEnv, getSupabaseAnonKey, getSupabaseUrl, MissingEnvError } from "@/lib/env";
 
 /** Server-side Supabase client for App Router. */
 export async function createClient() {
@@ -10,8 +10,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    env.url!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseAnonKey()!,
     {
       cookies: {
         getAll() {

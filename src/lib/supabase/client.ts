@@ -1,10 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
-/** Browser-side Supabase client. Reads anon key from public env vars
-    (these are safe to expose; RLS policies enforce data access). */
+/** Browser-side Supabase client. Sanitizes env values to tolerate accidental
+    quotes or angle-brackets that creep in from copy-paste. */
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  return createBrowserClient(getSupabaseUrl()!, getSupabaseAnonKey()!);
 }

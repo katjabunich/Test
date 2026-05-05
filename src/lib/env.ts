@@ -8,9 +8,29 @@ export type EnvCheck = {
   hasKey: boolean;
 };
 
+/** Strip wrapping characters that sneak in when copy-pasting from markdown
+   links (`<https://…>`) or quoted hints (`"…"`), plus stray whitespace. */
+function sanitize(value: string | undefined): string | undefined {
+  if (!value) return value;
+  let v = value.trim();
+  if (v.startsWith("<") && v.endsWith(">")) v = v.slice(1, -1);
+  if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+    v = v.slice(1, -1);
+  }
+  return v.trim();
+}
+
+export function getSupabaseUrl(): string | undefined {
+  return sanitize(process.env.NEXT_PUBLIC_SUPABASE_URL);
+}
+
+export function getSupabaseAnonKey(): string | undefined {
+  return sanitize(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+}
+
 export function checkSupabaseEnv(): EnvCheck {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = getSupabaseUrl();
+  const key = getSupabaseAnonKey();
   const missing: string[] = [];
   if (!url) missing.push("NEXT_PUBLIC_SUPABASE_URL");
   if (!key) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
