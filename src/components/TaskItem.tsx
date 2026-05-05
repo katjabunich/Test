@@ -36,7 +36,6 @@ export default function TaskItem({
   const [optimisticDone, setOptimisticDone] = useState(false);
   const [isPending, startTransition] = useTransition();
   const due = dueLabel(task.due_date);
-  const sphereColor = sphere?.color ?? "rgba(20,40,40,0.18)";
 
   function handleComplete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -59,30 +58,14 @@ export default function TaskItem({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "13px 14px 13px 10px",
+        padding: "12px 18px",
         background: "transparent",
         cursor: onEdit ? "pointer" : "default",
-        borderRadius: 14,
-        opacity: optimisticDone ? 0.35 : 1,
-        transform: optimisticDone ? "translateX(8px)" : "translateX(0)",
+        opacity: optimisticDone ? 0.4 : 1,
+        transform: optimisticDone ? "translateX(6px)" : "translateX(0)",
         transition: "opacity 280ms var(--ease-out), transform 280ms var(--ease-out)",
-        position: "relative",
       }}
     >
-      {/* Sphere edge bar */}
-      <span
-        aria-hidden
-        style={{
-          width: 3,
-          alignSelf: "stretch",
-          borderRadius: 999,
-          background: sphere
-            ? `linear-gradient(180deg, ${sphereColor} 0%, ${sphereColor}AA 100%)`
-            : "transparent",
-          flexShrink: 0,
-        }}
-      />
-
       <button
         type="button"
         onClick={handleComplete}
@@ -90,10 +73,10 @@ export default function TaskItem({
         aria-label="Отметить выполненной"
         className="tap"
         style={{
-          width: 26,
-          height: 26,
+          width: 24,
+          height: 24,
           borderRadius: "50%",
-          border: optimisticDone ? "1.5px solid var(--accent)" : "1.5px solid var(--text-faint)",
+          border: optimisticDone ? "none" : "1.5px solid var(--text-faint)",
           background: optimisticDone
             ? "linear-gradient(140deg, #14CAC4, #07918D)"
             : "transparent",
@@ -103,19 +86,19 @@ export default function TaskItem({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 250ms var(--ease-spring)",
-          boxShadow: optimisticDone ? "0 4px 12px rgba(10,186,181,0.35)" : "none",
+          transition: "all 220ms var(--ease-spring)",
+          boxShadow: optimisticDone ? "0 4px 10px rgba(10,186,181,0.30)" : "none",
         }}
       >
         <svg
-          width="13"
-          height="13"
+          width="12"
+          height="12"
           viewBox="0 0 14 14"
           fill="none"
           style={{
             opacity: optimisticDone ? 1 : 0,
             transform: optimisticDone ? "scale(1)" : "scale(0.4)",
-            transition: "all 220ms var(--ease-spring)",
+            transition: "all 200ms var(--ease-spring)",
           }}
         >
           <path d="M3 7.5L6 10.5L11 4.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,8 +108,8 @@ export default function TaskItem({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 15.5,
-            fontWeight: 450,
+            fontSize: 15,
+            fontWeight: 500,
             color: "var(--text)",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -137,32 +120,41 @@ export default function TaskItem({
           {task.title}
         </div>
         {(sphere || due || task.recurrence) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
             {sphere && (
-              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                {sphere.emoji ? `${sphere.emoji} ` : ""}{sphere.name}
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  background: `${sphere.color}1F`,
+                  border: `1px solid ${sphere.color}33`,
+                  color: "var(--text-muted)",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: 0.01,
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: sphere.color }} />
+                {sphere.name}
               </span>
             )}
             {due && (
-              <>
-                {sphere && <span style={{ color: "var(--text-faint)", fontSize: 11 }}>·</span>}
-                <span
-                  className="tnum"
-                  style={{
-                    fontSize: 12,
-                    color: due.tone === "warn" ? "var(--warn)" : "var(--text-muted)",
-                    fontWeight: due.tone === "warn" ? 500 : 400,
-                  }}
-                >
-                  {due.text}
-                </span>
-              </>
+              <span
+                className="tnum"
+                style={{
+                  fontSize: 12,
+                  color: due.tone === "warn" ? "var(--warn)" : "var(--text-muted)",
+                  fontWeight: due.tone === "warn" ? 600 : 400,
+                }}
+              >
+                {due.text}
+              </span>
             )}
             {task.recurrence && (
-              <>
-                <span style={{ color: "var(--text-faint)", fontSize: 11 }}>·</span>
-                <span style={{ fontSize: 11, color: "var(--text-faint)" }}>↻</span>
-              </>
+              <span style={{ fontSize: 11, color: "var(--text-faint)" }}>↻</span>
             )}
           </div>
         )}

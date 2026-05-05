@@ -7,13 +7,11 @@ import { today } from "@/lib/date";
 
 const ACCENT_FALLBACK = "#0ABAB5";
 
-/** Tap-target ring for a single habit on the Today screen. Big enough to
-   be a primary visual element, animates fill on completion. */
 export default function HabitRing({
   habit,
   doneToday,
   streak,
-  size = 64,
+  size = 60,
 }: {
   habit: Habit;
   doneToday: boolean;
@@ -36,7 +34,7 @@ export default function HabitRing({
     });
   }
 
-  const stroke = 3;
+  const stroke = 2.5;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
 
@@ -59,45 +57,28 @@ export default function HabitRing({
         padding: "4px 6px",
         flexShrink: 0,
         opacity: isPending ? 0.7 : 1,
+        minWidth: 70,
       }}
     >
-      <div
-        style={{
-          position: "relative",
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          animation: !optimistic ? "softPulse 2.6s ease-in-out infinite" : "none",
-        }}
-      >
+      <div style={{ position: "relative", width: size, height: size }}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <defs>
-            <linearGradient id={`grad-${habit.id}`} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity="1" />
+            <linearGradient id={`hr-${habit.id}`} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor={color} />
               <stop offset="100%" stopColor={color} stopOpacity="0.78" />
             </linearGradient>
           </defs>
-          {/* Track */}
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
-            fill="rgba(255,255,255,0.6)"
-            stroke="var(--hairline)"
-            strokeWidth={stroke}
-          />
-          {/* Progress */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill={optimistic ? `url(#grad-${habit.id})` : "transparent"}
-            stroke={color}
+            fill={optimistic ? `url(#hr-${habit.id})` : "var(--surface-tint)"}
+            stroke={optimistic ? color : "var(--hairline)"}
             strokeWidth={stroke}
             strokeDasharray={c}
             strokeDashoffset={optimistic ? 0 : c}
             strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 360ms var(--ease-spring), fill 280ms var(--ease-out)" }}
+            style={{ transition: "stroke-dashoffset 360ms var(--ease-spring), fill 240ms var(--ease-out)" }}
             transform={`rotate(-90 ${size / 2} ${size / 2})`}
           />
         </svg>
@@ -109,24 +90,21 @@ export default function HabitRing({
             alignItems: "center",
             justifyContent: "center",
             fontSize: size * 0.42,
-            transition: "transform 240ms var(--ease-spring)",
-            transform: optimistic ? "scale(1)" : "scale(0.96)",
+            color: optimistic ? "white" : "var(--text-muted)",
           }}
         >
           {optimistic ? (
-            <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="none">
+            <svg width={size * 0.46} height={size * 0.46} viewBox="0 0 24 24" fill="none">
               <path
                 d="M5 12.5L10 17L19 7.5"
                 stroke="white"
-                strokeWidth="3"
+                strokeWidth="2.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
-          ) : habit.emoji ? (
-            <span>{habit.emoji}</span>
           ) : (
-            <span style={{ fontSize: size * 0.36, color: "var(--text-muted)" }}>•</span>
+            <span>{habit.emoji || "·"}</span>
           )}
         </div>
       </div>
@@ -136,7 +114,7 @@ export default function HabitRing({
             fontSize: 11.5,
             color: "var(--text)",
             fontWeight: 500,
-            maxWidth: size + 22,
+            maxWidth: size + 24,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",

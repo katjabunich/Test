@@ -20,44 +20,51 @@ export default function HabitsView({
   const logsByHabit = groupLogsByHabit(logs);
 
   return (
-    <div style={{ padding: "26px 18px 16px" }}>
-      <header style={{ marginBottom: 18, padding: "0 4px" }}>
-        <div className="label" style={{ marginBottom: 6 }}>привычки</div>
-        <h1 className="heading-display">
+    <div style={{ padding: "20px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="card" style={{ padding: "20px 22px" }}>
+        <div className="eyebrow" style={{ marginBottom: 6 }}>привычки</div>
+        <h1
+          style={{
+            fontSize: 26,
+            fontWeight: 600,
+            letterSpacing: "-0.025em",
+            margin: 0,
+            color: "var(--text-display)",
+            lineHeight: 1.1,
+          }}
+        >
           <span className="tnum">{habits.length}</span>{" "}
-          <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>
-            активных
+          <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
+            {habits.length === 0 ? "пока нет" : "активных"}
           </span>
         </h1>
-      </header>
+      </div>
 
       {habits.length === 0 ? (
         <div
-          className="glass"
+          className="card"
           style={{
-            padding: "48px 22px",
+            padding: "40px 22px",
             textAlign: "center",
             color: "var(--text-muted)",
             fontSize: 14.5,
             lineHeight: 1.55,
           }}
         >
-          Пока пусто. Добавь привычку — например, играть на пианино или урок голландского.
+          Добавь привычку — например, играть на пианино или урок голландского.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }} className="stagger">
-          {habits.map((habit) => (
-            <HabitCard
-              key={habit.id}
-              habit={habit}
-              logged={logsByHabit.get(habit.id) ?? new Set()}
-              onEdit={(h) => {
-                setEditing(h);
-                setModalOpen(true);
-              }}
-            />
-          ))}
-        </div>
+        habits.map((habit) => (
+          <HabitCard
+            key={habit.id}
+            habit={habit}
+            logged={logsByHabit.get(habit.id) ?? new Set()}
+            onEdit={(h) => {
+              setEditing(h);
+              setModalOpen(true);
+            }}
+          />
+        ))
       )}
 
       <Fab

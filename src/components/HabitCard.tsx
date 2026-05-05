@@ -40,33 +40,19 @@ export default function HabitCard({
 
   return (
     <div
-      className="glass"
+      className="card"
       style={{
-        padding: 16,
+        padding: 18,
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Accent wash in background */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: -40,
-          right: -40,
-          width: 160,
-          height: 160,
-          background: `radial-gradient(closest-side, ${color}1F, transparent 70%)`,
-          pointerEvents: "none",
-        }}
-      />
-
       <div
         style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
-          marginBottom: 14,
+          marginBottom: 16,
           position: "relative",
         }}
       >
@@ -75,7 +61,7 @@ export default function HabitCard({
             width: 44,
             height: 44,
             borderRadius: 14,
-            background: `linear-gradient(140deg, ${color}24, ${color}12)`,
+            background: `linear-gradient(140deg, ${color}26, ${color}10)`,
             border: `1px solid ${color}33`,
             display: "flex",
             alignItems: "center",
@@ -89,24 +75,24 @@ export default function HabitCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: 16,
-              fontWeight: 550,
+              fontSize: 15.5,
+              fontWeight: 600,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              letterSpacing: "-0.005em",
+              letterSpacing: "-0.01em",
             }}
           >
             {habit.name}
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "baseline", marginTop: 2 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "baseline", marginTop: 2 }}>
             <span
               className="tnum"
               style={{
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: 700,
                 color: streak > 0 ? color : "var(--text-faint)",
-                letterSpacing: "-0.015em",
+                letterSpacing: "-0.02em",
               }}
             >
               {streak}
@@ -122,18 +108,18 @@ export default function HabitCard({
           aria-label="Изменить"
           className="tap"
           style={{
-            background: "rgba(0,0,0,0.04)",
-            border: "none",
+            background: "var(--surface-tint)",
+            border: "1px solid var(--hairline-soft)",
             borderRadius: 999,
             color: "var(--text-muted)",
             cursor: "pointer",
-            padding: 8,
+            padding: 7,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="6" r="1.6" fill="currentColor" />
             <circle cx="12" cy="12" r="1.6" fill="currentColor" />
             <circle cx="12" cy="18" r="1.6" fill="currentColor" />
@@ -156,15 +142,15 @@ export default function HabitCard({
               aria-label={d}
               style={{
                 aspectRatio: "1 / 1",
-                borderRadius: 6,
-                border: isToday ? `1.5px solid ${color}` : "1px solid var(--hairline)",
+                borderRadius: 5,
+                border: isToday ? `1.5px solid ${color}` : "1px solid var(--hairline-soft)",
                 background: done
                   ? `linear-gradient(140deg, ${color}, ${color}D9)`
                   : scheduled
-                    ? "rgba(255,255,255,0.55)"
+                    ? "var(--surface-tint)"
                     : "rgba(0,0,0,0.025)",
                 cursor: scheduled || done ? "pointer" : "default",
-                opacity: scheduled || done ? 1 : 0.55,
+                opacity: scheduled || done ? 1 : 0.6,
                 padding: 0,
                 transition: "background 200ms var(--ease-out)",
               }}
@@ -176,11 +162,12 @@ export default function HabitCard({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          marginTop: 6,
+          marginTop: 8,
           fontSize: 10,
           color: "var(--text-faint)",
-          letterSpacing: 0.05,
+          letterSpacing: 0.08,
           textTransform: "uppercase",
+          fontWeight: 600,
         }}
       >
         <span>3 недели назад</span>

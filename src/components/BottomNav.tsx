@@ -20,34 +20,33 @@ function activeTabFor(pathname: string): NavTab {
 }
 
 function Icon({ name, active }: { name: NavTab; active: boolean }) {
-  const stroke = active ? "var(--accent)" : "var(--text-muted)";
-  const fill   = active ? "var(--accent-tint)" : "transparent";
+  const stroke = active ? "var(--accent-deep)" : "var(--text-muted)";
   switch (name) {
     case "today":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" fill={fill} stroke={stroke} strokeWidth="1.7" />
+          <circle cx="12" cy="12" r="9" stroke={stroke} strokeWidth="1.6" />
           <circle cx="12" cy="12" r="3" fill={stroke} />
         </svg>
       );
     case "tasks":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="5" width="16" height="14" rx="3" fill={fill} stroke={stroke} strokeWidth="1.7" />
-          <path d="M8 10h8M8 14h5" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+          <rect x="4" y="5" width="16" height="14" rx="3" stroke={stroke} strokeWidth="1.6" />
+          <path d="M8 10h8M8 14h5" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
     case "habits":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" fill={fill} stroke={stroke} strokeWidth="1.7" />
-          <path d="M8 12.5l2.6 2.5L16 9.5" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="9" stroke={stroke} strokeWidth="1.6" />
+          <path d="M8 12.5l2.6 2.5L16 9.5" stroke={stroke} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "settings":
       return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M5 7h14M5 12h10M5 17h6" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" />
+          <path d="M5 7h14M5 12h10M5 17h6" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       );
   }
@@ -78,34 +77,27 @@ export default function BottomNav() {
       <div
         style={{
           width: "100%",
-          borderRadius: 30,
-          padding: "8px 6px",
+          borderRadius: 28,
+          padding: 6,
           position: "relative",
           isolation: "isolate",
           pointerEvents: "auto",
-          background: "rgba(255, 255, 255, 0.72)",
-          backdropFilter: "blur(28px) saturate(180%)",
-          WebkitBackdropFilter: "blur(28px) saturate(180%)",
-          border: "0.5px solid rgba(255, 255, 255, 0.85)",
-          boxShadow: [
-            "inset 1.5px 1.5px 1px rgba(255, 255, 255, 0.85)",
-            "inset -1px -1px 1px rgba(255, 255, 255, 0.4)",
-            "0 1px 3px rgba(10, 40, 40, 0.05)",
-            "0 12px 32px rgba(10, 40, 40, 0.08)",
-          ].join(", "),
+          background: "var(--surface)",
+          border: "1px solid var(--hairline-soft)",
+          boxShadow: "var(--shadow-card-lg)",
         }}
       >
-        {/* Sliding pill behind active tab */}
+        {/* Sliding pill */}
         <div
           style={{
             position: "absolute",
-            top: 8,
-            bottom: 8,
+            top: 6,
+            bottom: 6,
             left: `calc(6px + ${activeIndex} * (100% - 12px) / ${TABS.length})`,
             width: `calc((100% - 12px) / ${TABS.length})`,
-            background: "linear-gradient(180deg, rgba(10,186,181,0.10), rgba(10,186,181,0.16))",
-            border: "1px solid rgba(10,186,181,0.18)",
-            borderRadius: 24,
+            background: "var(--accent-cream)",
+            border: "1px solid var(--accent-soft)",
+            borderRadius: 22,
             transition: "left 380ms var(--ease-spring)",
             pointerEvents: "none",
           }}
@@ -133,7 +125,7 @@ export default function BottomNav() {
                 }}
               >
                 <Icon name={tab.id} active={isActive} />
-                <span style={{ fontSize: 10.5, letterSpacing: 0.2 }}>{tab.label}</span>
+                <span style={{ fontSize: 10.5, letterSpacing: 0.15 }}>{tab.label}</span>
               </Link>
             );
           })}
