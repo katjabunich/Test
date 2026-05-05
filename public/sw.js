@@ -1,9 +1,9 @@
-/* Minimal service worker so the app is installable as a PWA.
-   v1 has no offline strategy — a future version can add caching. */
+/* No-op service worker. Previous deploy registered a SW that cached pages;
+   this minimal version unregisters caches and stays out of the way during
+   debugging. After /diag confirms env vars are correct, we can put a real
+   caching strategy back. */
 
-const APP_SHELL_CACHE = "tasktracker-shell-v1";
-
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
@@ -11,18 +11,10 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
-      await Promise.all(
-        keys.filter((k) => k !== APP_SHELL_CACHE).map((k) => caches.delete(k)),
-      );
+      await Promise.all(keys.map((k) => caches.delete(k)));
       await self.clients.claim();
     })(),
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  // Network-first; SW does not interfere on success.
-  // Required so the browser counts this as a real fetch handler (PWA install).
-  event.respondWith(
-    fetch(event.request).catch(() => caches.match(event.request)),
-  );
-});
+// Intentionally no fetch handler — every request goes straight to the network.
