@@ -157,6 +157,20 @@ button, input, textarea, select {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Subtle bob applied to a wrapper around the 3D-rotated phone, so the
+   device feels like it's floating without disturbing its perspective. */
+@keyframes phone-sway {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+/* Decoration vertical breathe — used by floating chips/badges */
+@keyframes decor-float {
+  from { transform: translateY(0) var(--decor-rot, none); }
+  to   { transform: translateY(-6px) var(--decor-rot, none); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0ms !important; transition-duration: 0ms !important; }
 }

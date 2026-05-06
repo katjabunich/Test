@@ -3,26 +3,34 @@
 import type { CSSProperties, ReactNode } from "react";
 
 /** A faithful iPhone 15-style frame: warm-dark bezel, dynamic island,
-   status bar with 9:41 + battery, screen padded for content. The frame
-   is fixed at 220×475 — wrap the call site in transform: scale(...) if
-   you need it smaller. */
+   status bar with 9:41 + battery, screen padded for content.
+
+   The frame can be presented as a flat tilt (rotateZ via `tilt`) or in 3D
+   perspective (rotateX/rotateY) — pass any combination. A subtle screen
+   reflection overlay sits on top of the content for depth. */
 export default function PhoneFrame({
   children,
-  tilt = -2,
+  tilt = 0,
+  rotateY = 0,
+  rotateX = 0,
   style,
 }: {
   children: ReactNode;
   tilt?: number;
+  rotateY?: number;
+  rotateX?: number;
   style?: CSSProperties;
 }) {
+  const transform = `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotate(${tilt}deg)`;
   return (
     <div
       style={{
         width: 220,
         height: 475,
-        transform: `rotate(${tilt}deg)`,
+        transform,
+        transformStyle: "preserve-3d",
         filter:
-          "drop-shadow(0 24px 44px rgba(45,38,32,0.18)) drop-shadow(0 6px 14px rgba(45,38,32,0.10))",
+          "drop-shadow(0 28px 50px rgba(45,38,32,0.22)) drop-shadow(0 8px 16px rgba(45,38,32,0.10))",
         ...style,
       }}
     >
@@ -38,7 +46,7 @@ export default function PhoneFrame({
           position: "relative",
         }}
       >
-        {/* Tiny side highlight, suggestive of polished metal */}
+        {/* Polished metal highlights on the sides */}
         <div
           aria-hidden
           style={{
@@ -150,6 +158,21 @@ export default function PhoneFrame({
           >
             {children}
           </div>
+
+          {/* Screen reflection — diagonal soft highlight on top of everything,
+             gives the device a subtle "glassy" feel. */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(125deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 22%, transparent 42%, transparent 100%)",
+              pointerEvents: "none",
+              zIndex: 4,
+              borderRadius: 35,
+            }}
+          />
         </div>
       </div>
     </div>

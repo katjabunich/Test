@@ -12,12 +12,13 @@ const STORAGE_KEY = "dela.onboarded.v1";
 
 type Slide = {
   eyebrow: string;
-  eyebrowDot: string;     // sphere-style colour dot before the eyebrow
+  eyebrowDot: string;
   title: string;
   body: string;
   cta: string;
   visual: React.ReactNode;
-  tilt: number;
+  /** Halo colour behind the phone — sphere accent of the slide. */
+  glow: string;
 };
 
 const SLIDES: Slide[] = [
@@ -28,7 +29,7 @@ const SLIDES: Slide[] = [
     body: "Открываешь утром — и сразу видно, что делать сегодня. Без вкладок и поиска.",
     cta: "Дальше",
     visual: <HeroPreview />,
-    tilt: -4,
+    glow: "#f5c563",
   },
   {
     eyebrow: "Как это устроено",
@@ -37,7 +38,7 @@ const SLIDES: Slide[] = [
     body: "Работа, дом, канал, голландский, AI — у каждой свой цвет. Сразу видно, что относится к чему.",
     cta: "Дальше",
     visual: <SpheresPreview />,
-    tilt: 3,
+    glow: "#86c79a",
   },
   {
     eyebrow: "Ежедневный ритм",
@@ -46,7 +47,7 @@ const SLIDES: Slide[] = [
     body: "Тап по кольцу — отметила. Дойдёшь до 7, 30, 100 дней — будут конфетти.",
     cta: "Готова, поехали",
     visual: <RingPreview />,
-    tilt: -3,
+    glow: "#b5a3df",
   },
 ];
 
@@ -72,6 +73,7 @@ export default function Onboarding() {
 
   const isLast = step === SLIDES.length - 1;
   const slide = SLIDES[step];
+  const progress = (step + 1) / SLIDES.length;
 
   return (
     <div
@@ -86,8 +88,7 @@ export default function Onboarding() {
         overflow: "hidden",
       }}
     >
-      {/* Vivid mesh background per slide — re-mounts on step change so its
-         crossfade re-fires. */}
+      {/* Background blobs (per-slide) */}
       <div
         key={`bg-${step}`}
         style={{
@@ -99,34 +100,41 @@ export default function Onboarding() {
         <SlideBackground variant={step as 0 | 1 | 2} />
       </div>
 
-      {/* Top bar: pagination + skip */}
+      {/* Top bar — thread progress + skip */}
       <div
         style={{
           padding: "20px 22px 0",
           display: "flex",
           alignItems: "center",
-          gap: 16,
+          gap: 14,
           position: "relative",
           flexShrink: 0,
           zIndex: 2,
         }}
       >
-        <div style={{ display: "flex", gap: 6 }}>
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: i === step ? 28 : 8,
-                height: 4,
-                borderRadius: 2,
-                background:
-                  i === step ? "var(--mint-deep)" : "var(--ink-20)",
-                transition: "all 320ms var(--ease-spring)",
-              }}
-            />
-          ))}
+        {/* Thread track */}
+        <div
+          style={{
+            flex: 1,
+            height: 2.5,
+            background: "rgba(45,38,32,0.10)",
+            borderRadius: 2,
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              width: `${progress * 100}%`,
+              background:
+                "linear-gradient(90deg, var(--mint-deep), #14CAC4)",
+              borderRadius: 2,
+              transition: "width 540ms var(--ease-spring)",
+              boxShadow: "0 0 6px rgba(79,156,106,0.45)",
+            }}
+          />
         </div>
-        <div style={{ flex: 1 }} />
         <button
           type="button"
           onClick={finish}
@@ -140,14 +148,19 @@ export default function Onboarding() {
             padding: "4px 8px",
             cursor: "pointer",
             letterSpacing: "-0.005em",
+            flexShrink: 0,
           }}
         >
           пропустить
         </button>
       </div>
 
-      {/* Phone stage with floating decor */}
-      <PhoneStage step={step} variant={step as 0 | 1 | 2}>
+      {/* Phone stage with glow + decor */}
+      <PhoneStage
+        step={step}
+        variant={step as 0 | 1 | 2}
+        glow={slide.glow}
+      >
         {slide.visual}
       </PhoneStage>
 
@@ -263,16 +276,19 @@ export default function Onboarding() {
   );
 }
 
-/** Wraps the phone visual in a scaled stage and overlays floating decor.
-   The fixed-pixel 220×475 PhoneFrame fits any viewport via this scale. */
+/** Hosts the 3D-rotated phone, a coloured halo behind it, and floating
+   decoration around it. The phone itself sits inside a sway-animated
+   wrapper so it gently floats without disturbing its perspective. */
 function PhoneStage({
   children,
   step,
   variant,
+  glow,
 }: {
   children: React.ReactNode;
   step: number;
   variant: 0 | 1 | 2;
+  glow: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -281,8 +297,8 @@ function PhoneStage({
     const update = () => {
       if (!ref.current) return;
       const rect = ref.current.getBoundingClientRect();
-      const targetW = 250; // a bit of margin for floating decor + tilt
-      const targetH = 500;
+      const targetW = 280;
+      const targetH = 540;
       const s = Math.min(1, rect.width / targetW, rect.height / targetH);
       setScale(s);
     };
@@ -306,17 +322,14 @@ function PhoneStage({
       }}
     >
       <div
-        key={`phone-${step}`}
+        key={`stage-${step}`}
         style={{
           position: "relative",
-          width: 250 * scale,
-          height: 500 * scale,
+          width: 280 * scale,
+          height: 540 * scale,
           animation: "splash-in 540ms var(--ease-spring) both",
         }}
       >
-        {/* Floating decor sits in the same scaled box as the phone so it
-           tracks together. Decor positions are percentages relative to
-           this container. */}
         <div
           style={{
             position: "absolute",
@@ -325,26 +338,45 @@ function PhoneStage({
             transformOrigin: "center",
           }}
         >
-          {/* Phone is centred inside this 250×500 box */}
+          {/* Halo behind phone */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 360,
+              height: 480,
+              transform: "translate(-50%, -45%)",
+              background: `radial-gradient(closest-side, ${glow} 0%, transparent 70%)`,
+              filter: "blur(46px)",
+              opacity: 0.55,
+              pointerEvents: "none",
+              zIndex: 0,
+              animation: "slide-in 700ms 100ms var(--ease-out) both",
+            }}
+          />
+
+          {/* Phone, centred, floating with subtle sway */}
           <div
             style={{
               position: "absolute",
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
+              animation: "phone-sway 8s ease-in-out infinite",
+              zIndex: 1,
             }}
           >
             {children}
           </div>
-          <FloatingDecor variant={variant} />
+
+          {/* Floating chips/badges (flat, on top, do not rotate with phone) */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+            <FloatingDecor variant={variant} />
+          </div>
         </div>
       </div>
-      <style>{`
-        @keyframes decor-float {
-          0%   { transform: translateY(0)   var(--decor-rot, rotate(0deg)); }
-          100% { transform: translateY(-6px) var(--decor-rot, rotate(0deg)); }
-        }
-      `}</style>
     </div>
   );
 }

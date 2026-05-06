@@ -23,6 +23,12 @@ const TASKS = [
   { title: "Урок 14: voltooid",          sphere: "Голландский", color: POOL,   time: "14:00" },
 ];
 
+const enter = (delay: number) =>
+  ({
+    opacity: 0,
+    animation: `slide-in 420ms ${delay}ms var(--ease-out) forwards`,
+  }) as const;
+
 export default function MockTasksContent() {
   return (
     <div style={{ padding: "8px 14px 0" }}>
@@ -34,6 +40,7 @@ export default function MockTasksContent() {
           color: "var(--ink-60)",
           letterSpacing: "0.13em",
           marginBottom: 3,
+          ...enter(120),
         }}
       >
         14 АКТИВНЫХ
@@ -45,12 +52,13 @@ export default function MockTasksContent() {
           letterSpacing: "-0.04em",
           lineHeight: 0.95,
           color: "var(--ink)",
+          ...enter(200),
         }}
       >
         Задачи<span style={{ color: "var(--mint-deep)" }}>.</span>
       </div>
 
-      {/* Filter chips — horizontal, with sphere chips highlighted */}
+      {/* Filter chips */}
       <div
         style={{
           marginTop: 12,
@@ -59,14 +67,13 @@ export default function MockTasksContent() {
           overflow: "hidden",
         }}
       >
-        <FilterChip label="Все" count={14} active />
-        {SPHERES.slice(0, 3).map((s) => (
-          <FilterChip
-            key={s.name}
-            label={s.name}
-            count={3}
-            color={s.color}
-          />
+        <ChipSlot delay={380}>
+          <FilterChip label="Все" count={14} active />
+        </ChipSlot>
+        {SPHERES.slice(0, 3).map((s, i) => (
+          <ChipSlot key={s.name} delay={460 + i * 80}>
+            <FilterChip label={s.name} count={3} color={s.color} />
+          </ChipSlot>
         ))}
       </div>
 
@@ -78,6 +85,7 @@ export default function MockTasksContent() {
           gap: 6,
           marginTop: 14,
           marginBottom: 6,
+          ...enter(740),
         }}
       >
         <span
@@ -112,18 +120,18 @@ export default function MockTasksContent() {
 
       {/* Task rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {TASKS.map((t) => (
-          <TaskRow
-            key={t.title}
-            title={t.title}
-            sphere={t.sphere}
-            color={t.color}
-            time={t.time}
-          />
+        {TASKS.map((t, i) => (
+          <div key={t.title} style={enter(820 + i * 70)}>
+            <TaskRow {...t} />
+          </div>
         ))}
       </div>
     </div>
   );
+}
+
+function ChipSlot({ delay, children }: { delay: number; children: React.ReactNode }) {
+  return <div style={enter(delay)}>{children}</div>;
 }
 
 function FilterChip({
@@ -162,7 +170,6 @@ function FilterChip({
         />
       )}
       <span
-        className="mono lower"
         style={{
           fontSize: 8.5,
           fontWeight: 600,
@@ -172,7 +179,7 @@ function FilterChip({
         {label}
       </span>
       <span
-        className="mono tnum"
+        className="tnum"
         style={{
           fontSize: 8.5,
           fontWeight: 500,
@@ -234,7 +241,6 @@ function TaskRow({
           {title}
         </div>
         <div
-          className="mono lower"
           style={{
             display: "flex",
             gap: 4,

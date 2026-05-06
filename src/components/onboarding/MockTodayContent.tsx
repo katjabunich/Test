@@ -8,8 +8,14 @@ const POOL = "#7d96a8";
 const LILAC = "#b5a3df";
 const BUTTER = "#f5c563";
 
-/** Compact today-screen mock to live inside a PhoneFrame: date eyebrow,
-   greeting, four mini habit rings, hero card, two small task rows. */
+const enter = (delay: number) =>
+  ({
+    opacity: 0,
+    animation: `slide-in 460ms ${delay}ms var(--ease-out) forwards`,
+  }) as const;
+
+/** Compact today-screen mock to live inside a PhoneFrame, with each element
+   staging in so the screen feels alive on each slide enter. */
 export default function MockTodayContent() {
   return (
     <div style={{ padding: "8px 14px 0" }}>
@@ -21,6 +27,7 @@ export default function MockTodayContent() {
           color: "var(--ink-60)",
           letterSpacing: "0.13em",
           marginBottom: 4,
+          ...enter(120),
         }}
       >
         06.05 — ВТ
@@ -32,6 +39,7 @@ export default function MockTodayContent() {
           letterSpacing: "-0.034em",
           lineHeight: 1.04,
           color: "var(--ink)",
+          ...enter(220),
         }}
       >
         Доброе утро<span style={{ color: "var(--mint-deep)" }}>.</span>
@@ -46,10 +54,18 @@ export default function MockTodayContent() {
           gap: 4,
         }}
       >
-        <MiniRing color={MINT} done IconComp={Icons.Drop} />
-        <MiniRing color={POOL} done IconComp={Icons.Globe} />
-        <MiniRing color={PEACH} progress={0.4} IconComp={Icons.Run} />
-        <MiniRing color={LILAC} progress={0.85} IconComp={Icons.Book} />
+        <RingSlot delay={420}>
+          <MiniRing color={MINT} done IconComp={Icons.Drop} />
+        </RingSlot>
+        <RingSlot delay={500}>
+          <MiniRing color={POOL} done IconComp={Icons.Globe} />
+        </RingSlot>
+        <RingSlot delay={580}>
+          <MiniRing color={PEACH} progress={0.4} IconComp={Icons.Run} />
+        </RingSlot>
+        <RingSlot delay={660}>
+          <MiniRing color={LILAC} progress={0.85} IconComp={Icons.Book} />
+        </RingSlot>
       </div>
 
       {/* Hero card */}
@@ -61,6 +77,7 @@ export default function MockTodayContent() {
           padding: "9px 11px",
           position: "relative",
           overflow: "hidden",
+          ...enter(820),
         }}
       >
         <div
@@ -83,7 +100,6 @@ export default function MockTodayContent() {
           }}
         >
           <div
-            className="mono lower"
             style={{
               display: "flex",
               alignItems: "center",
@@ -100,7 +116,7 @@ export default function MockTodayContent() {
             Канал
           </div>
           <span
-            className="mono lower"
+            className="tnum"
             style={{ fontSize: 8.5, fontWeight: 600, color: "var(--ink)" }}
           >
             11:00
@@ -179,22 +195,36 @@ export default function MockTodayContent() {
 
       {/* Tiny task rows */}
       <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
-        <MiniTaskRow
-          title="Урок голландского"
-          sphere="Голландский"
-          color={POOL}
-          time="14:00"
-        />
-        <MiniTaskRow
-          title="Купить корм коту"
-          sphere="Дом"
-          color={MINT}
-          time="вчера"
-          overdue
-        />
+        <div style={enter(1000)}>
+          <MiniTaskRow
+            title="Урок голландского"
+            sphere="Голландский"
+            color={POOL}
+            time="14:00"
+          />
+        </div>
+        <div style={enter(1080)}>
+          <MiniTaskRow
+            title="Купить корм коту"
+            sphere="Дом"
+            color={MINT}
+            time="вчера"
+            overdue
+          />
+        </div>
       </div>
     </div>
   );
+}
+
+function RingSlot({
+  delay,
+  children,
+}: {
+  delay: number;
+  children: React.ReactNode;
+}) {
+  return <div style={enter(delay)}>{children}</div>;
 }
 
 function MiniRing({
@@ -303,7 +333,6 @@ function MiniTaskRow({
           {title}
         </div>
         <div
-          className="mono lower"
           style={{
             display: "flex",
             gap: 4,

@@ -5,7 +5,7 @@ import MockTodayContent from "@/components/onboarding/MockTodayContent";
 
 export default function HeroPreview() {
   return (
-    <PhoneFrame tilt={-4}>
+    <PhoneFrame rotateX={4} rotateY={-12} tilt={-2}>
       <MockTodayContent />
     </PhoneFrame>
   );
