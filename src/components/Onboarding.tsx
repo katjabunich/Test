@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Icons } from "@/components/Icons";
 import HeroPreview from "@/components/onboarding/HeroPreview";
 import SpheresPreview from "@/components/onboarding/SpheresPreview";
@@ -10,7 +10,7 @@ const STORAGE_KEY = "dela.onboarded.v1";
 
 type Slide = {
   eyebrow: string;
-  title: string;     // Title text WITHOUT the trailing period — the period is the mint accent
+  title: string;
   body: string;
   cta: string;
   visual: React.ReactNode;
@@ -76,38 +76,38 @@ export default function Onboarding() {
         overflow: "hidden",
       }}
     >
-      {/* Soft mint wash in the top-right corner — same warmth as the app */}
+      {/* Soft mint wash top-right */}
       <div
         aria-hidden
         style={{
           position: "absolute",
-          top: -120,
-          right: -120,
-          width: 360,
-          height: 360,
+          top: -180,
+          right: -150,
+          width: 460,
+          height: 460,
           borderRadius: "50%",
           background:
-            "radial-gradient(closest-side, rgba(134,199,154,0.22), transparent 70%)",
+            "radial-gradient(closest-side, rgba(134,199,154,0.28), transparent 70%)",
           pointerEvents: "none",
         }}
       />
-      {/* And a subtle peach in bottom-left, balancing it */}
+      {/* Soft peach bottom-left */}
       <div
         aria-hidden
         style={{
           position: "absolute",
-          bottom: -160,
-          left: -120,
-          width: 360,
-          height: 360,
+          bottom: -200,
+          left: -150,
+          width: 460,
+          height: 460,
           borderRadius: "50%",
           background:
-            "radial-gradient(closest-side, rgba(243,167,139,0.16), transparent 70%)",
+            "radial-gradient(closest-side, rgba(243,167,139,0.22), transparent 70%)",
           pointerEvents: "none",
         }}
       />
 
-      {/* Top bar: pagination indicator + skip */}
+      {/* Top bar */}
       <div
         style={{
           padding: "20px 22px 0",
@@ -115,6 +115,7 @@ export default function Onboarding() {
           alignItems: "center",
           gap: 16,
           position: "relative",
+          flexShrink: 0,
         }}
       >
         <div style={{ display: "flex", gap: 6 }}>
@@ -153,18 +154,26 @@ export default function Onboarding() {
         </button>
       </div>
 
-      {/* Slide content */}
+      {/* Phone mockup — hero of each slide */}
+      <PhoneStage step={step}>
+        <div
+          key={step}
+          style={{
+            animation: "splash-in 460ms var(--ease-spring) both",
+          }}
+        >
+          {slide.visual}
+        </div>
+      </PhoneStage>
+
+      {/* Text + CTA */}
       <div
-        key={step}
         style={{
-          flex: 1,
-          padding: "32px 28px 0",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "stretch",
-          minHeight: 0,
+          padding: "0 28px 0",
+          flexShrink: 0,
           position: "relative",
         }}
+        key={`text-${step}`}
       >
         <div
           className="mono"
@@ -173,65 +182,51 @@ export default function Onboarding() {
             fontWeight: 600,
             color: "var(--mint-deep)",
             letterSpacing: "0.14em",
-            marginBottom: 12,
+            marginBottom: 8,
             opacity: 0,
-            animation: "slide-in 360ms 60ms var(--ease-out) forwards",
+            animation: "slide-in 320ms 80ms var(--ease-out) forwards",
           }}
         >
           {slide.eyebrow}
         </div>
-
         <h2
           aria-label={`${slide.title}.`}
           style={{
-            fontSize: 36,
+            fontSize: 26,
             fontWeight: 700,
-            letterSpacing: "-0.032em",
-            lineHeight: 1.05,
+            letterSpacing: "-0.028em",
+            lineHeight: 1.08,
             color: "var(--ink)",
             margin: 0,
-            marginBottom: 28,
+            marginBottom: 10,
           }}
         >
           <StaggeredHeading text={slide.title} />
           <span style={{ color: "var(--mint-deep)" }}>.</span>
         </h2>
-
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: 0,
-          }}
-        >
-          {slide.visual}
-        </div>
-
         <p
           style={{
-            fontSize: 15,
+            fontSize: 14.5,
             color: "var(--ink-60)",
-            lineHeight: 1.55,
+            lineHeight: 1.5,
             letterSpacing: "-0.005em",
-            margin: "28px 0 0",
+            margin: 0,
             opacity: 0,
-            animation: "slide-in 380ms 700ms var(--ease-out) forwards",
-            maxWidth: 360,
+            animation: "slide-in 360ms 600ms var(--ease-out) forwards",
+            maxWidth: 380,
           }}
         >
           {slide.body}
         </p>
       </div>
 
-      {/* CTA */}
       <div
         style={{
           padding: "20px 22px calc(28px + env(safe-area-inset-bottom))",
           display: "flex",
           justifyContent: "flex-end",
           position: "relative",
+          flexShrink: 0,
         }}
       >
         <button
@@ -252,8 +247,6 @@ export default function Onboarding() {
             fontWeight: 600,
             letterSpacing: "-0.01em",
             boxShadow: "0 6px 16px rgba(79,156,106,0.4)",
-            opacity: 0,
-            animation: "slide-in 360ms 900ms var(--ease-out) forwards",
           }}
         >
           {slide.cta}
@@ -264,9 +257,59 @@ export default function Onboarding() {
   );
 }
 
-/** Renders a string with each character (or word, if text is long) as a
-   span with a staggered animation-delay. Caps total animation at ~600ms
-   so longer titles still feel snappy. */
+/** Wraps the phone visual in a scaled stage so a fixed-pixel 220×475
+   PhoneFrame fits any viewport. Also key={step} so the entry animation
+   re-fires on slide change. */
+function PhoneStage({
+  children,
+  step: _step,
+}: {
+  children: React.ReactNode;
+  step: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      // Phone natural size 220×475 plus a little gap for the tilt overflow.
+      const targetW = 230;
+      const targetH = 490;
+      const s = Math.min(1, rect.width / targetW, rect.height / targetH);
+      setScale(s);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "12px 0",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: "center",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function StaggeredHeading({ text }: { text: string }) {
   const chars = Array.from(text);
   const stepMs = chars.length > 18 ? 18 : 28;
