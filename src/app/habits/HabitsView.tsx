@@ -47,30 +47,30 @@ export default function HabitsView({
   return (
     <>
       <div style={{ padding: "8px 22px 18px" }}>
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 8,
-            letterSpacing: "-0.005em",
-          }}
-        >
-          <span className="tnum">{habits.length}</span>{" "}
-          {habits.length === 1 ? "активная" : "активные"}
-        </div>
         <h1
           style={{
-            fontSize: 40,
+            fontSize: 36,
             fontWeight: 700,
-            letterSpacing: "-0.04em",
-            lineHeight: 0.95,
+            letterSpacing: "-0.036em",
+            lineHeight: 1,
             color: "var(--ink)",
             margin: 0,
           }}
         >
-          Привычки<span style={{ color: "var(--mint-deep)" }}>.</span>
+          Привычки
         </h1>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            color: "var(--ink-60)",
+            marginTop: 8,
+            letterSpacing: "-0.005em",
+          }}
+        >
+          <span className="tnum">{habits.length}</span>{" "}
+          {habits.length === 1 ? "активная" : habits.length >= 2 && habits.length <= 4 ? "активные" : "активных"}
+        </div>
       </div>
 
       {/* Hero — best streak */}

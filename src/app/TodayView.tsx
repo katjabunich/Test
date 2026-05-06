@@ -21,12 +21,25 @@ const WEEKDAY_LONG = [
 ];
 const WEEKDAY_SHORT_LOWER = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 
-function greetingFor(): string {
+const GREETINGS = {
+  morning: ["Доброе утро", "С добрым утром", "Утречко", "Доброго утра"],
+  day:     ["Добрый день", "Хорошего дня", "Привет"],
+  evening: ["Добрый вечер", "Вечер добрый", "Хорошего вечера"],
+  night:   ["Доброй ночи", "Уже поздно", "Тихой ночи"],
+};
+
+function pickGreeting(seed: string): string {
   const h = new Date().getHours();
-  if (h < 5) return "доброй ночи";
-  if (h < 12) return "доброе утро";
-  if (h < 18) return "добрый день";
-  return "добрый вечер";
+  const pool =
+    h < 5 ? GREETINGS.night :
+    h < 12 ? GREETINGS.morning :
+    h < 18 ? GREETINGS.day :
+    GREETINGS.evening;
+  // Stable per day: hash today's date so the user sees the same phrase
+  // throughout the day, but different from yesterday.
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  return pool[Math.abs(hash) % pool.length];
 }
 
 function formatDue(due: string | null, overdue: boolean): string {
@@ -61,6 +74,13 @@ export default function TodayView({
   const search = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
+  const [name, setName] = useState<string | null>(null);
+
+  // Optional display name set in Settings → personalises the greeting.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setName(localStorage.getItem("dela.name"));
+  }, []);
 
   // ?new=1 from BottomNav FAB → open task creation
   useEffect(() => {
@@ -146,16 +166,16 @@ export default function TodayView({
             </div>
             <h1
               style={{
-                fontSize: 34,
+                fontSize: 32,
                 fontWeight: 700,
-                letterSpacing: "-0.038em",
-                lineHeight: 1,
+                letterSpacing: "-0.034em",
+                lineHeight: 1.04,
                 color: "var(--ink)",
                 margin: 0,
               }}
             >
-              {greetingFor()}
-              <span style={{ color: "var(--mint-deep)" }}>.</span>
+              {pickGreeting(t)}
+              {name ? `, ${name}` : ""}
             </h1>
           </div>
         </div>

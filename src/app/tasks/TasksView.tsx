@@ -97,17 +97,29 @@ export default function TasksView({
     <>
       {/* Heading */}
       <div style={{ padding: "8px 22px 18px" }}>
+        <h1
+          style={{
+            fontSize: 36,
+            fontWeight: 700,
+            letterSpacing: "-0.036em",
+            lineHeight: 1,
+            color: "var(--ink)",
+            margin: 0,
+          }}
+        >
+          Задачи
+        </h1>
         <div
           style={{
             display: "flex",
             alignItems: "baseline",
-            gap: 10,
-            marginBottom: 4,
+            gap: 8,
+            marginTop: 8,
           }}
         >
           <span
             style={{
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 500,
               color: "var(--ink-60)",
               letterSpacing: "-0.005em",
@@ -119,7 +131,7 @@ export default function TasksView({
           {overdueCount > 0 && (
             <span
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 500,
                 color: "var(--alert)",
                 letterSpacing: "-0.005em",
@@ -130,18 +142,6 @@ export default function TasksView({
             </span>
           )}
         </div>
-        <h1
-          style={{
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            lineHeight: 0.95,
-            color: "var(--ink)",
-            margin: 0,
-          }}
-        >
-          Задачи<span style={{ color: "var(--mint-deep)" }}>.</span>
-        </h1>
       </div>
 
       {/* Filter chips */}

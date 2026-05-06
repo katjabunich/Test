@@ -1,10 +1,39 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0ABAB5"/>
-      <stop offset="100%" stop-color="#07918D"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b7dcc4"/>
+      <stop offset="55%" stop-color="#86c79a"/>
+      <stop offset="100%" stop-color="#4f9c6a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.4" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#fffaf2"/>
+      <stop offset="60%" stop-color="#fbf6ee"/>
+      <stop offset="100%" stop-color="#f5e9d4"/>
+    </radialGradient>
+    <linearGradient id="horizon" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fbf6ee" stop-opacity="0"/>
+      <stop offset="20%" stop-color="#fbf6ee" stop-opacity="0.7"/>
+      <stop offset="80%" stop-color="#fbf6ee" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fbf6ee" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <path d="M170 262 L235 327 L350 195" stroke="white" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Sky -->
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <!-- Soft glow halo behind the sun -->
+  <circle cx="200" cy="220" r="160" fill="#fbf6ee" opacity="0.18"/>
+  <!-- Sun -->
+  <circle cx="200" cy="220" r="86" fill="url(#sun)"/>
+  <!-- Horizon line — gently curved -->
+  <path d="M 50 380 Q 256 340 462 380"
+        stroke="url(#horizon)"
+        stroke-width="6"
+        fill="none"
+        stroke-linecap="round"/>
+  <!-- Subtle reflection beneath sun -->
+  <path d="M 124 392 Q 200 376 276 392"
+        stroke="#fbf6ee"
+        stroke-width="3"
+        fill="none"
+        stroke-linecap="round"
+        opacity="0.45"/>
 </svg>
