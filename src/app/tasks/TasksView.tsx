@@ -95,9 +95,6 @@ export default function TasksView({
 
   const groups = useMemo(() => groupTasks(filtered), [filtered]);
   const overdueCount = tasks.filter((t) => t.due_date && isPast(t.due_date)).length;
-  const todayCount = tasks.filter(
-    (t) => (t.due_date && isToday(t.due_date)) || (t.do_today && !t.due_date),
-  ).length;
 
   const sphereById = useMemo(() => {
     const m = new Map<string, Sphere>();
@@ -117,7 +114,7 @@ export default function TasksView({
   return (
     <>
       {/* Heading */}
-      <div style={{ padding: "8px 22px 14px" }}>
+      <div style={{ padding: "8px 22px 16px" }}>
         <h1
           style={{
             fontSize: 36,
@@ -130,33 +127,30 @@ export default function TasksView({
         >
           Задачи
         </h1>
-      </div>
-
-      {/* Stat tiles */}
-      <div
-        style={{
-          padding: "0 18px 16px",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 8,
-        }}
-      >
-        <StatTile
-          label={tasks.length === 1 ? "активная" : "активных"}
-          value={tasks.length}
-          tone="neutral"
-        />
-        <StatTile
-          label="на сегодня"
-          value={todayCount}
-          tone="mint"
-        />
-        <StatTile
-          label={overdueCount === 1 ? "просрочена" : "просрочено"}
-          value={overdueCount}
-          tone="alert"
-          dim={overdueCount === 0}
-        />
+        {tasks.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 8,
+              marginTop: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              letterSpacing: "-0.005em",
+            }}
+          >
+            <span style={{ color: "var(--ink-60)" }}>
+              <span className="tnum">{tasks.length}</span>{" "}
+              {tasks.length === 1 ? "активная" : "активных"}
+            </span>
+            {overdueCount > 0 && (
+              <span style={{ color: "var(--alert)" }}>
+                · <span className="tnum">{overdueCount}</span>{" "}
+                {overdueCount === 1 ? "просрочена" : "просрочено"}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Filter chips */}
@@ -301,67 +295,13 @@ export default function TasksView({
   );
 }
 
-function StatTile({
-  label,
-  value,
-  tone,
-  dim,
-}: {
-  label: string;
-  value: number;
-  tone: "neutral" | "mint" | "alert";
-  dim?: boolean;
-}) {
-  const palette =
-    tone === "mint"
-      ? { bg: "rgba(134,199,154,0.15)", border: "rgba(79,156,106,0.20)", accent: "var(--mint-deep)" }
-      : tone === "alert"
-      ? { bg: "rgba(217,106,82,0.10)", border: "rgba(217,106,82,0.18)", accent: "var(--alert)" }
-      : { bg: "var(--paper-warm)", border: "var(--ink-05)", accent: "var(--ink)" };
-
-  return (
-    <div
-      style={{
-        background: palette.bg,
-        border: `1px solid ${palette.border}`,
-        borderRadius: 14,
-        padding: "12px 14px",
-        opacity: dim ? 0.45 : 1,
-        transition: "opacity 280ms var(--ease-out)",
-      }}
-    >
-      <div
-        className="tnum"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          letterSpacing: "-0.024em",
-          color: palette.accent,
-          lineHeight: 1,
-        }}
-      >
-        {value}
-      </div>
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: "var(--ink-60)",
-          marginTop: 4,
-          letterSpacing: "-0.005em",
-        }}
-      >
-        {label}
-      </div>
-    </div>
-  );
-}
-
+/** Sphere chips wear their sphere colour as a soft tint (always on, even
+   when inactive) so the filter row reads like a colour palette of life
+   areas. The "Все" chip stays neutral and inverts on active. */
 function FilterChip({
   label,
   count,
   color,
-  sphereName,
   active,
   onClick,
 }: {
@@ -372,6 +312,33 @@ function FilterChip({
   active: boolean;
   onClick: () => void;
 }) {
+  // Sphere chip: tinted bg in its colour; active = saturated colour bg.
+  // Neutral "Все" chip: paper-warm; active = ink.
+  const bg = color
+    ? active
+      ? color
+      : `${color}26` // ~15% sphere-tint
+    : active
+    ? "var(--ink)"
+    : "var(--paper-warm)";
+  const border = color
+    ? active
+      ? color
+      : `${color}55`
+    : active
+    ? "var(--ink)"
+    : "var(--ink-05)";
+  const textColor = color
+    ? "var(--ink)"
+    : active
+    ? "var(--paper)"
+    : "var(--ink)";
+  const countColor = color
+    ? "var(--ink)"
+    : active
+    ? "var(--paper)"
+    : "var(--ink-40)";
+
   return (
     <button
       type="button"
@@ -381,12 +348,11 @@ function FilterChip({
         padding: "7px 12px",
         borderRadius: 10,
         flexShrink: 0,
-        background: active ? "var(--ink)" : "var(--paper-warm)",
-        color: active ? "var(--paper)" : "var(--ink-80)",
+        background: bg,
         display: "flex",
         alignItems: "center",
         gap: 6,
-        border: `1px solid ${active ? "var(--ink)" : "var(--ink-05)"}`,
+        border: `1.5px solid ${border}`,
         cursor: "pointer",
       }}
     >
@@ -397,7 +363,8 @@ function FilterChip({
             width: 7,
             height: 7,
             borderRadius: 4,
-            background: color,
+            background: active ? "var(--ink)" : color,
+            opacity: active ? 0.4 : 1,
           }}
         />
       )}
@@ -405,7 +372,7 @@ function FilterChip({
         style={{
           fontSize: 12,
           fontWeight: 600,
-          color: active ? "var(--paper)" : "var(--ink)",
+          color: textColor,
           letterSpacing: "-0.005em",
         }}
       >
@@ -416,8 +383,8 @@ function FilterChip({
         style={{
           fontSize: 12,
           fontWeight: 500,
-          color: active ? "var(--paper)" : "var(--ink-40)",
-          opacity: active ? 0.65 : 1,
+          color: countColor,
+          opacity: 0.7,
         }}
       >
         {count}
