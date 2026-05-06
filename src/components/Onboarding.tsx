@@ -10,6 +10,11 @@ import FloatingDecor from "@/components/onboarding/FloatingDecor";
 
 const STORAGE_KEY = "dela.onboarded.v1";
 
+/** Nominal stage canvas — all decoration percentages are in this space.
+   The stage is then proportionally scaled down to fit the device. */
+const STAGE_W = 280;
+const STAGE_H = 510;
+
 type Slide = {
   eyebrow: string;
   eyebrowDot: string;
@@ -17,7 +22,6 @@ type Slide = {
   body: string;
   cta: string;
   visual: React.ReactNode;
-  /** Halo colour behind the phone — sphere accent of the slide. */
   glow: string;
 };
 
@@ -88,7 +92,7 @@ export default function Onboarding() {
         overflow: "hidden",
       }}
     >
-      {/* Background blobs (per-slide) */}
+      {/* Background blobs */}
       <div
         key={`bg-${step}`}
         style={{
@@ -100,19 +104,18 @@ export default function Onboarding() {
         <SlideBackground variant={step as 0 | 1 | 2} />
       </div>
 
-      {/* Top bar — thread progress + skip */}
+      {/* Top bar — thread + skip — respects status bar */}
       <div
         style={{
-          padding: "20px 22px 0",
+          padding: "max(12px, calc(env(safe-area-inset-top) + 6px)) 22px 0",
           display: "flex",
           alignItems: "center",
           gap: 14,
           position: "relative",
           flexShrink: 0,
-          zIndex: 2,
+          zIndex: 3,
         }}
       >
-        {/* Thread track */}
         <div
           style={{
             flex: 1,
@@ -120,7 +123,6 @@ export default function Onboarding() {
             background: "rgba(45,38,32,0.10)",
             borderRadius: 2,
             overflow: "hidden",
-            position: "relative",
           }}
         >
           <div
@@ -155,22 +157,18 @@ export default function Onboarding() {
         </button>
       </div>
 
-      {/* Phone stage with glow + decor */}
-      <PhoneStage
-        step={step}
-        variant={step as 0 | 1 | 2}
-        glow={slide.glow}
-      >
+      {/* Phone stage */}
+      <PhoneStage step={step} variant={step as 0 | 1 | 2} glow={slide.glow}>
         {slide.visual}
       </PhoneStage>
 
       {/* Text */}
       <div
         style={{
-          padding: "0 28px 0",
+          padding: "0 26px",
           flexShrink: 0,
           position: "relative",
-          zIndex: 2,
+          zIndex: 3,
         }}
         key={`text-${step}`}
       >
@@ -179,7 +177,7 @@ export default function Onboarding() {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            marginBottom: 10,
+            marginBottom: 8,
             opacity: 0,
             animation: "slide-in 360ms 80ms var(--ease-out) forwards",
           }}
@@ -191,11 +189,12 @@ export default function Onboarding() {
               borderRadius: 4,
               background: slide.eyebrowDot,
               boxShadow: `0 0 0 3px ${slide.eyebrowDot}33`,
+              flexShrink: 0,
             }}
           />
           <span
             style={{
-              fontSize: 13,
+              fontSize: 12.5,
               fontWeight: 500,
               color: "var(--ink-60)",
               letterSpacing: "-0.005em",
@@ -206,13 +205,12 @@ export default function Onboarding() {
         </div>
         <h2
           style={{
-            fontSize: 30,
+            fontSize: 26,
             fontWeight: 700,
-            letterSpacing: "-0.032em",
-            lineHeight: 1.05,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.06,
             color: "var(--ink)",
-            margin: 0,
-            marginBottom: 12,
+            margin: "0 0 10px",
             opacity: 0,
             animation: "slide-in 460ms 200ms var(--ease-out) forwards",
             textWrap: "balance" as React.CSSProperties["textWrap"],
@@ -223,9 +221,9 @@ export default function Onboarding() {
         </h2>
         <p
           style={{
-            fontSize: 15.5,
+            fontSize: 14.5,
             color: "var(--ink-80)",
-            lineHeight: 1.5,
+            lineHeight: 1.45,
             letterSpacing: "-0.005em",
             margin: 0,
             opacity: 0,
@@ -237,14 +235,15 @@ export default function Onboarding() {
         </p>
       </div>
 
+      {/* CTA */}
       <div
         style={{
-          padding: "20px 22px calc(28px + env(safe-area-inset-bottom))",
+          padding: "16px 22px max(18px, calc(env(safe-area-inset-bottom) + 14px))",
           display: "flex",
           justifyContent: "flex-end",
           position: "relative",
           flexShrink: 0,
-          zIndex: 2,
+          zIndex: 3,
         }}
       >
         <button
@@ -255,7 +254,7 @@ export default function Onboarding() {
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            padding: "14px 24px",
+            padding: "13px 22px",
             borderRadius: 999,
             background: "var(--mint-deep)",
             color: "#fff",
@@ -276,9 +275,10 @@ export default function Onboarding() {
   );
 }
 
-/** Hosts the 3D-rotated phone, a coloured halo behind it, and floating
-   decoration around it. The phone itself sits inside a sway-animated
-   wrapper so it gently floats without disturbing its perspective. */
+/** Stage holds: halo behind, 3D-rotated phone with sway, floating decor.
+   Layout box reserves the scaled footprint; visual canvas renders at
+   nominal size and is scaled into that footprint. Each layer is properly
+   nested so transform animations don't override positioning. */
 function PhoneStage({
   children,
   step,
@@ -297,9 +297,10 @@ function PhoneStage({
     const update = () => {
       if (!ref.current) return;
       const rect = ref.current.getBoundingClientRect();
-      const targetW = 280;
-      const targetH = 540;
-      const s = Math.min(1, rect.width / targetW, rect.height / targetH);
+      // Allow a bit of margin so tilt + decor edges don't kiss the bounds.
+      const usableW = Math.max(0, rect.width - 8);
+      const usableH = Math.max(0, rect.height - 8);
+      const s = Math.min(1, usableW / STAGE_W, usableH / STAGE_H);
       setScale(s);
     };
     update();
@@ -316,26 +317,32 @@ function PhoneStage({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "10px 0",
+        padding: 0,
         position: "relative",
         zIndex: 2,
+        overflow: "hidden",
       }}
     >
+      {/* Layout footprint sized to scaled stage */}
       <div
-        key={`stage-${step}`}
         style={{
+          width: STAGE_W * scale,
+          height: STAGE_H * scale,
           position: "relative",
-          width: 280 * scale,
-          height: 540 * scale,
-          animation: "splash-in 540ms var(--ease-spring) both",
         }}
       >
+        {/* Visual canvas at nominal size, scaled into the layout box */}
         <div
+          key={`stage-${step}`}
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            width: STAGE_W,
+            height: STAGE_H,
             transform: `scale(${scale})`,
-            transformOrigin: "center",
+            transformOrigin: "top left",
+            animation: "splash-in 540ms var(--ease-spring) both",
           }}
         >
           {/* Halo behind phone */}
@@ -345,11 +352,11 @@ function PhoneStage({
               position: "absolute",
               top: "50%",
               left: "50%",
-              width: 360,
-              height: 480,
+              width: 340,
+              height: 460,
               transform: "translate(-50%, -45%)",
               background: `radial-gradient(closest-side, ${glow} 0%, transparent 70%)`,
-              filter: "blur(46px)",
+              filter: "blur(48px)",
               opacity: 0.55,
               pointerEvents: "none",
               zIndex: 0,
@@ -357,22 +364,34 @@ function PhoneStage({
             }}
           />
 
-          {/* Phone, centred, floating with subtle sway */}
+          {/* Phone — centred, with sway nested inside the centring wrapper */}
           <div
             style={{
               position: "absolute",
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              animation: "phone-sway 8s ease-in-out infinite",
               zIndex: 1,
             }}
           >
-            {children}
+            <div
+              style={{
+                animation: "phone-sway 8s ease-in-out infinite",
+              }}
+            >
+              {children}
+            </div>
           </div>
 
-          {/* Floating chips/badges (flat, on top, do not rotate with phone) */}
-          <div style={{ position: "absolute", inset: 0, zIndex: 2 }}>
+          {/* Floating decor on top, flat (does not rotate with the phone) */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 2,
+              pointerEvents: "none",
+            }}
+          >
             <FloatingDecor variant={variant} />
           </div>
         </div>
