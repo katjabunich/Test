@@ -6,8 +6,8 @@ import { Icons } from "@/components/Icons";
 const MINT = "#86c79a";
 
 /** Today-screen mock zoomed in on a single habit ring filling 0 → 100%
-   on mount. Used as the visual for the "celebrate" slide. The slide
-   wrapper fires confetti separately so it spills outside the phone. */
+   on mount. The slide wrapper fires confetti separately so it spills
+   outside the phone. */
 export default function MockHabitContent() {
   const [progress, setProgress] = useState(0);
   const [filled, setFilled] = useState(false);
@@ -24,16 +24,15 @@ export default function MockHabitContent() {
   return (
     <div style={{ padding: "8px 14px 0", display: "flex", flexDirection: "column" }}>
       <div
-        className="mono"
         style={{
-          fontSize: 9,
-          fontWeight: 600,
+          fontSize: 11,
+          fontWeight: 500,
           color: "var(--ink-60)",
-          letterSpacing: "0.13em",
+          letterSpacing: "-0.005em",
           marginBottom: 4,
         }}
       >
-        06.05 — ВТ
+        вторник, 6 мая
       </div>
       <div
         style={{
@@ -48,17 +47,16 @@ export default function MockHabitContent() {
       </div>
 
       <div
-        className="mono"
         style={{
-          fontSize: 9,
-          fontWeight: 600,
+          fontSize: 11,
+          fontWeight: 500,
           color: "var(--ink-60)",
-          letterSpacing: "0.1em",
+          letterSpacing: "-0.005em",
           marginTop: 24,
           marginBottom: 14,
         }}
       >
-        ПРИВЫЧКИ СЕГОДНЯ
+        Привычки сегодня
       </div>
 
       {/* Big ring + label */}
@@ -90,15 +88,16 @@ export default function MockHabitContent() {
             Пить воду
           </span>
           <span
-            className="mono tnum"
+            className="tnum"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 700,
               color: "var(--mint-deep)",
               transition: "color 320ms",
+              letterSpacing: "-0.005em",
             }}
           >
-            {filled ? "7 ДНЕЙ ПОДРЯД" : "6 ДНЕЙ ПОДРЯД"}
+            {filled ? "7 дней подряд" : "6 дней подряд"}
           </span>
         </div>
       </div>

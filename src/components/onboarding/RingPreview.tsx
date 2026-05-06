@@ -16,7 +16,13 @@ export default function RingPreview() {
   }, []);
 
   return (
-    <PhoneFrame rotateX={3} rotateY={-8} tilt={-1}>
+    <PhoneFrame
+      rotateX={3}
+      rotateY={-8}
+      tilt={-1}
+      accent="#b5a3df"
+      ambient="#b5a3df"
+    >
       <MockHabitContent />
     </PhoneFrame>
   );

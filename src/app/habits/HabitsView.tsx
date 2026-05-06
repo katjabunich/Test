@@ -48,17 +48,16 @@ export default function HabitsView({
     <>
       <div style={{ padding: "8px 22px 18px" }}>
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 8,
-            letterSpacing: "0.12em",
+            letterSpacing: "-0.005em",
           }}
         >
           <span className="tnum">{habits.length}</span>{" "}
-          {habits.length === 1 ? "АКТИВНАЯ" : "АКТИВНЫЕ"}
+          {habits.length === 1 ? "активная" : "активные"}
         </div>
         <h1
           style={{
@@ -105,17 +104,16 @@ export default function HabitsView({
               />
             </div>
             <div
-              className="mono"
               style={{
-                fontSize: 10,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 color: "var(--ink)",
-                opacity: 0.65,
-                letterSpacing: "0.13em",
+                opacity: 0.7,
+                letterSpacing: "-0.005em",
                 position: "relative",
               }}
             >
-              ЛУЧШИЙ СТРИК
+              Лучший стрик
             </div>
             <div
               style={{
@@ -140,12 +138,12 @@ export default function HabitsView({
               </div>
               <div style={{ paddingBottom: 6 }}>
                 <div
-                  className="mono lower"
                   style={{
-                    fontSize: 10,
-                    fontWeight: 600,
+                    fontSize: 12,
+                    fontWeight: 500,
                     color: "var(--ink)",
-                    opacity: 0.65,
+                    opacity: 0.7,
+                    letterSpacing: "-0.005em",
                   }}
                 >
                   дней подряд
@@ -193,16 +191,15 @@ export default function HabitsView({
         ) : (
           <>
             <div
-              className="mono"
               style={{
-                fontSize: 10.5,
-                fontWeight: 600,
+                fontSize: 13,
+                fontWeight: 500,
                 color: "var(--ink-60)",
-                padding: "0 4px 4px",
-                letterSpacing: "0.1em",
+                padding: "0 4px 6px",
+                letterSpacing: "-0.005em",
               }}
             >
-              ВСЕ ПРИВЫЧКИ
+              Все привычки
             </div>
             {habits.map((habit) => (
               <HabitCard

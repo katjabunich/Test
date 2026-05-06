@@ -6,13 +6,20 @@ import type { Habit, HabitLog, Sphere, Task } from "@/lib/data";
 import HabitRing from "@/components/HabitRing";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
-import { Icons, SphereIcon, iconForSphereName } from "@/components/Icons";
+import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
 
-const MONTH_NUM = (m: number) => String(m + 1).padStart(2, "0");
-const WEEKDAY_SHORT = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+const MONTHS_GENITIVE = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+const WEEKDAY_LONG = [
+  "воскресенье", "понедельник", "вторник", "среда",
+  "четверг", "пятница", "суббота",
+];
+const WEEKDAY_SHORT_LOWER = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
 
 function greetingFor(): string {
   const h = new Date().getHours();
@@ -27,8 +34,15 @@ function formatDue(due: string | null, overdue: boolean): string {
   if (isToday(due)) return "сегодня";
   if (overdue) return "вчера";
   const d = fromIsoDate(due);
-  return `${WEEKDAY_SHORT[d.getDay()].toLowerCase()} · ${d.getDate()}.${MONTH_NUM(d.getMonth())}`;
+  return `${WEEKDAY_SHORT_LOWER[d.getDay()]} · ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`;
 }
+
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 500,
+  color: "var(--ink-60)",
+  letterSpacing: "-0.005em",
+} as const;
 
 export default function TodayView({
   todayTasks,
@@ -125,21 +139,10 @@ export default function TodayView({
           }}
         >
           <div>
-            <div
-              className="mono"
-              style={{
-                fontSize: 10.5,
-                fontWeight: 600,
-                color: "var(--ink-60)",
-                letterSpacing: "0.12em",
-                marginBottom: 8,
-              }}
-            >
-              <span className="tnum">
-                {String(dateObj.getDate()).padStart(2, "0")}.
-                {MONTH_NUM(dateObj.getMonth())}
-              </span>{" "}
-              — {WEEKDAY_SHORT[dateObj.getDay()]}
+            <div style={{ ...labelStyle, marginBottom: 8 }}>
+              {WEEKDAY_LONG[dateObj.getDay()]},{" "}
+              <span className="tnum">{dateObj.getDate()}</span>{" "}
+              {MONTHS_GENITIVE[dateObj.getMonth()]}
             </div>
             <h1
               style={{
@@ -220,31 +223,28 @@ export default function TodayView({
                 padding: "8px 4px 0",
               }}
             >
-              <span
-                className="mono"
-                style={{ fontSize: 10.5, fontWeight: 600, color: "var(--ink-60)" }}
-              >
-                ДАЛЬШЕ · <span className="tnum">{restTasks.length}</span>
+              <span style={labelStyle}>
+                Дальше · <span className="tnum">{restTasks.length}</span>
               </span>
               {overdueCount > 0 && (
                 <span
-                  className="mono"
                   style={{
-                    fontSize: 10.5,
-                    fontWeight: 600,
+                    fontSize: 13,
+                    fontWeight: 500,
                     color: "var(--alert)",
                     display: "flex",
                     alignItems: "center",
                     gap: 4,
-                    letterSpacing: "0.06em",
+                    letterSpacing: "-0.005em",
                   }}
                 >
                   <Icons.Alert
-                    size={11}
+                    size={12}
                     stroke="var(--alert)"
                     strokeWidth={2.2}
                   />
-                  <span className="tnum">{overdueCount}</span> ПРОСРОЧ.
+                  <span className="tnum">{overdueCount}</span>{" "}
+                  {overdueCount === 1 ? "просрочена" : "просрочено"}
                 </span>
               )}
             </div>
@@ -273,11 +273,8 @@ export default function TodayView({
                 padding: "16px 4px 0",
               }}
             >
-              <span
-                className="mono"
-                style={{ fontSize: 10.5, fontWeight: 600, color: "var(--ink-60)" }}
-              >
-                НА НЕДЕЛЕ · <span className="tnum">{upcomingTasks.length}</span>
+              <span style={labelStyle}>
+                На неделе · <span className="tnum">{upcomingTasks.length}</span>
               </span>
             </div>
           )}
@@ -295,7 +292,7 @@ export default function TodayView({
 }
 
 /** Hero "next task" card — coloured with the sphere's hue, with corner
-    sphere icon, mono time, dark inverse "Сделать" button. */
+    sphere icon, sentence-case time, dark inverse "Сделать" button. */
 function HeroNextTask({
   task,
   sphere,
@@ -337,7 +334,6 @@ function HeroNextTask({
         cursor: "pointer",
       }}
     >
-      {/* Decorative giant sphere icon in the corner */}
       {sphere && (
         <div
           aria-hidden
@@ -369,7 +365,6 @@ function HeroNextTask({
       >
         {sphereName && (
           <div
-            className="mono lower"
             style={{
               display: "flex",
               alignItems: "center",
@@ -377,9 +372,10 @@ function HeroNextTask({
               padding: "4px 10px",
               background: "rgba(255,255,255,0.35)",
               borderRadius: 8,
-              fontSize: 10.5,
+              fontSize: 11,
               fontWeight: 600,
               color: "var(--ink)",
+              letterSpacing: "-0.005em",
             }}
           >
             <SphereIcon
@@ -392,11 +388,12 @@ function HeroNextTask({
           </div>
         )}
         <div
-          className="mono lower"
+          className="tnum"
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
             color: "var(--ink)",
+            letterSpacing: "-0.005em",
           }}
         >
           {formatDue(task.due_date, overdue)}
@@ -404,18 +401,17 @@ function HeroNextTask({
       </div>
 
       <div
-        className="mono"
         style={{
-          fontSize: 9.5,
-          fontWeight: 600,
-          opacity: 0.6,
-          marginBottom: 6,
+          fontSize: 12,
+          fontWeight: 500,
+          opacity: 0.65,
+          marginBottom: 4,
           position: "relative",
           color: "var(--ink)",
-          letterSpacing: "0.13em",
+          letterSpacing: "-0.005em",
         }}
       >
-        СЛЕДУЮЩАЯ
+        Следующая
       </div>
       <div
         style={{

@@ -123,16 +123,15 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
           }}
         />
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 14,
-            letterSpacing: "0.13em",
+            letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "СФЕРА" : "НОВАЯ СФЕРА"}
+          {isEdit ? "Сфера" : "Новая сфера"}
         </div>
 
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
@@ -177,16 +176,15 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
         </div>
 
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 10,
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          ЦВЕТ
+          Цвет
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (

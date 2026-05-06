@@ -144,16 +144,15 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           }}
         />
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 14,
-            letterSpacing: "0.13em",
+            letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "ПРИВЫЧКА" : "НОВАЯ ПРИВЫЧКА"}
+          {isEdit ? "Привычка" : "Новая привычка"}
         </div>
 
         {/* Icon preview + name */}
@@ -206,16 +205,15 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
 
         {/* Icon picker */}
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 10,
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          ИКОНКА
+          Иконка
         </div>
         <div
           style={{
@@ -254,12 +252,12 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
           <span
-            className="mono lower"
             style={{
-              fontSize: 11,
-              fontWeight: 600,
+              fontSize: 12,
+              fontWeight: 500,
               color: "var(--ink-60)",
               flexShrink: 0,
+              letterSpacing: "-0.005em",
             }}
           >
             или эмодзи:
@@ -286,16 +284,15 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
 
         {/* Color */}
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 10,
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          ЦВЕТ
+          Цвет
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (
@@ -324,16 +321,15 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
 
         {/* Schedule */}
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 10,
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          РАСПИСАНИЕ
+          Расписание
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           <ScheduleChip
@@ -359,7 +355,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
                 key={d.i}
                 type="button"
                 onClick={() => toggleDay(d.i)}
-                className="tap mono lower"
+                className="tap"
                 style={{
                   width: 40,
                   height: 36,
@@ -449,7 +445,7 @@ function ScheduleChip({
     <button
       type="button"
       onClick={onClick}
-      className="tap mono lower"
+      className="tap"
       style={{
         padding: "7px 12px",
         borderRadius: 10,

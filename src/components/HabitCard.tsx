@@ -161,12 +161,12 @@ export default function HabitCard({
           {habit.name}
         </div>
         <div
-          className="mono lower"
           style={{
             marginTop: 4,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
             color,
+            letterSpacing: "-0.005em",
           }}
         >
           <span className="tnum">{weekDone}</span>/7 на неделе
@@ -187,12 +187,12 @@ export default function HabitCard({
           {streak}
         </div>
         <div
-          className="mono lower"
           style={{
             marginTop: 2,
-            fontSize: 9.5,
+            fontSize: 11,
             fontWeight: 500,
             color: "var(--ink-40)",
+            letterSpacing: "-0.005em",
           }}
         >
           дней

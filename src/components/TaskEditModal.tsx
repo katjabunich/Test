@@ -147,16 +147,15 @@ export default function TaskEditModal({
           }}
         />
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 14,
-            letterSpacing: "0.13em",
+            letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "ЗАДАЧА" : "НОВАЯ ЗАДАЧА"}
+          {isEdit ? "Задача" : "Новая задача"}
         </div>
 
         {/* Title input with mintDeep underline */}
@@ -195,18 +194,17 @@ export default function TaskEditModal({
           />
         </div>
 
-        {/* СФЕРА */}
+        {/* Сфера */}
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 10,
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          СФЕРА
+          Сфера
         </div>
         <div
           style={{
@@ -238,9 +236,10 @@ export default function TaskEditModal({
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
+            className="tnum"
             style={{
-              fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
-              fontSize: 12,
+              fontFamily: "inherit",
+              fontSize: 13,
               fontWeight: 600,
               color: dueDate === todayIso() ? "var(--mint-deep)" : "var(--ink-80)",
               background: "transparent",
@@ -248,15 +247,16 @@ export default function TaskEditModal({
               outline: "none",
               textAlign: "right",
               padding: 0,
+              letterSpacing: "-0.005em",
             }}
           />
           {!dueDate && (
             <span
-              className="mono lower"
               style={{
-                fontSize: 11,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 color: "var(--ink-40)",
+                letterSpacing: "-0.005em",
               }}
             >
               {dateLabel}
@@ -274,11 +274,11 @@ export default function TaskEditModal({
           onClick={() => setRecurrenceOpen((v) => !v)}
         >
           <span
-            className="mono lower"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
               color: recurrence ? "var(--ink-80)" : "var(--ink-40)",
+              letterSpacing: "-0.005em",
             }}
           >
             {recurrence ? RECURRENCE_LABELS[recurrence] : "не повторять"}
@@ -316,11 +316,11 @@ export default function TaskEditModal({
           last={!noteOpen}
         >
           <span
-            className="mono lower"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
               color: note ? "var(--ink-80)" : "var(--ink-40)",
+              letterSpacing: "-0.005em",
             }}
           >
             {note ? `${note.slice(0, 14)}${note.length > 14 ? "…" : ""}` : "добавить…"}
@@ -468,20 +468,20 @@ function SphereChipButton({
     <button
       type="button"
       onClick={onClick}
-      className="tap mono lower"
+      className="tap"
       style={{
-        padding: "6px 11px",
+        padding: "7px 12px",
         borderRadius: 10,
         background: active && color ? color : "var(--paper-warm)",
         border: `1px solid ${active && color ? color : "var(--ink-05)"}`,
         color: "var(--ink)",
-        fontSize: 11,
+        fontSize: 12.5,
         fontWeight: 600,
         cursor: "pointer",
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        letterSpacing: "0.01em",
+        letterSpacing: "-0.005em",
       }}
     >
       {color && (

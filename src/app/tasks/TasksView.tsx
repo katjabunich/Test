@@ -41,11 +41,11 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", label: "ПРОСРОЧЕНО", accent: "var(--alert)", items: overdue });
-  if (todays.length)  groups.push({ key: "today",   label: "СЕГОДНЯ",  items: todays });
-  if (week.length)    groups.push({ key: "week",    label: "НА ЭТОЙ НЕДЕЛЕ", items: week });
-  if (later.length)   groups.push({ key: "later",   label: "ПОЗЖЕ",    items: later });
-  if (noDate.length)  groups.push({ key: "nodate",  label: "БЕЗ ДАТЫ", items: noDate });
+  if (overdue.length) groups.push({ key: "overdue", label: "Просрочено", accent: "var(--alert)", items: overdue });
+  if (todays.length)  groups.push({ key: "today",   label: "Сегодня",  items: todays });
+  if (week.length)    groups.push({ key: "week",    label: "На этой неделе", items: week });
+  if (later.length)   groups.push({ key: "later",   label: "Позже",    items: later });
+  if (noDate.length)  groups.push({ key: "nodate",  label: "Без даты", items: noDate });
   return groups;
 }
 
@@ -106,22 +106,27 @@ export default function TasksView({
           }}
         >
           <span
-            className="mono"
-            style={{ fontSize: 10.5, fontWeight: 600, color: "var(--ink-60)" }}
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              letterSpacing: "-0.005em",
+            }}
           >
-            <span className="tnum">{tasks.length}</span> АКТИВНЫХ
+            <span className="tnum">{tasks.length}</span>{" "}
+            {tasks.length === 1 ? "активная" : "активных"}
           </span>
           {overdueCount > 0 && (
             <span
-              className="mono"
               style={{
-                fontSize: 10.5,
-                fontWeight: 600,
+                fontSize: 13,
+                fontWeight: 500,
                 color: "var(--alert)",
-                letterSpacing: "0.06em",
+                letterSpacing: "-0.005em",
               }}
             >
-              · <span className="tnum">{overdueCount}</span> ПРОСРОЧ.
+              · <span className="tnum">{overdueCount}</span>{" "}
+              {overdueCount === 1 ? "просрочена" : "просрочено"}
             </span>
           )}
         </div>
@@ -205,20 +210,19 @@ export default function TasksView({
                 }}
               >
                 <span
-                  className="mono"
                   style={{
-                    fontSize: 10.5,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: g.accent ?? "var(--ink-60)",
-                    letterSpacing: "0.1em",
+                    letterSpacing: "-0.005em",
                   }}
                 >
                   {g.label}
                 </span>
                 <span
-                  className="mono tnum"
+                  className="tnum"
                   style={{
-                    fontSize: 10.5,
+                    fontSize: 12,
                     fontWeight: 500,
                     color: "var(--ink-40)",
                   }}
@@ -314,20 +318,19 @@ function FilterChip({
         />
       )}
       <span
-        className="mono lower"
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 600,
           color: active ? "var(--paper)" : "var(--ink)",
-          letterSpacing: "0.01em",
+          letterSpacing: "-0.005em",
         }}
       >
         {label}
       </span>
       <span
-        className="mono tnum"
+        className="tnum"
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 500,
           color: active ? "var(--paper)" : "var(--ink-40)",
           opacity: active ? 0.65 : 1,

@@ -126,9 +126,8 @@ export default function HabitRing({
         </div>
       </div>
       <span
-        className="mono lower"
         style={{
-          fontSize: 10,
+          fontSize: 11,
           color: "var(--ink-60)",
           fontWeight: 500,
           width: "100%",
@@ -139,6 +138,7 @@ export default function HabitRing({
           WebkitBoxOrient: "vertical",
           overflow: "hidden",
           wordBreak: "break-word",
+          letterSpacing: "-0.005em",
         }}
       >
         {habit.name}

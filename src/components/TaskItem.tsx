@@ -134,14 +134,14 @@ export default function TaskItem({
           <div style={{ display: "flex", gap: 8, marginTop: 5, alignItems: "center" }}>
             {sphere && (
               <span
-                className="mono lower"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 600,
                   color: sphereColor,
+                  letterSpacing: "-0.005em",
                 }}
               >
                 <span
@@ -160,11 +160,12 @@ export default function TaskItem({
             )}
             {due && (
               <span
-                className="mono lower"
+                className="tnum"
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 500,
                   color: due.tone === "warn" ? "var(--alert)" : "var(--ink-60)",
+                  letterSpacing: "-0.005em",
                 }}
               >
                 {due.text}

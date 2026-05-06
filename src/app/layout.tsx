@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Onest, JetBrains_Mono } from "next/font/google";
+import { Onest } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
@@ -13,13 +13,6 @@ const display = Onest({
   variable: "--font-geist",
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
-});
-/* Mono for tabular labels — has Cyrillic. */
-const mono = JetBrains_Mono({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
-  variable: "--font-geist-mono",
-  display: "swap",
-  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -42,7 +35,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ru" className={`${display.variable} ${mono.variable}`}>
+    <html lang="ru" className={display.variable}>
       <body>
         <main>
           <PageTransition>{children}</PageTransition>

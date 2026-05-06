@@ -9,18 +9,18 @@ const LILAC = "#b5a3df";
 const BUTTER = "#f5c563";
 
 const SPHERES: { name: string; color: string; icon: IconKey }[] = [
-  { name: "Работа",      color: PEACH,  icon: "Briefcase" },
-  { name: "Канал",       color: BUTTER, icon: "Video" },
-  { name: "Дом",         color: MINT,   icon: "Home" },
-  { name: "Голландский", color: POOL,   icon: "Globe" },
-  { name: "AI",          color: LILAC,  icon: "Cpu" },
+  { name: "Работа",   color: PEACH,  icon: "Briefcase" },
+  { name: "Учёба",    color: POOL,   icon: "Book" },
+  { name: "Здоровье", color: MINT,   icon: "Run" },
+  { name: "Хобби",    color: BUTTER, icon: "Smile" },
+  { name: "Дом",      color: LILAC,  icon: "Home" },
 ];
 
 const TASKS = [
-  { title: "Подготовить деку для ревью", sphere: "Работа",      color: PEACH,  time: "сегодня" },
-  { title: "Записать черновик ролика",   sphere: "Канал",       color: BUTTER, time: "10:00" },
-  { title: "Помыть пол",                 sphere: "Дом",         color: MINT,   time: "сегодня" },
-  { title: "Урок 14: voltooid",          sphere: "Голландский", color: POOL,   time: "14:00" },
+  { title: "Подготовить отчёт",   sphere: "Работа",   color: PEACH,  time: "сегодня" },
+  { title: "Урок английского",    sphere: "Учёба",    color: POOL,   time: "10:00" },
+  { title: "Утренняя пробежка",   sphere: "Здоровье", color: MINT,   time: "14:00" },
+  { title: "Дочитать главу",      sphere: "Хобби",    color: BUTTER, time: "сегодня" },
 ];
 
 const enter = (delay: number) =>
@@ -33,17 +33,16 @@ export default function MockTasksContent() {
   return (
     <div style={{ padding: "8px 14px 0" }}>
       <div
-        className="mono"
         style={{
-          fontSize: 9,
-          fontWeight: 600,
+          fontSize: 11,
+          fontWeight: 500,
           color: "var(--ink-60)",
-          letterSpacing: "0.13em",
+          letterSpacing: "-0.005em",
           marginBottom: 3,
           ...enter(120),
         }}
       >
-        14 АКТИВНЫХ
+        12 активных
       </div>
       <div
         style={{
@@ -68,7 +67,7 @@ export default function MockTasksContent() {
         }}
       >
         <ChipSlot delay={380}>
-          <FilterChip label="Все" count={14} active />
+          <FilterChip label="Все" count={12} active />
         </ChipSlot>
         {SPHERES.slice(0, 3).map((s, i) => (
           <ChipSlot key={s.name} delay={460 + i * 80}>
@@ -89,20 +88,19 @@ export default function MockTasksContent() {
         }}
       >
         <span
-          className="mono"
           style={{
-            fontSize: 9,
+            fontSize: 11,
             fontWeight: 600,
             color: "var(--ink-60)",
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          СЕГОДНЯ
+          Сегодня
         </span>
         <span
-          className="mono tnum"
+          className="tnum"
           style={{
-            fontSize: 9,
+            fontSize: 10,
             fontWeight: 500,
             color: "var(--ink-40)",
           }}
@@ -171,9 +169,10 @@ function FilterChip({
       )}
       <span
         style={{
-          fontSize: 8.5,
+          fontSize: 9,
           fontWeight: 600,
           color: active ? "var(--paper)" : "var(--ink)",
+          letterSpacing: "-0.005em",
         }}
       >
         {label}
@@ -181,7 +180,7 @@ function FilterChip({
       <span
         className="tnum"
         style={{
-          fontSize: 8.5,
+          fontSize: 9,
           fontWeight: 500,
           color: active ? "var(--paper)" : "var(--ink-40)",
           opacity: active ? 0.65 : 1,
@@ -246,7 +245,7 @@ function TaskRow({
             gap: 4,
             alignItems: "center",
             marginTop: 2,
-            fontSize: 7.5,
+            fontSize: 8,
           }}
         >
           <span
@@ -256,6 +255,7 @@ function TaskRow({
               gap: 3,
               fontWeight: 600,
               color,
+              letterSpacing: "-0.005em",
             }}
           >
             <span
@@ -269,7 +269,15 @@ function TaskRow({
             {sphere}
           </span>
           <span style={{ color: "var(--ink-20)" }}>·</span>
-          <span style={{ fontWeight: 500, color: "var(--ink-60)" }}>{time}</span>
+          <span
+            style={{
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {time}
+          </span>
         </div>
       </div>
     </div>

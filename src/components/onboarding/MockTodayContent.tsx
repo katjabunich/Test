@@ -14,23 +14,20 @@ const enter = (delay: number) =>
     animation: `slide-in 460ms ${delay}ms var(--ease-out) forwards`,
   }) as const;
 
-/** Compact today-screen mock to live inside a PhoneFrame, with each element
-   staging in so the screen feels alive on each slide enter. */
+const labelStyle = {
+  fontSize: 11,
+  fontWeight: 500,
+  color: "var(--ink-60)",
+  letterSpacing: "-0.005em",
+} as const;
+
+/** Compact today-screen mock (neutral, generic example data) for slide 1.
+   Each element staggers in so the screen feels alive on slide enter. */
 export default function MockTodayContent() {
   return (
     <div style={{ padding: "8px 14px 0" }}>
-      <div
-        className="mono"
-        style={{
-          fontSize: 9,
-          fontWeight: 600,
-          color: "var(--ink-60)",
-          letterSpacing: "0.13em",
-          marginBottom: 4,
-          ...enter(120),
-        }}
-      >
-        06.05 — ВТ
+      <div style={{ ...labelStyle, marginBottom: 4, ...enter(120) }}>
+        вторник, 6 мая
       </div>
       <div
         style={{
@@ -58,17 +55,17 @@ export default function MockTodayContent() {
           <MiniRing color={MINT} done IconComp={Icons.Drop} />
         </RingSlot>
         <RingSlot delay={500}>
-          <MiniRing color={POOL} done IconComp={Icons.Globe} />
+          <MiniRing color={PEACH} done IconComp={Icons.Book} />
         </RingSlot>
         <RingSlot delay={580}>
-          <MiniRing color={PEACH} progress={0.4} IconComp={Icons.Run} />
+          <MiniRing color={POOL} progress={0.45} IconComp={Icons.Run} />
         </RingSlot>
         <RingSlot delay={660}>
-          <MiniRing color={LILAC} progress={0.85} IconComp={Icons.Book} />
+          <MiniRing color={LILAC} progress={0.7} IconComp={Icons.Lotus} />
         </RingSlot>
       </div>
 
-      {/* Hero card */}
+      {/* Hero card — generic "Хобби" example */}
       <div
         style={{
           marginTop: 12,
@@ -89,7 +86,7 @@ export default function MockTodayContent() {
             opacity: 0.16,
           }}
         >
-          <Icons.Video size={68} stroke="var(--ink)" strokeWidth={1.4} />
+          <Icons.Book size={68} stroke="var(--ink)" strokeWidth={1.4} />
         </div>
         <div
           style={{
@@ -107,34 +104,39 @@ export default function MockTodayContent() {
               padding: "2px 6px",
               background: "rgba(255,255,255,0.42)",
               borderRadius: 5,
-              fontSize: 8.5,
+              fontSize: 9,
               fontWeight: 600,
               color: "var(--ink)",
+              letterSpacing: "-0.005em",
             }}
           >
-            <Icons.Video size={7} stroke="var(--ink)" strokeWidth={2.4} />
-            Канал
+            <Icons.Book size={8} stroke="var(--ink)" strokeWidth={2.4} />
+            Хобби
           </div>
           <span
             className="tnum"
-            style={{ fontSize: 8.5, fontWeight: 600, color: "var(--ink)" }}
+            style={{
+              fontSize: 9,
+              fontWeight: 600,
+              color: "var(--ink)",
+              letterSpacing: "-0.005em",
+            }}
           >
             11:00
           </span>
         </div>
         <div
-          className="mono"
           style={{
-            fontSize: 7.5,
-            fontWeight: 600,
+            fontSize: 9,
+            fontWeight: 500,
             color: "var(--ink)",
-            opacity: 0.62,
-            letterSpacing: "0.13em",
+            opacity: 0.65,
             marginTop: 5,
             position: "relative",
+            letterSpacing: "-0.005em",
           }}
         >
-          СЛЕДУЮЩАЯ
+          Следующая
         </div>
         <div
           style={{
@@ -147,7 +149,7 @@ export default function MockTodayContent() {
             position: "relative",
           }}
         >
-          Записать черновик ролика
+          Дочитать главу
         </div>
         <div
           style={{
@@ -197,15 +199,15 @@ export default function MockTodayContent() {
       <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={enter(1000)}>
           <MiniTaskRow
-            title="Урок голландского"
-            sphere="Голландский"
-            color={POOL}
+            title="Утренняя пробежка"
+            sphere="Здоровье"
+            color={MINT}
             time="14:00"
           />
         </div>
         <div style={enter(1080)}>
           <MiniTaskRow
-            title="Купить корм коту"
+            title="Купить продукты"
             sphere="Дом"
             color={MINT}
             time="вчера"
@@ -338,7 +340,7 @@ function MiniTaskRow({
             gap: 4,
             alignItems: "center",
             marginTop: 2,
-            fontSize: 7.5,
+            fontSize: 8,
           }}
         >
           <span
@@ -348,6 +350,7 @@ function MiniTaskRow({
               gap: 3,
               fontWeight: 600,
               color,
+              letterSpacing: "-0.005em",
             }}
           >
             <span
@@ -365,6 +368,7 @@ function MiniTaskRow({
             style={{
               fontWeight: 500,
               color: overdue ? "var(--alert)" : "var(--ink-60)",
+              letterSpacing: "-0.005em",
             }}
           >
             {time}

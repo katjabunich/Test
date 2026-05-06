@@ -13,16 +13,15 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
     <>
       <div style={{ padding: "8px 22px 18px" }}>
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             marginBottom: 8,
-            letterSpacing: "0.13em",
+            letterSpacing: "-0.005em",
           }}
         >
-          ПЕРСОНАЛИЗАЦИЯ
+          Персонализация
         </div>
         <h1
           style={{
@@ -40,16 +39,15 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
 
       <div style={{ padding: "0 18px" }}>
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             padding: "0 4px 10px",
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          СФЕРЫ ЖИЗНИ
+          Сферы жизни
         </div>
 
         <div
@@ -142,7 +140,7 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             setEditing(null);
             setModalOpen(true);
           }}
-          className="tap mono lower"
+          className="tap"
           style={{
             width: "100%",
             padding: "12px 16px",
@@ -150,27 +148,27 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             border: "1.5px dashed var(--ink-20)",
             background: "transparent",
             textAlign: "center",
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 600,
             color: "var(--ink-60)",
             cursor: "pointer",
             marginBottom: 24,
+            letterSpacing: "-0.005em",
           }}
         >
           + Добавить сферу
         </button>
 
         <div
-          className="mono"
           style={{
-            fontSize: 10.5,
-            fontWeight: 600,
+            fontSize: 13,
+            fontWeight: 500,
             color: "var(--ink-60)",
             padding: "0 4px 10px",
-            letterSpacing: "0.1em",
+            letterSpacing: "-0.005em",
           }}
         >
-          ПРИЛОЖЕНИЕ
+          Приложение
         </div>
 
         <div
@@ -266,8 +264,12 @@ function SettingsRow({
         {label}
       </span>
       <span
-        className="mono lower"
-        style={{ fontSize: 11, fontWeight: 600, color: accentColor }}
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: accentColor,
+          letterSpacing: "-0.005em",
+        }}
       >
         {value}
       </span>

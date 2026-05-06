@@ -3,84 +3,77 @@
 import { Icons } from "@/components/Icons";
 
 /** Floating UI fragments around the phone. Each item is wrapped in two
-   divs: an outer one for static rotation + position, an inner one that
-   runs the breathing animation. This keeps the rotation stable during
-   the translateY keyframes. */
+   divs: outer for static rotation + position, inner for the breathing
+   animation. Positioned so chips graze the bezel rather than covering
+   the phone's screen content. */
 export default function FloatingDecor({ variant }: { variant: 0 | 1 | 2 }) {
   if (variant === 0) {
+    // Slide 1 — concept chip about "complete by tap"
     return (
-      <>
-        <Floating
-          rotation={-8}
-          style={{ top: "62%", left: "4%" }}
-          delay={0}
-          enterDelay={520}
-        >
-          <Chip
-            color="#f5c563"
-            label="Канал"
-            icon={<Icons.Video size={12} stroke="var(--ink)" strokeWidth={2.4} />}
-          />
-        </Floating>
-        <Floating
-          rotation={6}
-          style={{ top: "16%", right: "4%" }}
-          delay={500}
-          enterDelay={620}
-        >
-          <Badge label="Сделать" accent="#f5c563" />
-        </Floating>
-      </>
+      <Floating
+        rotation={6}
+        style={{ top: "26%", right: "-14%" }}
+        delay={0}
+        enterDelay={520}
+      >
+        <Pill background="rgba(255,255,255,0.92)" borderColor="#f5c563">
+          <Icons.Check size={12} stroke="#0f742d" strokeWidth={2.6} />
+          <span style={{ fontWeight: 600 }}>1 тап</span>
+        </Pill>
+      </Floating>
     );
   }
+
   if (variant === 1) {
     return (
       <>
+        {/* Top-right: palette chip — 5 dots + "5 цветов" */}
         <Floating
-          rotation={-6}
-          style={{ top: "14%", left: "4%" }}
+          rotation={5}
+          style={{ top: "14%", right: "-14%" }}
           delay={0}
           enterDelay={520}
         >
-          <Chip
-            color="#f3a78b"
-            label="Работа"
-            icon={<Icons.Briefcase size={12} stroke="var(--ink)" strokeWidth={2.4} />}
-          />
+          <Pill background="rgba(255,255,255,0.92)" borderColor="#86c79a">
+            <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
+              <Dot color="#f3a78b" />
+              <Dot color="#f5c563" />
+              <Dot color="#86c79a" />
+              <Dot color="#7d96a8" />
+              <Dot color="#b5a3df" />
+            </span>
+            <span style={{ fontWeight: 600 }}>5 цветов</span>
+          </Pill>
         </Floating>
+
+        {/* Bottom-left: swipe hint */}
         <Floating
-          rotation={7}
-          style={{ top: "70%", right: "4%" }}
+          rotation={-6}
+          style={{ top: "70%", left: "-10%" }}
           delay={400}
           enterDelay={620}
         >
-          <Chip
-            color="#7d96a8"
-            label="Голландский"
-            icon={<Icons.Globe size={12} stroke="var(--ink)" strokeWidth={2.4} />}
-          />
-        </Floating>
-        <Floating
-          rotation={-10}
-          style={{ top: "60%", left: "4%" }}
-          delay={200}
-          enterDelay={720}
-        >
-          <Chip
-            color="#b5a3df"
-            label="AI"
-            icon={<Icons.Cpu size={12} stroke="var(--ink)" strokeWidth={2.4} />}
-          />
+          <Pill background="rgba(255,255,255,0.92)" borderColor="#7d96a8">
+            <Icons.Chevron
+              size={12}
+              stroke="var(--ink)"
+              strokeWidth={2.4}
+              style={{ transform: "rotate(180deg)" }}
+            />
+            <span style={{ fontWeight: 600 }}>свайп</span>
+            <Icons.Chevron size={12} stroke="var(--ink)" strokeWidth={2.4} />
+          </Pill>
         </Floating>
       </>
     );
   }
-  // variant === 2 — celebration
+
+  // variant === 2 — celebration. Solid badges; pop-in entry to mirror confetti.
   return (
     <>
       <Floating
         rotation={8}
-        style={{ top: "18%", right: "4%" }}
+        style={{ top: "22%", right: "-14%" }}
         delay={1700}
         enterDelay={1100}
         popIn
@@ -89,19 +82,24 @@ export default function FloatingDecor({ variant }: { variant: 0 | 1 | 2 }) {
       </Floating>
       <Floating
         rotation={-6}
-        style={{ top: "65%", left: "4%" }}
+        style={{ top: "70%", left: "-10%" }}
         delay={1900}
         enterDelay={1300}
         popIn
       >
         <Badge label="🎉 7 дней" accent="#b5a3df" />
       </Floating>
+      <style>{`
+        @keyframes decor-pop {
+          0%   { opacity: 0; transform: scale(0.6); }
+          70%  { opacity: 1; transform: scale(1.1); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }
 
-/** Outer holds rotation + position; inner holds the bob animation +
-   optional pop-in entry. Two layers so neither override each other. */
 function Floating({
   rotation,
   style,
@@ -135,25 +133,18 @@ function Floating({
       >
         {children}
       </div>
-      <style>{`
-        @keyframes decor-pop {
-          0%   { opacity: 0; transform: scale(0.6); }
-          70%  { opacity: 1; transform: scale(1.1); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 }
 
-function Chip({
-  color,
-  label,
-  icon,
+function Pill({
+  children,
+  background,
+  borderColor,
 }: {
-  color: string;
-  label: string;
-  icon: React.ReactNode;
+  children: React.ReactNode;
+  background: string;
+  borderColor: string;
 }) {
   return (
     <div
@@ -163,34 +154,32 @@ function Chip({
         gap: 6,
         padding: "7px 11px",
         borderRadius: 999,
-        background: "rgba(255,255,255,0.88)",
+        background,
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        border: `1.5px solid ${color}`,
+        border: `1.5px solid ${borderColor}`,
         boxShadow: "0 8px 18px rgba(45,38,32,0.12)",
         whiteSpace: "nowrap",
+        fontSize: 11.5,
+        color: "var(--ink)",
+        letterSpacing: "-0.005em",
       }}
     >
-      <span
-        style={{
-          width: 7,
-          height: 7,
-          borderRadius: 4,
-          background: color,
-        }}
-      />
-      {icon}
-      <span
-        style={{
-          fontSize: 11.5,
-          fontWeight: 600,
-          color: "var(--ink)",
-          letterSpacing: "-0.005em",
-        }}
-      >
-        {label}
-      </span>
+      {children}
     </div>
+  );
+}
+
+function Dot({ color }: { color: string }) {
+  return (
+    <span
+      style={{
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        background: color,
+      }}
+    />
   );
 }
 
