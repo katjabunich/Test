@@ -11,7 +11,10 @@ import { isPast, isToday, today, addDays } from "@/lib/date";
 type Group = {
   key: string;
   label: string;
+  /** Text colour for the group label */
   accent?: string;
+  /** Soft background colour for the group label pill */
+  tint?: string;
   items: Task[];
 };
 
@@ -41,11 +44,26 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", label: "Просрочено", accent: "var(--alert)", items: overdue });
-  if (todays.length)  groups.push({ key: "today",   label: "Сегодня",  items: todays });
-  if (week.length)    groups.push({ key: "week",    label: "На этой неделе", items: week });
-  if (later.length)   groups.push({ key: "later",   label: "Позже",    items: later });
-  if (noDate.length)  groups.push({ key: "nodate",  label: "Без даты", items: noDate });
+  if (overdue.length) groups.push({
+    key: "overdue", label: "Просрочено", items: overdue,
+    accent: "var(--alert)", tint: "rgba(217,106,82,0.10)",
+  });
+  if (todays.length) groups.push({
+    key: "today", label: "Сегодня", items: todays,
+    accent: "var(--mint-deep)", tint: "rgba(134,199,154,0.18)",
+  });
+  if (week.length) groups.push({
+    key: "week", label: "На этой неделе", items: week,
+    accent: "var(--ink-80)", tint: "var(--paper-warm)",
+  });
+  if (later.length) groups.push({
+    key: "later", label: "Позже", items: later,
+    accent: "var(--ink-60)", tint: "var(--paper-warm)",
+  });
+  if (noDate.length) groups.push({
+    key: "nodate", label: "Без даты", items: noDate,
+    accent: "var(--ink-60)", tint: "var(--paper-warm)",
+  });
   return groups;
 }
 
@@ -77,6 +95,9 @@ export default function TasksView({
 
   const groups = useMemo(() => groupTasks(filtered), [filtered]);
   const overdueCount = tasks.filter((t) => t.due_date && isPast(t.due_date)).length;
+  const todayCount = tasks.filter(
+    (t) => (t.due_date && isToday(t.due_date)) || (t.do_today && !t.due_date),
+  ).length;
 
   const sphereById = useMemo(() => {
     const m = new Map<string, Sphere>();
@@ -96,7 +117,7 @@ export default function TasksView({
   return (
     <>
       {/* Heading */}
-      <div style={{ padding: "8px 22px 18px" }}>
+      <div style={{ padding: "8px 22px 14px" }}>
         <h1
           style={{
             fontSize: 36,
@@ -109,39 +130,33 @@ export default function TasksView({
         >
           Задачи
         </h1>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-            marginTop: 8,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 14,
-              fontWeight: 500,
-              color: "var(--ink-60)",
-              letterSpacing: "-0.005em",
-            }}
-          >
-            <span className="tnum">{tasks.length}</span>{" "}
-            {tasks.length === 1 ? "активная" : "активных"}
-          </span>
-          {overdueCount > 0 && (
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 500,
-                color: "var(--alert)",
-                letterSpacing: "-0.005em",
-              }}
-            >
-              · <span className="tnum">{overdueCount}</span>{" "}
-              {overdueCount === 1 ? "просрочена" : "просрочено"}
-            </span>
-          )}
-        </div>
+      </div>
+
+      {/* Stat tiles */}
+      <div
+        style={{
+          padding: "0 18px 16px",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 8,
+        }}
+      >
+        <StatTile
+          label={tasks.length === 1 ? "активная" : "активных"}
+          value={tasks.length}
+          tone="neutral"
+        />
+        <StatTile
+          label="на сегодня"
+          value={todayCount}
+          tone="mint"
+        />
+        <StatTile
+          label={overdueCount === 1 ? "просрочена" : "просрочено"}
+          value={overdueCount}
+          tone="alert"
+          dim={overdueCount === 0}
+        />
       </div>
 
       {/* Filter chips */}
@@ -204,30 +219,43 @@ export default function TasksView({
               <div
                 style={{
                   display: "flex",
-                  alignItems: "baseline",
+                  alignItems: "center",
                   gap: 8,
                   padding: "0 4px 10px",
                 }}
               >
                 <span
                   style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: g.accent ?? "var(--ink-60)",
-                    letterSpacing: "-0.005em",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "5px 11px",
+                    borderRadius: 999,
+                    background: g.tint ?? "var(--paper-warm)",
+                    border: `1px solid ${g.accent ?? "var(--ink-10)"}1F`,
                   }}
                 >
-                  {g.label}
-                </span>
-                <span
-                  className="tnum"
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: "var(--ink-40)",
-                  }}
-                >
-                  {g.items.length}
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: g.accent ?? "var(--ink-60)",
+                      letterSpacing: "-0.005em",
+                    }}
+                  >
+                    {g.label}
+                  </span>
+                  <span
+                    className="tnum"
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: g.accent ?? "var(--ink-40)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    {g.items.length}
+                  </span>
                 </span>
                 <div
                   style={{
@@ -270,6 +298,62 @@ export default function TasksView({
         defaultSphereId={filter}
       />
     </>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  tone,
+  dim,
+}: {
+  label: string;
+  value: number;
+  tone: "neutral" | "mint" | "alert";
+  dim?: boolean;
+}) {
+  const palette =
+    tone === "mint"
+      ? { bg: "rgba(134,199,154,0.15)", border: "rgba(79,156,106,0.20)", accent: "var(--mint-deep)" }
+      : tone === "alert"
+      ? { bg: "rgba(217,106,82,0.10)", border: "rgba(217,106,82,0.18)", accent: "var(--alert)" }
+      : { bg: "var(--paper-warm)", border: "var(--ink-05)", accent: "var(--ink)" };
+
+  return (
+    <div
+      style={{
+        background: palette.bg,
+        border: `1px solid ${palette.border}`,
+        borderRadius: 14,
+        padding: "12px 14px",
+        opacity: dim ? 0.45 : 1,
+        transition: "opacity 280ms var(--ease-out)",
+      }}
+    >
+      <div
+        className="tnum"
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          letterSpacing: "-0.024em",
+          color: palette.accent,
+          lineHeight: 1,
+        }}
+      >
+        {value}
+      </div>
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 500,
+          color: "var(--ink-60)",
+          marginTop: 4,
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {label}
+      </div>
+    </div>
   );
 }
 

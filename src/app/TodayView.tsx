@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Habit, HabitLog, Sphere, Task } from "@/lib/data";
 import HabitRing from "@/components/HabitRing";
@@ -10,6 +10,8 @@ import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
+
+const NAME_KEY = "dela.name";
 
 const MONTHS_GENITIVE = [
   "января", "февраля", "марта", "апреля", "мая", "июня",
@@ -75,12 +77,40 @@ export default function TodayView({
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const [name, setName] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // Optional display name set in Settings → personalises the greeting.
+  // Display name lives in localStorage. Inline-editable in the greeting;
+  // listening to the storage event keeps it in sync if multiple tabs are
+  // open or another component (Settings) updates it.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setName(localStorage.getItem("dela.name"));
+    setName(localStorage.getItem(NAME_KEY));
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === NAME_KEY) setName(e.newValue);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  useEffect(() => {
+    if (editingName) nameInputRef.current?.focus();
+  }, [editingName]);
+
+  function startNameEdit() {
+    setNameDraft(name ?? "");
+    setEditingName(true);
+  }
+  function commitName() {
+    const trimmed = nameDraft.trim().slice(0, 30);
+    if (typeof window !== "undefined") {
+      if (trimmed) localStorage.setItem(NAME_KEY, trimmed);
+      else localStorage.removeItem(NAME_KEY);
+    }
+    setName(trimmed || null);
+    setEditingName(false);
+  }
 
   // ?new=1 from BottomNav FAB → open task creation
   useEffect(() => {
@@ -169,13 +199,62 @@ export default function TodayView({
                 fontSize: 32,
                 fontWeight: 700,
                 letterSpacing: "-0.034em",
-                lineHeight: 1.04,
+                lineHeight: 1.08,
                 color: "var(--ink)",
                 margin: 0,
               }}
             >
-              {pickGreeting(t)}
-              {name ? `, ${name}` : ""}
+              {pickGreeting(t)},{" "}
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  onBlur={commitName}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      commitName();
+                    } else if (e.key === "Escape") {
+                      setEditingName(false);
+                    }
+                  }}
+                  placeholder="имя"
+                  maxLength={30}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    font: "inherit",
+                    color: "var(--mint-deep)",
+                    width: `${Math.max(4, nameDraft.length || 5)}ch`,
+                    padding: 0,
+                    letterSpacing: "inherit",
+                  }}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={startNameEdit}
+                  className="tap"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    font: "inherit",
+                    letterSpacing: "inherit",
+                    color: "var(--mint-deep)",
+                    cursor: "pointer",
+                    textDecoration: name ? "none" : "underline",
+                    textDecorationStyle: name ? undefined : "dotted",
+                    textDecorationThickness: name ? undefined : "1.5px",
+                    textUnderlineOffset: name ? undefined : "5px",
+                  }}
+                >
+                  {name ?? "представься"}
+                </button>
+              )}
+              !
             </h1>
           </div>
         </div>

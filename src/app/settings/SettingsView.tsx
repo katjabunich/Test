@@ -1,28 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 
-const NAME_KEY = "dela.name";
-
 export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setName(localStorage.getItem(NAME_KEY) ?? "");
-  }, []);
-
-  function persistName(next: string) {
-    setName(next);
-    if (typeof window === "undefined") return;
-    if (next.trim()) localStorage.setItem(NAME_KEY, next.trim());
-    else localStorage.removeItem(NAME_KEY);
-  }
 
   return (
     <>
@@ -53,61 +38,6 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
       </div>
 
       <div style={{ padding: "0 18px" }}>
-        {/* Name */}
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            padding: "0 4px 10px",
-            letterSpacing: "-0.005em",
-          }}
-        >
-          Как тебя зовут
-        </div>
-        <div
-          style={{
-            background: "var(--paper-warm)",
-            borderRadius: 18,
-            border: "1px solid var(--ink-05)",
-            padding: "4px 14px",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 22,
-          }}
-        >
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => persistName(e.target.value.slice(0, 30))}
-            placeholder="(не обязательно)"
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              fontSize: 15.5,
-              fontWeight: 500,
-              color: "var(--ink)",
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              letterSpacing: "-0.01em",
-              minWidth: 0,
-            }}
-          />
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--ink-40)",
-              letterSpacing: "-0.005em",
-              flexShrink: 0,
-            }}
-          >
-            будет в приветствии
-          </span>
-        </div>
-
         <div
           style={{
             fontSize: 13,
