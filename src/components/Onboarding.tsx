@@ -2,39 +2,46 @@
 
 import { useEffect, useState } from "react";
 import { Icons } from "@/components/Icons";
+import HeroPreview from "@/components/onboarding/HeroPreview";
+import SpheresPreview from "@/components/onboarding/SpheresPreview";
+import RingPreview from "@/components/onboarding/RingPreview";
 
 const STORAGE_KEY = "dela.onboarded.v1";
 
 type Slide = {
   eyebrow: string;
-  title: string;
+  title: string;     // Title text WITHOUT the trailing period — the period is the mint accent
   body: string;
+  cta: string;
   visual: React.ReactNode;
 };
 
 const SLIDES: Slide[] = [
   {
-    eyebrow: "ПРИВЕТ",
-    title: "Я помогаю не теряться в делах",
-    body: "Утром открываешь — сразу видишь, что нужно сегодня. Без вкладок и поиска.",
-    visual: <CheckHero />,
+    eyebrow: "ПЕРВЫЙ ВЗГЛЯД",
+    title: "Доброе утро",
+    body: "Открываешь утром — и сразу видно, что делать сегодня. Без вкладок и поиска.",
+    cta: "Дальше",
+    visual: <HeroPreview />,
   },
   {
-    eyebrow: "СФЕРЫ",
-    title: "Раздели жизнь по областям",
-    body: "Работа, дом, твой канал, голландский — у каждой свой цвет. Сразу видно, что куда.",
-    visual: <SpheresHero />,
+    eyebrow: "КАК ЭТО УСТРОЕНО",
+    title: "Своя жизнь по сферам",
+    body: "Работа, дом, канал, голландский, AI — у каждой свой цвет. Сразу видно, что относится к чему.",
+    cta: "Дальше",
+    visual: <SpheresPreview />,
   },
   {
-    eyebrow: "ПРИВЫЧКИ",
-    title: "Кольца отмечаешь одним тапом",
-    body: "Прогресс за неделю + стрик. Доходишь до 7, 30, 100 дней — будут конфетти.",
-    visual: <RingsHero />,
+    eyebrow: "ЕЖЕДНЕВНЫЙ РИТМ",
+    title: "7 дней подряд — праздник",
+    body: "Тап по кольцу — отметила. Дойдёшь до 7, 30, 100 дней — будут конфетти.",
+    cta: "Готова, поехали",
+    visual: <RingPreview />,
   },
 ];
 
 export default function Onboarding() {
-  const [done, setDone] = useState(true); // Default true — only flip false after we read the flag, so we don't flash for returning users.
+  const [done, setDone] = useState(true);
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
 
@@ -66,15 +73,66 @@ export default function Onboarding() {
         display: "flex",
         flexDirection: "column",
         animation: exiting ? "splash-out 320ms var(--ease-out) forwards" : "none",
+        overflow: "hidden",
       }}
     >
+      {/* Soft mint wash in the top-right corner — same warmth as the app */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -120,
+          right: -120,
+          width: 360,
+          height: 360,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(closest-side, rgba(134,199,154,0.22), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+      {/* And a subtle peach in bottom-left, balancing it */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          bottom: -160,
+          left: -120,
+          width: 360,
+          height: 360,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(closest-side, rgba(243,167,139,0.16), transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Top bar: pagination indicator + skip */}
       <div
         style={{
-          padding: "20px 22px",
+          padding: "20px 22px 0",
           display: "flex",
-          justifyContent: "flex-end",
+          alignItems: "center",
+          gap: 16,
+          position: "relative",
         }}
       >
+        <div style={{ display: "flex", gap: 6 }}>
+          {SLIDES.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: i === step ? 28 : 8,
+                height: 4,
+                borderRadius: 2,
+                background:
+                  i === step ? "var(--mint-deep)" : "var(--ink-20)",
+                transition: "all 320ms var(--ease-spring)",
+              }}
+            />
+          ))}
+        </div>
+        <div style={{ flex: 1 }} />
         <button
           type="button"
           onClick={finish}
@@ -83,91 +141,99 @@ export default function Onboarding() {
             background: "transparent",
             border: "none",
             color: "var(--ink-60)",
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
-            padding: "6px 8px",
+            padding: "4px 8px",
             cursor: "pointer",
-            letterSpacing: "0.06em",
+            letterSpacing: "0.13em",
+            textTransform: "uppercase",
           }}
         >
-          пропустить
+          Пропустить
         </button>
       </div>
 
+      {/* Slide content */}
       <div
         key={step}
         style={{
           flex: 1,
-          padding: "0 28px",
+          padding: "32px 28px 0",
           display: "flex",
           flexDirection: "column",
           alignItems: "stretch",
-          justifyContent: "center",
-          textAlign: "left",
-          animation: "slide-in 380ms var(--ease-out) both",
+          minHeight: 0,
+          position: "relative",
         }}
       >
-        <div style={{ marginBottom: 36, alignSelf: "center" }}>{slide.visual}</div>
         <div
           className="mono"
           style={{
             fontSize: 11,
             fontWeight: 600,
             color: "var(--mint-deep)",
-            letterSpacing: "0.13em",
-            marginBottom: 10,
+            letterSpacing: "0.14em",
+            marginBottom: 12,
+            opacity: 0,
+            animation: "slide-in 360ms 60ms var(--ease-out) forwards",
           }}
         >
           {slide.eyebrow}
         </div>
+
         <h2
+          aria-label={`${slide.title}.`}
           style={{
-            fontSize: 28,
+            fontSize: 36,
             fontWeight: 700,
-            letterSpacing: "-0.025em",
-            color: "var(--ink-display, var(--ink))",
+            letterSpacing: "-0.032em",
+            lineHeight: 1.05,
+            color: "var(--ink)",
             margin: 0,
-            lineHeight: 1.12,
+            marginBottom: 28,
           }}
         >
-          {slide.title}
+          <StaggeredHeading text={slide.title} />
+          <span style={{ color: "var(--mint-deep)" }}>.</span>
         </h2>
+
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          {slide.visual}
+        </div>
+
         <p
           style={{
-            marginTop: 14,
             fontSize: 15,
             color: "var(--ink-60)",
-            lineHeight: 1.5,
+            lineHeight: 1.55,
             letterSpacing: "-0.005em",
+            margin: "28px 0 0",
+            opacity: 0,
+            animation: "slide-in 380ms 700ms var(--ease-out) forwards",
+            maxWidth: 360,
           }}
         >
           {slide.body}
         </p>
       </div>
 
+      {/* CTA */}
       <div
         style={{
-          padding: "16px 22px calc(28px + env(safe-area-inset-bottom))",
+          padding: "20px 22px calc(28px + env(safe-area-inset-bottom))",
           display: "flex",
-          alignItems: "center",
-          gap: 16,
+          justifyContent: "flex-end",
+          position: "relative",
         }}
       >
-        <div style={{ display: "flex", gap: 6 }}>
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              style={{
-                width: i === step ? 24 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: i === step ? "var(--mint-deep)" : "var(--ink-20)",
-                transition: "all 280ms var(--ease-out)",
-              }}
-            />
-          ))}
-        </div>
-        <div style={{ flex: 1 }} />
         <button
           type="button"
           onClick={() => (isLast ? finish() : setStep(step + 1))}
@@ -186,9 +252,11 @@ export default function Onboarding() {
             fontWeight: 600,
             letterSpacing: "-0.01em",
             boxShadow: "0 6px 16px rgba(79,156,106,0.4)",
+            opacity: 0,
+            animation: "slide-in 360ms 900ms var(--ease-out) forwards",
           }}
         >
-          {isLast ? "Готова" : "Дальше"}
+          {slide.cta}
           <Icons.Chevron size={16} stroke="#fff" strokeWidth={2.2} />
         </button>
       </div>
@@ -196,128 +264,27 @@ export default function Onboarding() {
   );
 }
 
-/* ─── Visuals for each slide ─── */
-
-function CheckHero() {
+/** Renders a string with each character (or word, if text is long) as a
+   span with a staggered animation-delay. Caps total animation at ~600ms
+   so longer titles still feel snappy. */
+function StaggeredHeading({ text }: { text: string }) {
+  const chars = Array.from(text);
+  const stepMs = chars.length > 18 ? 18 : 28;
   return (
-    <svg width="160" height="160" viewBox="0 0 160 160" aria-hidden>
-      <defs>
-        <linearGradient id="ob-check" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#86c79a" />
-          <stop offset="100%" stopColor="#4f9c6a" />
-        </linearGradient>
-      </defs>
-      <circle
-        cx="80"
-        cy="80"
-        r="64"
-        fill="rgba(134,199,154,0.15)"
-        stroke="rgba(79,156,106,0.3)"
-        strokeWidth="1.2"
-      />
-      <circle cx="80" cy="80" r="44" fill="url(#ob-check)" />
-      <path
-        d="M58 82 L74 96 L104 64"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SpheresHero() {
-  const items = [
-    { color: "#f3a78b" },
-    { color: "#f5c563" },
-    { color: "#86c79a" },
-    { color: "#7d96a8" },
-    { color: "#b5a3df" },
-  ];
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap",
-        justifyContent: "center",
-        maxWidth: 280,
-      }}
-    >
-      {items.map((s, i) => (
-        <div
+    <>
+      {chars.map((ch, i) => (
+        <span
           key={i}
           style={{
-            width: 64,
-            height: 64,
-            borderRadius: 18,
-            background: s.color,
-            transform: `rotate(${(i - 2) * 4}deg)`,
-            boxShadow: "0 4px 12px rgba(45,38,32,0.06)",
-            animation: `slide-in ${400 + i * 60}ms var(--ease-out) both`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function RingsHero() {
-  const items = [
-    { color: "#86c79a", progress: 0.85, fill: true },
-    { color: "#7d96a8", progress: 0.7, fill: true },
-    { color: "#f3a78b", progress: 0.3, fill: false },
-    { color: "#b5a3df", progress: 1.0, fill: false },
-  ];
-  const size = 56;
-  const stroke = 3;
-  const r = (size - stroke * 2) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div style={{ display: "flex", gap: 12 }}>
-      {items.map((it, i) => (
-        <div
-          key={i}
-          style={{
-            position: "relative",
-            width: size,
-            height: size,
-            animation: `slide-in ${400 + i * 80}ms var(--ease-out) both`,
+            display: "inline-block",
+            whiteSpace: "pre",
+            opacity: 0,
+            animation: `text-stagger-in 360ms ${i * stepMs}ms var(--ease-out) forwards`,
           }}
         >
-          <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              fill="none"
-              stroke="var(--ink-10)"
-              strokeWidth={stroke}
-            />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              fill="none"
-              stroke={it.color}
-              strokeWidth={stroke}
-              strokeDasharray={c}
-              strokeDashoffset={c * (1 - it.progress)}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div
-            style={{
-              position: "absolute",
-              inset: 6,
-              borderRadius: "50%",
-              background: it.fill ? it.color : "transparent",
-            }}
-          />
-        </div>
+          {ch}
+        </span>
       ))}
-    </div>
+    </>
   );
 }
