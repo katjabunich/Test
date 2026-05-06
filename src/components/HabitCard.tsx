@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
 import { computeStreak } from "@/lib/habits";
 import { addDays, today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
+import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 
 /** Habit list row per v4: paperWarm card with thin ring on the left,
     name + week progress in the middle, big streak number on the right. */
@@ -24,6 +25,15 @@ export default function HabitCard({
   const [, startTransition] = useTransition();
 
   const streak = useMemo(() => computeStreak(habit, localLogged), [habit, localLogged]);
+
+  // Celebrate when the streak crosses upward through a milestone.
+  const prevStreak = useRef(streak);
+  useEffect(() => {
+    if (streak > prevStreak.current && isStreakMilestone(streak)) {
+      void fireConfetti(habit.color || undefined);
+    }
+    prevStreak.current = streak;
+  }, [streak, habit.color]);
 
   const t = today();
   const doneToday = localLogged.has(t);

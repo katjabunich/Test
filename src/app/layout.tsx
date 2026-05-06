@@ -3,6 +3,9 @@ import { Onest, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
+import SplashScreen from "@/components/SplashScreen";
+import Onboarding from "@/components/Onboarding";
+import PageTransition from "@/components/PageTransition";
 
 /* Geist clone with full Cyrillic support — visually nearly identical. */
 const display = Onest({
@@ -40,8 +43,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${display.variable} ${mono.variable}`}>
       <body>
-        <main>{children}</main>
+        <main>
+          <PageTransition>{children}</PageTransition>
+        </main>
         <BottomNav />
+        <SplashScreen />
+        <Onboarding />
         <RegisterSW />
       </body>
     </html>

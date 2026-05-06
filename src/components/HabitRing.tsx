@@ -5,6 +5,7 @@ import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
 import { today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
+import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 
 /** Ring per v4: thin 2px stroke, no surrounding container. Centre disk
     fills with the habit colour when done; otherwise its built-in icon /
@@ -13,11 +14,13 @@ export default function HabitRing({
   habit,
   doneToday,
   weekDone,
+  streak,
   size = 56,
 }: {
   habit: Habit;
   doneToday: boolean;
   weekDone: number;
+  streak: number;
   size?: number;
 }) {
   const [optimistic, setOptimistic] = useState(doneToday);
@@ -26,6 +29,15 @@ export default function HabitRing({
 
   function handleClick() {
     const wasDone = optimistic;
+    // If we're about to mark done, predict the new streak. This is
+    // approximate — the actual streak depends on yesterday's log too —
+    // but it's good enough to fire a celebration the user expects.
+    if (!wasDone) {
+      const predicted = streak + 1;
+      if (isStreakMilestone(predicted)) {
+        void fireConfetti(habit.color || undefined);
+      }
+    }
     setOptimistic(!wasDone);
     startTransition(async () => {
       try {

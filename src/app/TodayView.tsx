@@ -8,7 +8,7 @@ import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import { Icons, SphereIcon, iconForSphereName } from "@/components/Icons";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
-import { groupLogsByHabit, isScheduledOn } from "@/lib/habits";
+import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
 
 const MONTH_NUM = (m: number) => String(m + 1).padStart(2, "0");
@@ -176,6 +176,7 @@ export default function TodayView({
                 habit={h}
                 doneToday={doneTodaySet.has(h.id)}
                 weekDone={weekDoneFor(h.id)}
+                streak={computeStreak(h, logsByHabit.get(h.id) ?? new Set())}
                 size={56}
               />
             ))}

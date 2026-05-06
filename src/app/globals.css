@@ -106,6 +106,51 @@ button, input, textarea, select {
 }
 .check-pop { animation: check-pop 280ms var(--ease-out); }
 
+/* Page transition — re-fires on pathname change via key */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-in { animation: page-in 320ms var(--ease-out); }
+
+/* Skeleton shimmer */
+@keyframes skel {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.skel {
+  background: linear-gradient(
+    90deg,
+    rgba(45,38,32,0.04) 0%,
+    rgba(45,38,32,0.10) 50%,
+    rgba(45,38,32,0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: skel 1.4s linear infinite;
+  border-radius: 10px;
+}
+
+/* Splash logo entry */
+@keyframes splash-in {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-ring-in {
+  from { stroke-dashoffset: 220; opacity: 0; }
+  to   { stroke-dashoffset: 0;   opacity: 1; }
+}
+@keyframes splash-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Onboarding slide */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0ms !important; transition-duration: 0ms !important; }
 }
