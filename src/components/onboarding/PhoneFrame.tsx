@@ -89,7 +89,69 @@ export default function PhoneFrame({
           }}
         />
 
-        {/* 1px chamfer line just inside the bezel — gives the frame a
+        {/* Real iPhone side buttons — small extruded marks on the bezel */}
+        {/* Mute switch (top-left) */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: -2,
+            top: 86,
+            width: 3,
+            height: 22,
+            background:
+              "linear-gradient(90deg, #0a0805 0%, #1c1612 60%, transparent 100%)",
+            borderRadius: "2px 0 0 2px",
+            boxShadow: "inset 1px 0 0 rgba(255,255,255,0.06)",
+          }}
+        />
+        {/* Volume up */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: -2,
+            top: 124,
+            width: 3,
+            height: 36,
+            background:
+              "linear-gradient(90deg, #0a0805 0%, #1c1612 60%, transparent 100%)",
+            borderRadius: "2px 0 0 2px",
+            boxShadow: "inset 1px 0 0 rgba(255,255,255,0.06)",
+          }}
+        />
+        {/* Volume down */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: -2,
+            top: 168,
+            width: 3,
+            height: 36,
+            background:
+              "linear-gradient(90deg, #0a0805 0%, #1c1612 60%, transparent 100%)",
+            borderRadius: "2px 0 0 2px",
+            boxShadow: "inset 1px 0 0 rgba(255,255,255,0.06)",
+          }}
+        />
+        {/* Power / side button on right */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: -2,
+            top: 138,
+            width: 3,
+            height: 56,
+            background:
+              "linear-gradient(270deg, #0a0805 0%, #1c1612 60%, transparent 100%)",
+            borderRadius: "0 2px 2px 0",
+            boxShadow: "inset -1px 0 0 rgba(255,255,255,0.10)",
+          }}
+        />
+
+        {/* 1px chamfer line just inside the bezel edge — gives the frame a
            lighter "polished edge" against the screen */}
         <div
           aria-hidden
@@ -133,7 +195,8 @@ export default function PhoneFrame({
             />
           )}
 
-          {/* Dynamic island — subtle inner gradient gives depth */}
+          {/* Dynamic island — subtle inner gradient gives depth, with a tiny
+             camera lens dot on the right */}
           <div
             aria-hidden
             style={{
@@ -149,8 +212,25 @@ export default function PhoneFrame({
               boxShadow:
                 "inset 0 1px 1px rgba(255,255,255,0.06), 0 0 0 0.5px rgba(0,0,0,0.6)",
               zIndex: 4,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingRight: 8,
             }}
-          />
+          >
+            {/* Camera lens — 5px dark dot with a subtle blue tint */}
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle at 30% 30%, #2a3040 0%, #0a0d18 60%, #000 100%)",
+                boxShadow:
+                  "inset 0 0 1px rgba(255,255,255,0.15), 0 0 0 0.5px rgba(0,0,0,0.5)",
+              }}
+            />
+          </div>
 
           {/* Status bar */}
           <div

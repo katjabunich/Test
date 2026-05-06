@@ -27,28 +27,28 @@ type Slide = {
 
 const SLIDES: Slide[] = [
   {
-    eyebrow: "Первый взгляд",
+    eyebrow: "Утро",
     eyebrowDot: "#f5c563",
-    title: "Доброе утро",
-    body: "Открываешь утром — и сразу видно, что делать сегодня. Без вкладок и поиска.",
+    title: "Что важно сегодня",
+    body: "Утром открываешь — на одном экране всё, что нужно сделать. Без вкладок и поиска.",
     cta: "Дальше",
     visual: <HeroPreview />,
     glow: "#f5c563",
   },
   {
-    eyebrow: "Как это устроено",
+    eyebrow: "Структура",
     eyebrowDot: "#86c79a",
-    title: "Своя жизнь по сферам",
-    body: "Работа, дом, канал, голландский, AI — у каждой свой цвет. Сразу видно, что относится к чему.",
+    title: "Все задачи на виду",
+    body: "Один экран — все дела разбиты по сферам и срокам. Ничего не теряется.",
     cta: "Дальше",
     visual: <SpheresPreview />,
     glow: "#86c79a",
   },
   {
-    eyebrow: "Ежедневный ритм",
+    eyebrow: "Регулярность",
     eyebrowDot: "#b5a3df",
-    title: "7 дней подряд — праздник",
-    body: "Тап по кольцу — отметила. Дойдёшь до 7, 30, 100 дней — будут конфетти.",
+    title: "Привычки, день за днём",
+    body: "Помогает строить новые привычки и держаться их. Видно, сколько дней подряд получилось.",
     cta: "Готова, поехали",
     visual: <RingPreview />,
     glow: "#b5a3df",
@@ -59,6 +59,7 @@ export default function Onboarding() {
   const [done, setDone] = useState(true);
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
+  const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -75,12 +76,41 @@ export default function Onboarding() {
     setTimeout(() => setDone(true), 320);
   }
 
+  function goNext() {
+    if (step < SLIDES.length - 1) setStep(step + 1);
+    else finish();
+  }
+  function goPrev() {
+    if (step > 0) setStep(step - 1);
+  }
+
+  // Swipe gestures: horizontal swipe ≥50px in <600ms = navigation
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY, t: Date.now() };
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (!swipeStart.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - swipeStart.current.x;
+    const dy = t.clientY - swipeStart.current.y;
+    const dt = Date.now() - swipeStart.current.t;
+    swipeStart.current = null;
+    if (Math.abs(dy) > Math.abs(dx)) return; // vertical scroll, ignore
+    if (Math.abs(dx) < 50) return;
+    if (dt > 600) return;
+    if (dx < 0) goNext();
+    else goPrev();
+  }
+
   const isLast = step === SLIDES.length - 1;
   const slide = SLIDES[step];
   const progress = (step + 1) / SLIDES.length;
 
   return (
     <div
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       style={{
         position: "fixed",
         inset: 0,
@@ -104,18 +134,44 @@ export default function Onboarding() {
         <SlideBackground variant={step as 0 | 1 | 2} />
       </div>
 
-      {/* Top bar — thread + skip — respects status bar */}
+      {/* Top bar — back + thread + skip — respects status bar */}
       <div
         style={{
-          padding: "max(12px, calc(env(safe-area-inset-top) + 6px)) 22px 0",
+          padding: "max(12px, calc(env(safe-area-inset-top) + 6px)) 18px 0",
           display: "flex",
           alignItems: "center",
-          gap: 14,
+          gap: 12,
           position: "relative",
           flexShrink: 0,
           zIndex: 3,
         }}
       >
+        <button
+          type="button"
+          onClick={goPrev}
+          aria-label="Назад"
+          className="tap"
+          disabled={step === 0}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: step === 0 ? "transparent" : "var(--ink-60)",
+            cursor: step === 0 ? "default" : "pointer",
+            padding: 4,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "color 220ms var(--ease-out)",
+          }}
+        >
+          <Icons.Chevron
+            size={20}
+            stroke="currentColor"
+            strokeWidth={2.2}
+            style={{ transform: "rotate(180deg)" }}
+          />
+        </button>
         <div
           style={{
             flex: 1,
@@ -248,7 +304,7 @@ export default function Onboarding() {
       >
         <button
           type="button"
-          onClick={() => (isLast ? finish() : setStep(step + 1))}
+          onClick={goNext}
           className="tap"
           style={{
             display: "inline-flex",
