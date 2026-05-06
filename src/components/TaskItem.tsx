@@ -11,12 +11,12 @@ function dueLabel(due: string | null): { text: string; tone: "muted" | "warn" } 
   if (isPast(due)) {
     const d = fromIsoDate(due);
     const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-    return { text: days === 1 ? "вчера" : `просрочено ${days} дн.`, tone: "warn" };
+    return { text: days === 1 ? "вчера" : `${days} дн назад`, tone: "warn" };
   }
   const d = fromIsoDate(due);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.round((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const t = new Date();
+  t.setHours(0, 0, 0, 0);
+  const diff = Math.round((d.getTime() - t.getTime()) / (1000 * 60 * 60 * 24));
   if (diff <= 7) {
     const wd = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"][d.getDay()];
     return { text: wd, tone: "muted" };
@@ -24,6 +24,9 @@ function dueLabel(due: string | null): { text: string; tone: "muted" | "warn" } 
   return { text: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`, tone: "muted" };
 }
 
+/** Task row per v4: paper-warm card, mint-bordered checkbox left, sphere
+    chip + due label below the title. Animated check fills with sphere
+    colour on tap. */
 export default function TaskItem({
   task,
   sphere,
@@ -36,6 +39,8 @@ export default function TaskItem({
   const [optimisticDone, setOptimisticDone] = useState(false);
   const [isPending, startTransition] = useTransition();
   const due = dueLabel(task.due_date);
+  const overdue = !!(task.due_date && isPast(task.due_date));
+  const sphereColor = sphere?.color ?? "var(--ink-40)";
 
   function handleComplete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -55,11 +60,13 @@ export default function TaskItem({
       tabIndex={0}
       onClick={() => onEdit?.(task)}
       style={{
+        background: overdue ? "rgba(217,106,82,0.06)" : "var(--paper-warm)",
+        border: `1px solid ${overdue ? "rgba(217,106,82,0.18)" : "var(--ink-05)"}`,
+        borderRadius: 16,
+        padding: "12px 14px",
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "12px 18px",
-        background: "transparent",
         cursor: onEdit ? "pointer" : "default",
         opacity: optimisticDone ? 0.4 : 1,
         transform: optimisticDone ? "translateX(6px)" : "translateX(0)",
@@ -71,38 +78,39 @@ export default function TaskItem({
         onClick={handleComplete}
         disabled={isPending || optimisticDone}
         aria-label="Отметить выполненной"
-        className="tap"
         style={{
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          border: optimisticDone ? "none" : "1.5px solid var(--text-faint)",
-          background: optimisticDone
-            ? "linear-gradient(140deg, #14CAC4, #07918D)"
-            : "transparent",
+          width: 22,
+          height: 22,
+          borderRadius: 11,
+          border: `2px solid ${sphereColor}`,
+          background: optimisticDone ? sphereColor : "transparent",
           padding: 0,
           cursor: "pointer",
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 220ms var(--ease-spring)",
-          boxShadow: optimisticDone ? "0 4px 10px rgba(10,186,181,0.30)" : "none",
+          transition: "background 200ms var(--ease-out)",
         }}
       >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 14 14"
-          fill="none"
-          style={{
-            opacity: optimisticDone ? 1 : 0,
-            transform: optimisticDone ? "scale(1)" : "scale(0.4)",
-            transition: "all 200ms var(--ease-spring)",
-          }}
-        >
-          <path d="M3 7.5L6 10.5L11 4.5" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        {optimisticDone && (
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 12 12"
+            fill="none"
+            className="check-pop"
+          >
+            <path
+              d="M2 6.5 L5 9 L10 3.5"
+              fill="none"
+              stroke="#fff"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -110,51 +118,63 @@ export default function TaskItem({
           style={{
             fontSize: 15,
             fontWeight: 500,
-            color: "var(--text)",
+            color: "var(--ink)",
+            letterSpacing: "-0.01em",
+            opacity: optimisticDone ? 0.5 : 1,
+            textDecoration: optimisticDone ? "line-through" : "none",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-            letterSpacing: "-0.005em",
+            lineHeight: 1.3,
           }}
         >
           {task.title}
         </div>
         {(sphere || due || task.recurrence) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 5, alignItems: "center" }}>
             {sphere && (
               <span
+                className="mono lower"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
-                  padding: "2px 8px",
-                  borderRadius: 999,
-                  background: `${sphere.color}1F`,
-                  border: `1px solid ${sphere.color}33`,
-                  color: "var(--text-muted)",
                   fontSize: 11,
-                  fontWeight: 500,
-                  letterSpacing: 0.01,
+                  fontWeight: 600,
+                  color: sphereColor,
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: sphere.color }} />
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    background: sphereColor,
+                  }}
+                />
                 {sphere.name}
               </span>
             )}
+            {sphere && due && (
+              <span style={{ color: "var(--ink-20)", fontSize: 12 }}>·</span>
+            )}
             {due && (
               <span
-                className="tnum"
+                className="mono lower"
                 style={{
-                  fontSize: 12,
-                  color: due.tone === "warn" ? "var(--warn)" : "var(--text-muted)",
-                  fontWeight: due.tone === "warn" ? 600 : 400,
+                  fontSize: 11,
+                  fontWeight: 500,
+                  color: due.tone === "warn" ? "var(--alert)" : "var(--ink-60)",
                 }}
               >
                 {due.text}
               </span>
             )}
             {task.recurrence && (
-              <span style={{ fontSize: 11, color: "var(--text-faint)" }}>↻</span>
+              <>
+                <span style={{ color: "var(--ink-20)", fontSize: 12 }}>·</span>
+                <span style={{ fontSize: 11, color: "var(--ink-40)" }}>↻</span>
+              </>
             )}
           </div>
         )}

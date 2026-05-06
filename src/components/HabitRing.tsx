@@ -4,23 +4,40 @@ import { useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
 import { today } from "@/lib/date";
+import { Icons } from "@/components/Icons";
 
-const ACCENT_FALLBACK = "#0ABAB5";
+const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
+  "Вода": "Drop",
+  "Бег": "Run",
+  "Чтение": "Book",
+  "Медитация": "Lotus",
+  "Голландский": "Globe",
+  "Голл.": "Globe",
+  "Пианино": "Smile",
+};
 
+function pickIcon(habit: Habit): keyof typeof Icons {
+  if (HABIT_NAME_TO_ICON[habit.name]) return HABIT_NAME_TO_ICON[habit.name];
+  return "Dot";
+}
+
+/** Ring per v4: thin 2px stroke, no surrounding container. Centre disk
+    fills with the habit colour when done; otherwise the line-art icon
+    sits on paper. weekDone fills the progress arc. */
 export default function HabitRing({
   habit,
   doneToday,
-  streak,
-  size = 60,
+  weekDone,
+  size = 56,
 }: {
   habit: Habit;
   doneToday: boolean;
-  streak: number;
+  weekDone: number;
   size?: number;
 }) {
   const [optimistic, setOptimistic] = useState(doneToday);
   const [isPending, startTransition] = useTransition();
-  const color = habit.color || ACCENT_FALLBACK;
+  const color = habit.color || "var(--mint)";
 
   function handleClick() {
     const wasDone = optimistic;
@@ -34,9 +51,11 @@ export default function HabitRing({
     });
   }
 
-  const stroke = 2.5;
-  const r = (size - stroke) / 2;
+  const stroke = 2;
+  const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.min(7, weekDone) / 7);
+  const IconComp = Icons[pickIcon(habit)];
 
   return (
     <button
@@ -54,87 +73,72 @@ export default function HabitRing({
         background: "none",
         border: "none",
         cursor: "pointer",
-        padding: "4px 6px",
+        padding: 0,
         flexShrink: 0,
         opacity: isPending ? 0.7 : 1,
-        minWidth: 70,
       }}
     >
       <div style={{ position: "relative", width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <defs>
-            <linearGradient id={`hr-${habit.id}`} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor={color} />
-              <stop offset="100%" stopColor={color} stopOpacity="0.78" />
-            </linearGradient>
-          </defs>
+        <svg
+          width={size}
+          height={size}
+          style={{ transform: "rotate(-90deg)" }}
+          aria-hidden
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
-            fill={optimistic ? `url(#hr-${habit.id})` : "var(--surface-tint)"}
-            stroke={optimistic ? color : "var(--hairline)"}
+            fill="none"
+            stroke="var(--ink-10)"
+            strokeWidth={stroke}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={color}
             strokeWidth={stroke}
             strokeDasharray={c}
-            strokeDashoffset={optimistic ? 0 : c}
+            strokeDashoffset={offset}
             strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 360ms var(--ease-spring), fill 240ms var(--ease-out)" }}
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            style={{ transition: "stroke-dashoffset 380ms var(--ease-out)" }}
           />
         </svg>
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            inset: 6,
+            borderRadius: "50%",
+            background: optimistic ? color : "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: size * 0.42,
-            color: optimistic ? "white" : "var(--text-muted)",
+            transition: "background 220ms var(--ease-out)",
           }}
         >
-          {optimistic ? (
-            <svg width={size * 0.46} height={size * 0.46} viewBox="0 0 24 24" fill="none">
-              <path
-                d="M5 12.5L10 17L19 7.5"
-                stroke="white"
-                strokeWidth="2.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          ) : (
-            <span>{habit.emoji || "·"}</span>
-          )}
+          <IconComp
+            size={Math.round(size * 0.4)}
+            stroke={optimistic ? "var(--ink)" : color}
+            strokeWidth={2}
+          />
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-        <span
-          style={{
-            fontSize: 11.5,
-            color: "var(--text)",
-            fontWeight: 500,
-            maxWidth: size + 24,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            letterSpacing: "-0.005em",
-          }}
-        >
-          {habit.name}
-        </span>
-        <span
-          className="tnum"
-          style={{
-            fontSize: 10.5,
-            color: streak > 0 ? color : "var(--text-faint)",
-            fontWeight: 600,
-            letterSpacing: 0.05,
-          }}
-        >
-          {streak > 0 ? `${streak} дн` : "—"}
-        </span>
-      </div>
+      <span
+        className="mono lower"
+        style={{
+          fontSize: 10,
+          color: "var(--ink-60)",
+          fontWeight: 500,
+          maxWidth: size + 18,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {habit.name}
+      </span>
     </button>
   );
 }

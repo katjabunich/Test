@@ -1,17 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
-import Fab from "@/components/Fab";
+import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, addDays } from "@/lib/date";
 
 type Group = {
   key: string;
   label: string;
-  tone: "warn" | "muted";
-  tasks: Task[];
+  accent?: string;
+  items: Task[];
 };
 
 function groupTasks(tasks: Task[]): Group[] {
@@ -25,8 +26,14 @@ function groupTasks(tasks: Task[]): Group[] {
   const weekEnd = addDays(t, 7);
 
   for (const task of tasks) {
-    if (task.do_today && !task.due_date) { todays.push(task); continue; }
-    if (!task.due_date) { noDate.push(task); continue; }
+    if (task.do_today && !task.due_date) {
+      todays.push(task);
+      continue;
+    }
+    if (!task.due_date) {
+      noDate.push(task);
+      continue;
+    }
     if (isPast(task.due_date)) overdue.push(task);
     else if (isToday(task.due_date)) todays.push(task);
     else if (task.due_date <= weekEnd) week.push(task);
@@ -34,18 +41,34 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", label: "Просроченные", tone: "warn", tasks: overdue });
-  if (todays.length)  groups.push({ key: "today", label: "Сегодня", tone: "muted", tasks: todays });
-  if (week.length)    groups.push({ key: "week", label: "На этой неделе", tone: "muted", tasks: week });
-  if (later.length)   groups.push({ key: "later", label: "Позже", tone: "muted", tasks: later });
-  if (noDate.length)  groups.push({ key: "nodate", label: "Без даты", tone: "muted", tasks: noDate });
+  if (overdue.length) groups.push({ key: "overdue", label: "ПРОСРОЧЕНО", accent: "var(--alert)", items: overdue });
+  if (todays.length)  groups.push({ key: "today",   label: "СЕГОДНЯ",  items: todays });
+  if (week.length)    groups.push({ key: "week",    label: "НА ЭТОЙ НЕДЕЛЕ", items: week });
+  if (later.length)   groups.push({ key: "later",   label: "ПОЗЖЕ",    items: later });
+  if (noDate.length)  groups.push({ key: "nodate",  label: "БЕЗ ДАТЫ", items: noDate });
   return groups;
 }
 
-export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: Sphere[] }) {
+export default function TasksView({
+  tasks,
+  spheres,
+}: {
+  tasks: Task[];
+  spheres: Sphere[];
+}) {
+  const router = useRouter();
+  const search = useSearchParams();
   const [filter, setFilter] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
+
+  useEffect(() => {
+    if (search.get("new") === "1") {
+      setEditing(null);
+      setModalOpen(true);
+      router.replace("/tasks", { scroll: false });
+    }
+  }, [search, router]);
 
   const filtered = useMemo(() => {
     if (!filter) return tasks;
@@ -53,6 +76,7 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
   }, [tasks, filter]);
 
   const groups = useMemo(() => groupTasks(filtered), [filtered]);
+  const overdueCount = tasks.filter((t) => t.due_date && isPast(t.due_date)).length;
 
   const sphereById = useMemo(() => {
     const m = new Map<string, Sphere>();
@@ -60,104 +84,180 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
     return m;
   }, [spheres]);
 
-  return (
-    <div style={{ padding: "20px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* Hero card */}
-      <div className="card" style={{ padding: "20px 22px" }}>
-        <div className="eyebrow" style={{ marginBottom: 6 }}>задачи</div>
-        <h1
-          style={{
-            fontSize: 26,
-            fontWeight: 600,
-            letterSpacing: "-0.025em",
-            margin: 0,
-            color: "var(--text-display)",
-            lineHeight: 1.1,
-          }}
-        >
-          <span className="tnum">{tasks.length}</span>{" "}
-          <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
-            {tasks.length === 0 ? "пока нет" : "всего"}
-          </span>
-        </h1>
-      </div>
+  const countBySphere = useMemo(() => {
+    const m = new Map<string, number>();
+    tasks.forEach((t) => {
+      if (!t.sphere_id) return;
+      m.set(t.sphere_id, (m.get(t.sphere_id) ?? 0) + 1);
+    });
+    return m;
+  }, [tasks]);
 
-      {/* Sphere filter card */}
-      <div className="card" style={{ padding: "12px 8px" }}>
+  return (
+    <>
+      {/* Heading */}
+      <div style={{ padding: "8px 22px 18px" }}>
         <div
           style={{
             display: "flex",
-            gap: 6,
-            overflowX: "auto",
-            padding: "4px 8px",
-            scrollbarWidth: "none",
+            alignItems: "baseline",
+            gap: 10,
+            marginBottom: 4,
           }}
         >
-          <FilterChip
-            selected={filter === null}
-            onClick={() => setFilter(null)}
-            label="Все"
-          />
-          {spheres.map((s) => (
-            <FilterChip
-              key={s.id}
-              selected={filter === s.id}
-              onClick={() => setFilter(s.id)}
-              label={s.name}
-              color={s.color}
-              emoji={s.emoji ?? undefined}
-            />
-          ))}
-        </div>
-      </div>
-
-      {groups.length === 0 ? (
-        <div
-          className="card"
-          style={{ padding: "40px 22px", textAlign: "center", color: "var(--text-muted)", fontSize: 14.5 }}
-        >
-          {filter ? "В этой сфере пусто." : "Пока пусто. Нажми + чтобы добавить."}
-        </div>
-      ) : (
-        groups.map((g) => (
-          <div key={g.key} className="card" style={{ padding: "16px 6px" }}>
-            <div
+          <span
+            className="mono"
+            style={{ fontSize: 10.5, fontWeight: 600, color: "var(--ink-60)" }}
+          >
+            <span className="tnum">{tasks.length}</span> АКТИВНЫХ
+          </span>
+          {overdueCount > 0 && (
+            <span
+              className="mono"
               style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                padding: "0 16px",
-                marginBottom: 8,
+                fontSize: 10.5,
+                fontWeight: 600,
+                color: "var(--alert)",
+                letterSpacing: "0.06em",
               }}
             >
-              <span
-                className="label"
-                style={{ color: g.tone === "warn" ? "var(--warn)" : "var(--text-muted)" }}
+              · <span className="tnum">{overdueCount}</span> ПРОСРОЧ.
+            </span>
+          )}
+        </div>
+        <h1
+          style={{
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.04em",
+            lineHeight: 0.95,
+            color: "var(--ink)",
+            margin: 0,
+          }}
+        >
+          Задачи<span style={{ color: "var(--mint-deep)" }}>.</span>
+        </h1>
+      </div>
+
+      {/* Filter chips */}
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          padding: "0 0 16px 22px",
+          overflowX: "auto",
+          flexShrink: 0,
+          scrollbarWidth: "none",
+        }}
+      >
+        <FilterChip
+          label="Все"
+          count={tasks.length}
+          active={filter === null}
+          onClick={() => setFilter(null)}
+        />
+        {spheres.map((s) => (
+          <FilterChip
+            key={s.id}
+            label={s.name}
+            count={countBySphere.get(s.id) ?? 0}
+            color={s.color}
+            sphereName={s.name}
+            active={filter === s.id}
+            onClick={() => setFilter(s.id)}
+          />
+        ))}
+        <div style={{ minWidth: 18 }} />
+      </div>
+
+      {/* Groups */}
+      <div
+        style={{
+          padding: "0 18px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 18,
+        }}
+      >
+        {groups.length === 0 ? (
+          <div
+            style={{
+              padding: "40px 22px",
+              textAlign: "center",
+              color: "var(--ink-60)",
+              fontSize: 14.5,
+              background: "var(--paper-warm)",
+              border: "1px solid var(--ink-05)",
+              borderRadius: 16,
+            }}
+          >
+            {filter ? "В этой сфере пусто." : "Пока пусто. Жми + внизу."}
+          </div>
+        ) : (
+          groups.map((g) => (
+            <div key={g.key}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
+                  padding: "0 4px 10px",
+                }}
               >
-                {g.label}
-              </span>
-              <span className="tnum eyebrow">{g.tasks.length}</span>
-            </div>
-            {g.tasks.map((task, i) => (
-              <div key={task.id}>
-                <TaskItem
-                  task={task}
-                  sphere={task.sphere_id ? sphereById.get(task.sphere_id) ?? null : null}
-                  onEdit={(t) => {
-                    setEditing(t);
-                    setModalOpen(true);
+                <span
+                  className="mono"
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    color: g.accent ?? "var(--ink-60)",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  {g.label}
+                </span>
+                <span
+                  className="mono tnum"
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 500,
+                    color: "var(--ink-40)",
+                  }}
+                >
+                  {g.items.length}
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    background: "var(--ink-10)",
+                    marginLeft: 4,
                   }}
                 />
-                {i < g.tasks.length - 1 && (
-                  <div style={{ height: 1, background: "var(--hairline-soft)", margin: "0 22px" }} />
-                )}
               </div>
-            ))}
-          </div>
-        ))
-      )}
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 7 }}
+              >
+                {g.items.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    sphere={
+                      task.sphere_id
+                        ? sphereById.get(task.sphere_id) ?? null
+                        : null
+                    }
+                    onEdit={(t) => {
+                      setEditing(t);
+                      setModalOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
 
-      <Fab onClick={() => { setEditing(null); setModalOpen(true); }} />
       <TaskEditModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -165,22 +265,24 @@ export default function TasksView({ tasks, spheres }: { tasks: Task[]; spheres: 
         spheres={spheres}
         defaultSphereId={filter}
       />
-    </div>
+    </>
   );
 }
 
 function FilterChip({
-  selected,
-  onClick,
   label,
+  count,
   color,
-  emoji,
+  sphereName,
+  active,
+  onClick,
 }: {
-  selected: boolean;
-  onClick: () => void;
   label: string;
+  count: number;
   color?: string;
-  emoji?: string;
+  sphereName?: string;
+  active: boolean;
+  onClick: () => void;
 }) {
   return (
     <button
@@ -188,35 +290,51 @@ function FilterChip({
       onClick={onClick}
       className="tap"
       style={{
-        display: "inline-flex",
+        padding: "7px 12px",
+        borderRadius: 10,
+        flexShrink: 0,
+        background: active ? "var(--ink)" : "var(--paper-warm)",
+        color: active ? "var(--paper)" : "var(--ink-80)",
+        display: "flex",
         alignItems: "center",
         gap: 6,
-        padding: "8px 13px",
-        borderRadius: 999,
-        border: selected
-          ? `1.5px solid ${color ?? "var(--accent)"}`
-          : "1px solid var(--hairline-soft)",
-        background: selected
-          ? color
-            ? `${color}1A`
-            : "var(--accent-cream)"
-          : "var(--surface-tint)",
-        color: "var(--text)",
-        fontSize: 13,
-        fontWeight: 500,
+        border: `1px solid ${active ? "var(--ink)" : "var(--ink-05)"}`,
         cursor: "pointer",
-        whiteSpace: "nowrap",
-        flexShrink: 0,
       }}
     >
       {color && (
         <span
           aria-hidden
-          style={{ width: 8, height: 8, borderRadius: "50%", background: color }}
+          style={{
+            width: 7,
+            height: 7,
+            borderRadius: 4,
+            background: color,
+          }}
         />
       )}
-      {emoji && <span>{emoji}</span>}
-      <span>{label}</span>
+      <span
+        className="mono lower"
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: active ? "var(--paper)" : "var(--ink)",
+          letterSpacing: "0.01em",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        className="mono tnum"
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: active ? "var(--paper)" : "var(--ink-40)",
+          opacity: active ? 0.65 : 1,
+        }}
+      >
+        {count}
+      </span>
     </button>
   );
 }

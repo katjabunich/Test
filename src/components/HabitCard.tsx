@@ -3,10 +3,26 @@
 import { useMemo, useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
-import { computeStreak, isScheduledOn, lastDays } from "@/lib/habits";
+import { computeStreak, isScheduledOn } from "@/lib/habits";
+import { addDays, today } from "@/lib/date";
+import { Icons } from "@/components/Icons";
 
-const ACCENT_FALLBACK = "#0ABAB5";
+const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
+  "Вода": "Drop",
+  "Бег": "Run",
+  "Чтение": "Book",
+  "Медитация": "Lotus",
+  "Голландский": "Globe",
+  "Голл.": "Globe",
+  "Пианино": "Smile",
+};
 
+function pickIcon(habit: Habit): keyof typeof Icons {
+  return HABIT_NAME_TO_ICON[habit.name] ?? "Dot";
+}
+
+/** Habit list row per v4: paperWarm card with thin ring on the left,
+    name + week progress in the middle, big streak number on the right. */
 export default function HabitCard({
   habit,
   logged,
@@ -16,172 +32,175 @@ export default function HabitCard({
   logged: Set<string>;
   onEdit: (habit: Habit) => void;
 }) {
-  const color = habit.color || ACCENT_FALLBACK;
+  const color = habit.color || "var(--mint)";
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
   const [, startTransition] = useTransition();
 
   const streak = useMemo(() => computeStreak(habit, localLogged), [habit, localLogged]);
-  const days21 = useMemo(() => lastDays(21), []);
 
-  function toggleDay(date: string) {
+  const t = today();
+  const doneToday = localLogged.has(t);
+  const weekDone = useMemo(() => {
+    let n = 0;
+    for (let i = 0; i < 7; i++) if (localLogged.has(addDays(t, -i))) n++;
+    return n;
+  }, [localLogged, t]);
+
+  function toggleToday() {
     const next = new Set(localLogged);
-    if (next.has(date)) next.delete(date);
-    else next.add(date);
+    if (next.has(t)) next.delete(t);
+    else next.add(t);
     setLocalLogged(next);
     startTransition(async () => {
       try {
-        await toggleHabitLog(habit.id, date);
+        await toggleHabitLog(habit.id, t);
       } catch {
         setLocalLogged(logged);
       }
     });
   }
 
+  const stroke = 2;
+  const size = 48;
+  const r = (size - stroke * 2) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.min(7, weekDone) / 7);
+  const IconComp = Icons[pickIcon(habit)];
+
   return (
     <div
-      className="card"
+      onClick={() => onEdit(habit)}
       style={{
-        padding: 18,
-        position: "relative",
-        overflow: "hidden",
+        background: "var(--paper-warm)",
+        borderRadius: 16,
+        padding: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        border: "1px solid var(--ink-05)",
+        cursor: "pointer",
       }}
     >
-      <div
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleToday();
+        }}
+        aria-label={doneToday ? "Снять отметку" : "Отметить выполненной"}
+        className="tap"
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 16,
           position: "relative",
+          width: size,
+          height: size,
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          flexShrink: 0,
         }}
       >
+        <svg
+          width={size}
+          height={size}
+          style={{ transform: "rotate(-90deg)" }}
+          aria-hidden
+        >
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="var(--ink-10)"
+            strokeWidth={stroke}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dashoffset 380ms var(--ease-out)" }}
+          />
+        </svg>
         <div
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: 14,
-            background: `linear-gradient(140deg, ${color}26, ${color}10)`,
-            border: `1px solid ${color}33`,
+            position: "absolute",
+            inset: 6,
+            borderRadius: "50%",
+            background: doneToday ? color : "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 22,
-            flexShrink: 0,
+            transition: "background 220ms var(--ease-out)",
           }}
         >
-          {habit.emoji || "•"}
+          <IconComp
+            size={20}
+            stroke={doneToday ? "var(--ink)" : color}
+            strokeWidth={2}
+          />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 15.5,
-              fontWeight: 600,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              letterSpacing: "-0.01em",
-            }}
-          >
-            {habit.name}
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "baseline", marginTop: 2 }}>
-            <span
-              className="tnum"
-              style={{
-                fontSize: 17,
-                fontWeight: 700,
-                color: streak > 0 ? color : "var(--text-faint)",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {streak}
-            </span>
-            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
-              {streak > 0 ? plur(streak, ["день", "дня", "дней"]) + " подряд" : "стрик 0"}
-            </span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => onEdit(habit)}
-          aria-label="Изменить"
-          className="tap"
+      </button>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
           style={{
-            background: "var(--surface-tint)",
-            border: "1px solid var(--hairline-soft)",
-            borderRadius: 999,
-            color: "var(--text-muted)",
-            cursor: "pointer",
-            padding: 7,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            fontSize: 15,
+            fontWeight: 600,
+            color: "var(--ink)",
+            letterSpacing: "-0.01em",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            lineHeight: 1.2,
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="6" r="1.6" fill="currentColor" />
-            <circle cx="12" cy="12" r="1.6" fill="currentColor" />
-            <circle cx="12" cy="18" r="1.6" fill="currentColor" />
-          </svg>
-        </button>
+          {habit.name}
+        </div>
+        <div
+          className="mono lower"
+          style={{
+            marginTop: 4,
+            fontSize: 11,
+            fontWeight: 600,
+            color,
+          }}
+        >
+          <span className="tnum">{weekDone}</span>/7 на неделе
+        </div>
       </div>
 
-      {/* 21-day heatmap */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(21, 1fr)", gap: 3 }}>
-        {days21.map((d) => {
-          const scheduled = isScheduledOn(habit, d);
-          const done = localLogged.has(d);
-          const isToday = d === days21[days21.length - 1];
-          return (
-            <button
-              key={d}
-              type="button"
-              onClick={() => toggleDay(d)}
-              disabled={!scheduled && !done}
-              aria-label={d}
-              style={{
-                aspectRatio: "1 / 1",
-                borderRadius: 5,
-                border: isToday ? `1.5px solid ${color}` : "1px solid var(--hairline-soft)",
-                background: done
-                  ? `linear-gradient(140deg, ${color}, ${color}D9)`
-                  : scheduled
-                    ? "var(--surface-tint)"
-                    : "rgba(0,0,0,0.025)",
-                cursor: scheduled || done ? "pointer" : "default",
-                opacity: scheduled || done ? 1 : 0.6,
-                padding: 0,
-                transition: "background 200ms var(--ease-out)",
-              }}
-            />
-          );
-        })}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 8,
-          fontSize: 10,
-          color: "var(--text-faint)",
-          letterSpacing: 0.08,
-          textTransform: "uppercase",
-          fontWeight: 600,
-        }}
-      >
-        <span>3 недели назад</span>
-        <span>сегодня</span>
+      <div style={{ textAlign: "right" }}>
+        <div
+          className="tnum"
+          style={{
+            fontSize: 28,
+            fontWeight: 700,
+            letterSpacing: "-0.034em",
+            lineHeight: 1,
+            color: "var(--ink)",
+          }}
+        >
+          {streak}
+        </div>
+        <div
+          className="mono lower"
+          style={{
+            marginTop: 2,
+            fontSize: 9.5,
+            fontWeight: 500,
+            color: "var(--ink-40)",
+          }}
+        >
+          дней
+        </div>
       </div>
     </div>
   );
-}
-
-function plur(n: number, forms: [string, string, string]): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 14) return forms[2];
-  if (mod10 === 1) return forms[0];
-  if (mod10 >= 2 && mod10 <= 4) return forms[1];
-  return forms[2];
 }

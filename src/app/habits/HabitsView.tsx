@@ -1,11 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Habit, HabitLog } from "@/lib/data";
 import HabitCard from "@/components/HabitCard";
 import HabitEditModal from "@/components/HabitEditModal";
-import Fab from "@/components/Fab";
-import { groupLogsByHabit } from "@/lib/habits";
+import { Icons } from "@/components/Icons";
+import { computeStreak, groupLogsByHabit } from "@/lib/habits";
+
+const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
+  "Вода": "Drop",
+  "Бег": "Run",
+  "Чтение": "Book",
+  "Медитация": "Lotus",
+  "Голландский": "Globe",
+  "Пианино": "Smile",
+};
+
+function pickIcon(name: string): keyof typeof Icons {
+  return HABIT_NAME_TO_ICON[name] ?? "Loop";
+}
 
 export default function HabitsView({
   habits,
@@ -14,71 +28,211 @@ export default function HabitsView({
   habits: Habit[];
   logs: HabitLog[];
 }) {
+  const router = useRouter();
+  const search = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Habit | null>(null);
 
-  const logsByHabit = groupLogsByHabit(logs);
+  useEffect(() => {
+    if (search.get("new") === "1") {
+      setEditing(null);
+      setModalOpen(true);
+      router.replace("/habits", { scroll: false });
+    }
+  }, [search, router]);
+
+  const logsByHabit = useMemo(() => groupLogsByHabit(logs), [logs]);
+
+  const withStreak = useMemo(
+    () =>
+      habits.map((h) => ({
+        habit: h,
+        streak: computeStreak(h, logsByHabit.get(h.id) ?? new Set()),
+      })),
+    [habits, logsByHabit],
+  );
+
+  const top = useMemo(
+    () => withStreak.slice().sort((a, b) => b.streak - a.streak)[0] ?? null,
+    [withStreak],
+  );
+
+  const TopIcon = top ? Icons[pickIcon(top.habit.name)] : null;
 
   return (
-    <div style={{ padding: "20px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="card" style={{ padding: "20px 22px" }}>
-        <div className="eyebrow" style={{ marginBottom: 6 }}>привычки</div>
-        <h1
+    <>
+      <div style={{ padding: "8px 22px 18px" }}>
+        <div
+          className="mono"
           style={{
-            fontSize: 26,
+            fontSize: 10.5,
             fontWeight: 600,
-            letterSpacing: "-0.025em",
-            margin: 0,
-            color: "var(--text-display)",
-            lineHeight: 1.1,
+            color: "var(--ink-60)",
+            marginBottom: 8,
+            letterSpacing: "0.12em",
           }}
         >
           <span className="tnum">{habits.length}</span>{" "}
-          <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>
-            {habits.length === 0 ? "пока нет" : "активных"}
-          </span>
+          {habits.length === 1 ? "АКТИВНАЯ" : "АКТИВНЫЕ"}
+        </div>
+        <h1
+          style={{
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.04em",
+            lineHeight: 0.95,
+            color: "var(--ink)",
+            margin: 0,
+          }}
+        >
+          Привычки<span style={{ color: "var(--mint-deep)" }}>.</span>
         </h1>
       </div>
 
-      {habits.length === 0 ? (
-        <div
-          className="card"
-          style={{
-            padding: "40px 22px",
-            textAlign: "center",
-            color: "var(--text-muted)",
-            fontSize: 14.5,
-            lineHeight: 1.55,
-          }}
-        >
-          Добавь привычку — например, играть на пианино или урок голландского.
-        </div>
-      ) : (
-        habits.map((habit) => (
-          <HabitCard
-            key={habit.id}
-            habit={habit}
-            logged={logsByHabit.get(habit.id) ?? new Set()}
-            onEdit={(h) => {
-              setEditing(h);
-              setModalOpen(true);
+      {/* Hero — best streak */}
+      {top && top.streak > 0 && TopIcon && (
+        <div style={{ padding: "0 18px 14px" }}>
+          <div
+            style={{
+              background: "var(--mint)",
+              borderRadius: 22,
+              padding: "18px 20px",
+              position: "relative",
+              overflow: "hidden",
             }}
-          />
-        ))
+          >
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                right: -22,
+                bottom: -22,
+                opacity: 0.16,
+                pointerEvents: "none",
+              }}
+            >
+              <TopIcon size={150} stroke="var(--ink)" strokeWidth={1.3} />
+            </div>
+            <div
+              className="mono"
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                color: "var(--ink)",
+                opacity: 0.65,
+                letterSpacing: "0.13em",
+                position: "relative",
+              }}
+            >
+              ЛУЧШИЙ СТРИК
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 14,
+                marginTop: 6,
+                position: "relative",
+              }}
+            >
+              <div
+                className="tnum"
+                style={{
+                  fontSize: 64,
+                  fontWeight: 700,
+                  letterSpacing: "-0.045em",
+                  lineHeight: 0.85,
+                  color: "var(--ink)",
+                }}
+              >
+                {top.streak}
+              </div>
+              <div style={{ paddingBottom: 6 }}>
+                <div
+                  className="mono lower"
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                    opacity: 0.65,
+                  }}
+                >
+                  дней подряд
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  {top.habit.name}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
-      <Fab
-        label="Новая привычка"
-        onClick={() => {
-          setEditing(null);
-          setModalOpen(true);
+      <div
+        style={{
+          padding: "0 18px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
         }}
-      />
+      >
+        {habits.length === 0 ? (
+          <div
+            style={{
+              padding: "40px 22px",
+              textAlign: "center",
+              color: "var(--ink-60)",
+              fontSize: 14.5,
+              background: "var(--paper-warm)",
+              border: "1px solid var(--ink-05)",
+              borderRadius: 16,
+              lineHeight: 1.5,
+            }}
+          >
+            Пока пусто. Жми + чтобы добавить.
+          </div>
+        ) : (
+          <>
+            <div
+              className="mono"
+              style={{
+                fontSize: 10.5,
+                fontWeight: 600,
+                color: "var(--ink-60)",
+                padding: "0 4px 4px",
+                letterSpacing: "0.1em",
+              }}
+            >
+              ВСЕ ПРИВЫЧКИ
+            </div>
+            {habits.map((habit) => (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                logged={logsByHabit.get(habit.id) ?? new Set()}
+                onEdit={(h) => {
+                  setEditing(h);
+                  setModalOpen(true);
+                }}
+              />
+            ))}
+          </>
+        )}
+      </div>
+
       <HabitEditModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         habit={editing}
       />
-    </div>
+    </>
   );
 }

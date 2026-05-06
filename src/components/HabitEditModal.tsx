@@ -2,17 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Habit, HabitScheduleType } from "@/lib/data";
-import { createHabit, updateHabit, deleteHabit } from "@/lib/actions";
+import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
+import { Icons } from "@/components/Icons";
 
 const COLORS = [
-  "#0ABAB5", // tiffany
-  "#7DAEC4", // steel
-  "#F5B5A8", // peach
-  "#F4C77A", // honey
-  "#E89B8E", // coral
-  "#9CA8B0", // graphite
-  "#B5DCC4", // mint
-  "#D4B0E0", // lilac
+  "#86c79a", "#f3a78b", "#f5c563", "#7d96a8",
+  "#b5a3df", "#e89bb0", "#0ABAB5", "#4f9c6a",
 ];
 
 const WEEKDAYS = [
@@ -76,11 +71,8 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           schedule_value:
             scheduleType === "weekdays" ? { days } : null,
         };
-        if (isEdit && habit) {
-          await updateHabit(habit.id, payload);
-        } else {
-          await createHabit(payload);
-        }
+        if (isEdit && habit) await updateHabit(habit.id, payload);
+        else await createHabit(payload);
         onClose();
       } catch (e) {
         console.error(e);
@@ -102,7 +94,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
   }
 
   function toggleDay(i: number) {
-    setDays((prev) => (prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort()));
+    setDays((prev) =>
+      prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort(),
+    );
   }
 
   return (
@@ -111,9 +105,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(20, 30, 30, 0.25)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "rgba(45,38,32,0.45)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
         zIndex: 100,
         display: "flex",
         alignItems: "flex-end",
@@ -124,36 +118,39 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: 430,
-          background: "var(--bg-base)",
+          maxWidth: 460,
+          background: "var(--paper)",
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
-          padding: "20px 20px calc(20px + env(safe-area-inset-bottom))",
+          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -8px 32px rgba(10, 40, 40, 0.12)",
+          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 17, fontWeight: 500 }}>
-            {isEdit ? "Изменить" : "Новая привычка"}
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="Закрыть"
-            style={{
-              width: 32, height: 32, borderRadius: 16, border: "none",
-              background: "rgba(0,0,0,0.04)", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </button>
+        <div
+          style={{
+            width: 40,
+            height: 4.5,
+            background: "var(--ink-20)",
+            borderRadius: 3,
+            margin: "0 auto 16px",
+          }}
+        />
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 14,
+            letterSpacing: "0.13em",
+          }}
+        >
+          {isEdit ? "ПРИВЫЧКА" : "НОВАЯ ПРИВЫЧКА"}
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value.slice(0, 4))}
@@ -162,9 +159,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               width: 56,
               padding: "12px 0",
               fontSize: 22,
-              border: "1px solid var(--hairline)",
+              border: "1px solid var(--ink-10)",
               borderRadius: 12,
-              background: "white",
+              background: "var(--paper-warm)",
               outline: "none",
               textAlign: "center",
             }}
@@ -177,14 +174,16 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             style={{
               flex: 1,
               padding: "12px 14px",
-              fontSize: 17,
-              border: "1px solid var(--hairline)",
+              fontSize: 16,
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              border: "1px solid var(--ink-10)",
               borderRadius: 12,
-              background: "white",
+              background: "var(--paper-warm)",
               outline: "none",
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter") {
                 e.preventDefault();
                 submit();
               }
@@ -192,111 +191,146 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           />
         </div>
 
-        {/* Color */}
-        <div style={{ marginTop: 16 }}>
-          <Label>Цвет</Label>
-          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-            {COLORS.map((c) => (
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "0.1em",
+          }}
+        >
+          ЦВЕТ
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+          {COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setColor(c)}
+              aria-label={c}
+              className="tap"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: c,
+                border:
+                  color === c
+                    ? "2.5px solid var(--ink)"
+                    : "2px solid var(--paper)",
+                outline: color === c ? "2px solid var(--paper)" : "none",
+                outlineOffset: -4,
+                cursor: "pointer",
+              }}
+            />
+          ))}
+        </div>
+
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "0.1em",
+          }}
+        >
+          РАСПИСАНИЕ
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          <ScheduleChip
+            active={scheduleType === "daily"}
+            label="каждый день"
+            onClick={() => setScheduleType("daily")}
+          />
+          <ScheduleChip
+            active={scheduleType === "weekdays"}
+            label="по дням"
+            onClick={() => setScheduleType("weekdays")}
+          />
+          <ScheduleChip
+            active={scheduleType === "n_per_week"}
+            label="без расписания"
+            onClick={() => setScheduleType("n_per_week")}
+          />
+        </div>
+        {scheduleType === "weekdays" && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
+            {WEEKDAYS.map((d) => (
               <button
-                key={c}
+                key={d.i}
                 type="button"
-                onClick={() => setColor(c)}
-                aria-label={c}
+                onClick={() => toggleDay(d.i)}
+                className="tap mono lower"
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: c,
-                  border: color === c ? "2.5px solid var(--text)" : "2px solid white",
+                  width: 40,
+                  height: 36,
+                  borderRadius: 999,
+                  border: days.includes(d.i)
+                    ? "1.5px solid var(--mint-deep)"
+                    : "1px solid var(--ink-10)",
+                  background: days.includes(d.i)
+                    ? "rgba(79,156,106,0.12)"
+                    : "var(--paper-warm)",
+                  color: days.includes(d.i) ? "var(--mint-deep)" : "var(--ink)",
+                  fontSize: 12,
+                  fontWeight: 600,
                   cursor: "pointer",
-                  outline: color === c ? "2px solid white" : "none",
-                  outlineOffset: -4,
                 }}
-              />
+              >
+                {d.label}
+              </button>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Schedule */}
-        <div style={{ marginTop: 16 }}>
-          <Label>Расписание</Label>
-          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-            <ScheduleChip
-              active={scheduleType === "daily"}
-              onClick={() => setScheduleType("daily")}
-              label="каждый день"
-            />
-            <ScheduleChip
-              active={scheduleType === "weekdays"}
-              onClick={() => setScheduleType("weekdays")}
-              label="по дням"
-            />
-            <ScheduleChip
-              active={scheduleType === "n_per_week"}
-              onClick={() => setScheduleType("n_per_week")}
-              label="без расписания"
-            />
-          </div>
-          {scheduleType === "weekdays" && (
-            <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
-              {WEEKDAYS.map((d) => (
-                <button
-                  key={d.i}
-                  type="button"
-                  onClick={() => toggleDay(d.i)}
-                  style={{
-                    width: 40,
-                    height: 36,
-                    borderRadius: 999,
-                    border: days.includes(d.i) ? "1.5px solid var(--accent)" : "1px solid var(--hairline)",
-                    background: days.includes(d.i) ? "var(--accent-tint)" : "white",
-                    color: days.includes(d.i) ? "var(--accent-deep)" : "var(--text)",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                  }}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: "flex", gap: 10, marginTop: 24, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "stretch" }}>
           {isEdit && (
             <button
               type="button"
               onClick={remove}
               disabled={isPending}
+              className="tap"
               style={{
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1px solid var(--hairline)",
+                padding: "13px 14px",
+                borderRadius: 14,
+                border: "1px solid var(--ink-10)",
                 background: "transparent",
-                color: "#C46E5A",
+                color: "var(--alert)",
+                fontSize: 14,
                 cursor: "pointer",
-                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              Удалить
+              <Icons.Trash size={15} stroke="var(--alert)" strokeWidth={1.8} />
             </button>
           )}
           <button
             type="button"
             onClick={submit}
             disabled={isPending || !name.trim()}
+            className="tap"
             style={{
               flex: 1,
-              padding: "13px 16px",
-              borderRadius: 12,
+              padding: "15px 0",
+              borderRadius: 14,
+              background: name.trim()
+                ? "var(--mint-deep)"
+                : "rgba(79,156,106,0.4)",
+              color: "#fff",
               border: "none",
-              background: name.trim() ? "var(--accent)" : "var(--accent-soft)",
-              color: "white",
               cursor: name.trim() ? "pointer" : "not-allowed",
-              fontSize: 16,
-              fontWeight: 500,
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              boxShadow: name.trim()
+                ? "0 6px 16px rgba(79,156,106,0.4)"
+                : "none",
             }}
           >
             Готово
@@ -307,27 +341,30 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", opacity: 0.7 }}>
-      {children}
-    </div>
-  );
-}
-
-function ScheduleChip({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+function ScheduleChip({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
+      className="tap mono lower"
       style={{
         padding: "7px 12px",
-        borderRadius: 999,
-        border: active ? "1.5px solid var(--accent)" : "1px solid var(--hairline)",
-        background: active ? "var(--accent-tint)" : "white",
-        color: active ? "var(--accent-deep)" : "var(--text)",
-        fontSize: 13,
-        fontWeight: 500,
+        borderRadius: 10,
+        border: active
+          ? "1.5px solid var(--mint-deep)"
+          : "1px solid var(--ink-05)",
+        background: active ? "rgba(79,156,106,0.12)" : "var(--paper-warm)",
+        color: active ? "var(--mint-deep)" : "var(--ink)",
+        fontSize: 11.5,
+        fontWeight: 600,
         cursor: "pointer",
       }}
     >

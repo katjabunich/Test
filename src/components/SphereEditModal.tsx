@@ -2,11 +2,18 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
-import { createSphere, updateSphere, deleteSphere } from "@/lib/actions";
+import { createSphere, deleteSphere, updateSphere } from "@/lib/actions";
+import { Icons } from "@/components/Icons";
 
 const COLORS = [
-  "#7DAEC4", "#F5B5A8", "#F4C77A", "#E89B8E", "#9CA8B0",
-  "#0ABAB5", "#B5DCC4", "#D4B0E0", "#9DC9E8", "#E8C99B",
+  "#86c79a", // mint
+  "#f3a78b", // peach
+  "#f5c563", // butter
+  "#7d96a8", // pool
+  "#b5a3df", // lilac
+  "#e89bb0", // blush
+  "#0ABAB5", // tiffany
+  "#d96a52", // alert (use carefully)
 ];
 
 type Props = {
@@ -45,9 +52,17 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
     startTransition(async () => {
       try {
         if (isEdit && sphere) {
-          await updateSphere(sphere.id, { name: trimmed, color, emoji: emoji.trim() || null });
+          await updateSphere(sphere.id, {
+            name: trimmed,
+            color,
+            emoji: emoji.trim() || null,
+          });
         } else {
-          await createSphere({ name: trimmed, color, emoji: emoji.trim() || null });
+          await createSphere({
+            name: trimmed,
+            color,
+            emoji: emoji.trim() || null,
+          });
         }
         onClose();
       } catch (e) {
@@ -73,51 +88,66 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
     <div
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0,
-        background: "rgba(20, 30, 30, 0.25)",
-        backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+        position: "fixed",
+        inset: 0,
+        background: "rgba(45,38,32,0.45)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
         zIndex: 100,
-        display: "flex", alignItems: "flex-end", justifyContent: "center",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "100%", maxWidth: 430,
-          background: "var(--bg-base)",
-          borderTopLeftRadius: 28, borderTopRightRadius: 28,
-          padding: "20px 20px calc(20px + env(safe-area-inset-bottom))",
-          boxShadow: "0 -8px 32px rgba(10, 40, 40, 0.12)",
+          width: "100%",
+          maxWidth: 460,
+          background: "var(--paper)",
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 17, fontWeight: 500 }}>
-            {isEdit ? "Изменить сферу" : "Новая сфера"}
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="Закрыть"
-            style={{
-              width: 32, height: 32, borderRadius: 16, border: "none",
-              background: "rgba(0,0,0,0.04)", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </button>
+        <div
+          style={{
+            width: 40,
+            height: 4.5,
+            background: "var(--ink-20)",
+            borderRadius: 3,
+            margin: "0 auto 16px",
+          }}
+        />
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 14,
+            letterSpacing: "0.13em",
+          }}
+        >
+          {isEdit ? "СФЕРА" : "НОВАЯ СФЕРА"}
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value.slice(0, 4))}
             placeholder="✨"
             style={{
-              width: 56, padding: "12px 0",
-              fontSize: 22, border: "1px solid var(--hairline)",
-              borderRadius: 12, background: "white", outline: "none",
+              width: 56,
+              padding: "12px 0",
+              fontSize: 22,
+              border: "1px solid var(--ink-10)",
+              borderRadius: 12,
+              background: "var(--paper-warm)",
+              outline: "none",
               textAlign: "center",
             }}
           />
@@ -127,9 +157,15 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Название"
             style={{
-              flex: 1, padding: "12px 14px",
-              fontSize: 17, border: "1px solid var(--hairline)",
-              borderRadius: 12, background: "white", outline: "none",
+              flex: 1,
+              padding: "12px 14px",
+              fontSize: 16,
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              border: "1px solid var(--ink-10)",
+              borderRadius: 12,
+              background: "var(--paper-warm)",
+              outline: "none",
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -140,61 +176,87 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
           />
         </div>
 
-        <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", opacity: 0.7 }}>
-            Цвет
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                aria-label={c}
-                style={{
-                  width: 36, height: 36,
-                  borderRadius: "50%",
-                  background: c,
-                  border: color === c ? "2.5px solid var(--text)" : "2px solid white",
-                  cursor: "pointer",
-                  outline: color === c ? "2px solid white" : "none",
-                  outlineOffset: -4,
-                }}
-              />
-            ))}
-          </div>
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "0.1em",
+          }}
+        >
+          ЦВЕТ
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+          {COLORS.map((c) => (
+            <button
+              type="button"
+              key={c}
+              onClick={() => setColor(c)}
+              aria-label={c}
+              className="tap"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                background: c,
+                border:
+                  color === c
+                    ? "2.5px solid var(--ink)"
+                    : "2px solid var(--paper)",
+                outline: color === c ? "2px solid var(--paper)" : "none",
+                outlineOffset: -4,
+                cursor: "pointer",
+              }}
+            />
+          ))}
         </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "stretch" }}>
           {isEdit && (
             <button
               type="button"
               onClick={remove}
               disabled={isPending}
+              className="tap"
               style={{
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1px solid var(--hairline)",
+                padding: "13px 14px",
+                borderRadius: 14,
+                border: "1px solid var(--ink-10)",
                 background: "transparent",
-                color: "#C46E5A",
+                color: "var(--alert)",
+                fontSize: 14,
                 cursor: "pointer",
-                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              Удалить
+              <Icons.Trash size={15} stroke="var(--alert)" strokeWidth={1.8} />
             </button>
           )}
           <button
             type="button"
             onClick={submit}
             disabled={isPending || !name.trim()}
+            className="tap"
             style={{
-              flex: 1, padding: "13px 16px",
-              borderRadius: 12, border: "none",
-              background: name.trim() ? "var(--accent)" : "var(--accent-soft)",
-              color: "white",
+              flex: 1,
+              padding: "15px 0",
+              borderRadius: 14,
+              background: name.trim()
+                ? "var(--mint-deep)"
+                : "rgba(79,156,106,0.4)",
+              color: "#fff",
+              border: "none",
               cursor: name.trim() ? "pointer" : "not-allowed",
-              fontSize: 16, fontWeight: 500,
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              boxShadow: name.trim()
+                ? "0 6px 16px rgba(79,156,106,0.4)"
+                : "none",
             }}
           >
             Готово

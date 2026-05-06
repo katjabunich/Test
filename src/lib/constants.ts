@@ -8,11 +8,11 @@ export type DefaultSphere = {
   emoji: string;
 };
 
-/* Default spheres seeded on first load. User can edit/delete in /settings. */
+/* Default spheres (v4 palette). User can edit/delete in /settings. */
 export const DEFAULT_SPHERES: DefaultSphere[] = [
-  { name: "Работа",      color: "#7DAEC4", emoji: "💼" },
-  { name: "Дом",         color: "#F5B5A8", emoji: "🏡" },
-  { name: "Канал",       color: "#F4C77A", emoji: "✨" },
-  { name: "Голландский", color: "#E89B8E", emoji: "🇳🇱" },
-  { name: "AI",          color: "#9CA8B0", emoji: "🤖" },
+  { name: "Работа",      color: "#f3a78b", emoji: "💼" },
+  { name: "Канал",       color: "#f5c563", emoji: "✨" },
+  { name: "Дом",         color: "#86c79a", emoji: "🏡" },
+  { name: "Голландский", color: "#7d96a8", emoji: "🇳🇱" },
+  { name: "AI",          color: "#b5a3df", emoji: "🤖" },
 ];

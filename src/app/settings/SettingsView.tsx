@@ -3,73 +3,80 @@
 import { useState } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
+import { Icons, SphereIcon } from "@/components/Icons";
 
 export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
 
   return (
-    <div style={{ padding: "20px 16px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="card" style={{ padding: "20px 22px" }}>
-        <div className="eyebrow" style={{ marginBottom: 6 }}>настройки</div>
-        <h1
+    <>
+      <div style={{ padding: "8px 22px 18px" }}>
+        <div
+          className="mono"
           style={{
-            fontSize: 26,
+            fontSize: 10.5,
             fontWeight: 600,
-            letterSpacing: "-0.025em",
-            margin: 0,
-            color: "var(--text-display)",
-            lineHeight: 1.1,
+            color: "var(--ink-60)",
+            marginBottom: 8,
+            letterSpacing: "0.13em",
           }}
         >
-          сферы и аккаунт
+          ПЕРСОНАЛИЗАЦИЯ
+        </div>
+        <h1
+          style={{
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.04em",
+            lineHeight: 0.95,
+            color: "var(--ink)",
+            margin: 0,
+          }}
+        >
+          Настройки<span style={{ color: "var(--mint-deep)" }}>.</span>
         </h1>
       </div>
 
-      <div className="card" style={{ padding: "16px 6px 8px" }}>
+      <div style={{ padding: "0 18px" }}>
         <div
+          className="mono"
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 16px",
-            marginBottom: 6,
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            padding: "0 4px 10px",
+            letterSpacing: "0.1em",
           }}
         >
-          <div className="label">
-            сферы · <span className="tnum">{spheres.length}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setEditing(null);
-              setModalOpen(true);
-            }}
-            className="tap"
-            style={{
-              fontSize: 13,
-              padding: "6px 12px",
-              borderRadius: 999,
-              border: "1px solid var(--accent-soft)",
-              background: "var(--accent-cream)",
-              color: "var(--accent-deep)",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            + Добавить
-          </button>
+          СФЕРЫ ЖИЗНИ
         </div>
 
-        {spheres.length === 0 ? (
-          <div style={{ padding: "24px 14px", textAlign: "center", color: "var(--text-muted)" }}>
-            Пока пусто.
-          </div>
-        ) : (
-          spheres.map((s, i) => (
-            <div key={s.id}>
+        <div
+          style={{
+            background: "var(--paper-warm)",
+            borderRadius: 18,
+            border: "1px solid var(--ink-05)",
+            overflow: "hidden",
+            marginBottom: 10,
+          }}
+        >
+          {spheres.length === 0 ? (
+            <div
+              style={{
+                padding: "24px 14px",
+                textAlign: "center",
+                color: "var(--ink-60)",
+                fontSize: 14,
+              }}
+            >
+              Пока пусто.
+            </div>
+          ) : (
+            spheres.map((s, i) => (
               <button
                 type="button"
+                key={s.id}
                 onClick={() => {
                   setEditing(s);
                   setModalOpen(true);
@@ -79,72 +86,192 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
                   width: "100%",
                   display: "flex",
                   alignItems: "center",
-                  gap: 14,
-                  padding: "14px 16px",
+                  gap: 12,
+                  padding: "12px 14px",
+                  borderBottom:
+                    i === spheres.length - 1
+                      ? "none"
+                      : "1px solid var(--ink-05)",
                   background: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  color: "var(--text)",
                   textAlign: "left",
                 }}
               >
                 <span
                   style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 12,
-                    background: `linear-gradient(140deg, ${s.color}33, ${s.color}1A)`,
-                    border: `1px solid ${s.color}40`,
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    background: s.color,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 18,
                     flexShrink: 0,
                   }}
                 >
-                  {s.emoji || "•"}
+                  <SphereIcon
+                    name={s.name}
+                    size={18}
+                    stroke="var(--ink)"
+                    strokeWidth={2}
+                  />
                 </span>
-                <span style={{ flex: 1, fontSize: 15.5, fontWeight: 500, letterSpacing: "-0.005em" }}>
-                  {s.name}
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: 15,
+                      fontWeight: 500,
+                      color: "var(--ink)",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {s.name}
+                  </span>
                 </span>
-                <span
-                  style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: "50%",
-                    background: s.color,
-                    boxShadow: `0 0 0 2px ${s.color}1A`,
-                    flexShrink: 0,
-                  }}
-                />
-                <span style={{ fontSize: 14, color: "var(--text-faint)" }}>›</span>
+                <Icons.Chevron size={16} stroke="var(--ink-40)" />
               </button>
-              {i < spheres.length - 1 && (
-                <div style={{ height: 1, background: "var(--hairline-soft)", margin: "0 16px" }} />
-              )}
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      <p
-        style={{
-          marginTop: 12,
-          padding: "0 22px",
-          fontSize: 12,
-          color: "var(--text-faint)",
-          lineHeight: 1.6,
-        }}
-      >
-        v1 · приложение для одного пользователя.<br />
-        В следующих версиях: вход, цели и стратегия, экспорт данных.
-      </p>
+        <button
+          type="button"
+          onClick={() => {
+            setEditing(null);
+            setModalOpen(true);
+          }}
+          className="tap mono lower"
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 14,
+            border: "1.5px dashed var(--ink-20)",
+            background: "transparent",
+            textAlign: "center",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            cursor: "pointer",
+            marginBottom: 24,
+          }}
+        >
+          + Добавить сферу
+        </button>
+
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            padding: "0 4px 10px",
+            letterSpacing: "0.1em",
+          }}
+        >
+          ПРИЛОЖЕНИЕ
+        </div>
+
+        <div
+          style={{
+            background: "var(--paper-warm)",
+            borderRadius: 18,
+            border: "1px solid var(--ink-05)",
+            overflow: "hidden",
+          }}
+        >
+          <SettingsRow
+            Icon={Icons.Phone}
+            label="Установить на главный"
+            value="PWA"
+            accent
+          />
+          <SettingsRow
+            Icon={Icons.Bell}
+            label="Уведомления"
+            value="—"
+            disabled
+          />
+          <SettingsRow
+            Icon={Icons.Cloud}
+            label="Резервная копия"
+            value="облако"
+            disabled
+            last
+          />
+        </div>
+
+        <p
+          style={{
+            marginTop: 22,
+            padding: "0 6px",
+            fontSize: 12,
+            color: "var(--ink-40)",
+            lineHeight: 1.6,
+          }}
+        >
+          v1 · приложение для одного пользователя.
+          <br />
+          Дальше: вход, цели, экспорт.
+        </p>
+      </div>
 
       <SphereEditModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         sphere={editing}
       />
+    </>
+  );
+}
+
+function SettingsRow({
+  Icon,
+  label,
+  value,
+  accent,
+  disabled,
+  last,
+}: {
+  Icon: (p: { size?: number; stroke?: string; strokeWidth?: number }) => React.JSX.Element;
+  label: string;
+  value: string;
+  accent?: boolean;
+  disabled?: boolean;
+  last?: boolean;
+}) {
+  const accentColor = accent ? "var(--mint-deep)" : "var(--ink-60)";
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "14px",
+        borderBottom: last ? "none" : "1px solid var(--ink-05)",
+        opacity: disabled ? 0.55 : 1,
+      }}
+    >
+      <Icon size={18} stroke={accentColor} strokeWidth={1.8} />
+      <span
+        style={{
+          flex: 1,
+          fontSize: 14.5,
+          fontWeight: accent ? 600 : 500,
+          color: "var(--ink)",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        className="mono lower"
+        style={{ fontSize: 11, fontWeight: 600, color: accentColor }}
+      >
+        {value}
+      </span>
+      <Icons.Chevron size={15} stroke="var(--ink-40)" />
     </div>
   );
 }

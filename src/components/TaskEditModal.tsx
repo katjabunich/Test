@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import type { Sphere, Task, Recurrence } from "@/lib/data";
-import { createTask, updateTask, deleteTask } from "@/lib/actions";
-import { RECURRENCE_LABELS } from "@/lib/recurrence";
+import type { Recurrence, Sphere, Task } from "@/lib/data";
+import { createTask, deleteTask, updateTask } from "@/lib/actions";
+import { Icons, SphereIcon } from "@/components/Icons";
+import { fromIsoDate, today as todayIso } from "@/lib/date";
+
+const RECURRENCE_LABELS: Record<NonNullable<Recurrence>, string> = {
+  daily: "каждый день",
+  weekly: "каждую неделю",
+  biweekly: "раз в 2 недели",
+  monthly: "каждый месяц",
+};
 
 type Props = {
   open: boolean;
@@ -13,11 +21,15 @@ type Props = {
   defaultSphereId?: string | null;
 };
 
-const RECURRENCES: Recurrence[] = [null, "daily", "weekly", "biweekly", "monthly"];
-
-export default function TaskEditModal({ open, onClose, task, spheres, defaultSphereId }: Props) {
+export default function TaskEditModal({
+  open,
+  onClose,
+  task,
+  spheres,
+  defaultSphereId,
+}: Props) {
   const isEdit = !!task;
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [title, setTitle] = useState("");
   const [sphereId, setSphereId] = useState<string | null>(null);
@@ -25,6 +37,8 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
   const [doToday, setDoToday] = useState(false);
   const [note, setNote] = useState("");
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
+  const [recurrenceOpen, setRecurrenceOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -36,6 +50,7 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
       setDoToday(task.do_today);
       setNote(task.note ?? "");
       setRecurrence(task.recurrence);
+      setNoteOpen(!!task.note);
     } else {
       setTitle("");
       setSphereId(defaultSphereId ?? null);
@@ -43,7 +58,9 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
       setDoToday(false);
       setNote("");
       setRecurrence(null);
+      setNoteOpen(false);
     }
+    setRecurrenceOpen(false);
     setTimeout(() => inputRef.current?.focus(), 50);
   }, [open, task, defaultSphereId]);
 
@@ -62,11 +79,8 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
           note: note.trim() || null,
           recurrence,
         };
-        if (isEdit && task) {
-          await updateTask(task.id, payload);
-        } else {
-          await createTask(payload);
-        }
+        if (isEdit && task) await updateTask(task.id, payload);
+        else await createTask(payload);
         onClose();
       } catch (e) {
         console.error(e);
@@ -87,15 +101,22 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
     });
   }
 
+  const dateLabel = (() => {
+    if (!dueDate) return "—";
+    if (dueDate === todayIso()) return "Сегодня";
+    const d = fromIsoDate(dueDate);
+    return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+  })();
+
   return (
     <div
       onClick={onClose}
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(20, 30, 30, 0.25)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        background: "rgba(45,38,32,0.45)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
         zIndex: 100,
         display: "flex",
         alignItems: "flex-end",
@@ -106,134 +127,206 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: 430,
-          background: "var(--bg-base)",
+          maxWidth: 460,
+          background: "var(--paper)",
           borderTopLeftRadius: 28,
           borderTopRightRadius: 28,
-          padding: "20px 20px calc(20px + env(safe-area-inset-bottom))",
+          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -8px 32px rgba(10, 40, 40, 0.12)",
+          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 17, fontWeight: 500 }}>
-            {isEdit ? "Изменить" : "Новая задача"}
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="Закрыть"
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              border: "none",
-              background: "rgba(0,0,0,0.04)",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </button>
-        </div>
-
-        <input
-          ref={inputRef}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Что нужно сделать"
+        <div
           style={{
-            width: "100%",
-            padding: "12px 14px",
-            fontSize: 17,
-            border: "1px solid var(--hairline)",
-            borderRadius: 12,
-            background: "white",
-            outline: "none",
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
+            width: 40,
+            height: 4.5,
+            background: "var(--ink-20)",
+            borderRadius: 3,
+            margin: "0 auto 16px",
           }}
         />
-
-        {/* Spheres */}
-        <div style={{ marginTop: 16 }}>
-          <Label>Сфера</Label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-            <SphereButton
-              selected={sphereId === null}
-              color="#9CA8B0"
-              label="Без сферы"
-              onClick={() => setSphereId(null)}
-            />
-            {spheres.map((s) => (
-              <SphereButton
-                key={s.id}
-                selected={sphereId === s.id}
-                color={s.color}
-                label={s.name}
-                emoji={s.emoji ?? undefined}
-                onClick={() => setSphereId(s.id)}
-              />
-            ))}
-          </div>
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 14,
+            letterSpacing: "0.13em",
+          }}
+        >
+          {isEdit ? "ЗАДАЧА" : "НОВАЯ ЗАДАЧА"}
         </div>
 
-        {/* Date + Do today */}
-        <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "stretch" }}>
-          <div style={{ flex: 1 }}>
-            <Label>Дата</Label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+        {/* Title input with mintDeep underline */}
+        <div
+          style={{
+            borderBottom: "2px solid var(--mint-deep)",
+            paddingBottom: 12,
+            marginBottom: 18,
+          }}
+        >
+          <textarea
+            ref={inputRef}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Что нужно сделать"
+            rows={2}
+            style={{
+              width: "100%",
+              fontFamily: "inherit",
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: "-0.018em",
+              lineHeight: 1.2,
+              color: "var(--ink)",
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              resize: "none",
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+          />
+        </div>
+
+        {/* СФЕРА */}
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "0.1em",
+          }}
+        >
+          СФЕРА
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            marginBottom: 18,
+          }}
+        >
+          <SphereChipButton
+            active={sphereId === null}
+            label="Без"
+            onClick={() => setSphereId(null)}
+          />
+          {spheres.map((s) => (
+            <SphereChipButton
+              key={s.id}
+              active={sphereId === s.id}
+              label={s.name}
+              color={s.color}
+              onClick={() => setSphereId(s.id)}
+            />
+          ))}
+        </div>
+
+        {/* Rows */}
+        <Row Icon={Icons.Calendar} label="Дата">
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            style={{
+              fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
+              fontSize: 12,
+              fontWeight: 600,
+              color: dueDate === todayIso() ? "var(--mint-deep)" : "var(--ink-80)",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              textAlign: "right",
+              padding: 0,
+            }}
+          />
+          {!dueDate && (
+            <span
+              className="mono lower"
               style={{
-                width: "100%",
-                padding: "10px 12px",
-                marginTop: 8,
-                fontSize: 15,
-                border: "1px solid var(--hairline)",
-                borderRadius: 12,
-                background: "white",
-                outline: "none",
-                colorScheme: "light",
+                fontSize: 11,
+                fontWeight: 600,
+                color: "var(--ink-40)",
               }}
-            />
-          </div>
-          <div style={{ flexShrink: 0, paddingTop: 24 }}>
-            <ToggleChip
-              active={doToday}
-              onClick={() => setDoToday(!doToday)}
-              label="сегодня"
-            />
-          </div>
-        </div>
+            >
+              {dateLabel}
+            </span>
+          )}
+        </Row>
 
-        {/* Recurrence */}
-        <div style={{ marginTop: 16 }}>
-          <Label>Повтор</Label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-            {RECURRENCES.map((r) => (
-              <ToggleChip
-                key={r ?? "none"}
-                active={recurrence === r}
-                onClick={() => setRecurrence(r)}
-                label={r ? RECURRENCE_LABELS[r] : "не повторять"}
-              />
-            ))}
-          </div>
-        </div>
+        <Row Icon={Icons.Sun} label="На сегодня">
+          <Toggle on={doToday} onChange={setDoToday} />
+        </Row>
 
-        {/* Note */}
-        <div style={{ marginTop: 16 }}>
-          <Label>Заметка</Label>
+        <Row
+          Icon={Icons.Repeat}
+          label="Повтор"
+          onClick={() => setRecurrenceOpen((v) => !v)}
+        >
+          <span
+            className="mono lower"
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: recurrence ? "var(--ink-80)" : "var(--ink-40)",
+            }}
+          >
+            {recurrence ? RECURRENCE_LABELS[recurrence] : "не повторять"}
+          </span>
+        </Row>
+        {recurrenceOpen && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              padding: "4px 0 12px",
+            }}
+          >
+            {([null, "daily", "weekly", "biweekly", "monthly"] as Recurrence[]).map(
+              (r) => (
+                <SphereChipButton
+                  key={r ?? "none"}
+                  active={recurrence === r}
+                  label={r ? RECURRENCE_LABELS[r] : "не повторять"}
+                  onClick={() => {
+                    setRecurrence(r);
+                    setRecurrenceOpen(false);
+                  }}
+                />
+              ),
+            )}
+          </div>
+        )}
+
+        <Row
+          Icon={Icons.Note}
+          label="Заметка"
+          onClick={() => setNoteOpen((v) => !v)}
+          last={!noteOpen}
+        >
+          <span
+            className="mono lower"
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: note ? "var(--ink-80)" : "var(--ink-40)",
+            }}
+          >
+            {note ? `${note.slice(0, 14)}${note.length > 14 ? "…" : ""}` : "добавить…"}
+          </span>
+        </Row>
+        {noteOpen && (
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -241,54 +334,73 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
             rows={3}
             style={{
               width: "100%",
-              padding: "10px 12px",
-              marginTop: 8,
-              fontSize: 15,
-              border: "1px solid var(--hairline)",
+              padding: "12px 14px",
+              fontSize: 14,
+              border: "1px solid var(--ink-10)",
               borderRadius: 12,
-              background: "white",
+              background: "var(--paper-warm)",
               outline: "none",
+              fontFamily: "inherit",
               resize: "vertical",
-              minHeight: 60,
+              minHeight: 70,
+              marginTop: 2,
             }}
           />
-        </div>
+        )}
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 10, marginTop: 24, alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            marginTop: 18,
+            alignItems: "stretch",
+          }}
+        >
           {isEdit && (
             <button
               type="button"
               onClick={remove}
               disabled={isPending}
+              className="tap"
               style={{
-                padding: "12px 14px",
-                borderRadius: 12,
-                border: "1px solid var(--hairline)",
+                padding: "13px 14px",
+                borderRadius: 14,
+                border: "1px solid var(--ink-10)",
                 background: "transparent",
-                color: "#C46E5A",
+                color: "var(--alert)",
+                fontSize: 14,
+                fontWeight: 500,
                 cursor: "pointer",
-                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              Удалить
+              <Icons.Trash size={15} stroke="var(--alert)" strokeWidth={1.8} />
             </button>
           )}
           <button
             type="button"
             onClick={submit}
             disabled={isPending || !title.trim()}
+            className="tap"
             style={{
               flex: 1,
-              padding: "13px 16px",
-              borderRadius: 12,
+              padding: "15px 0",
+              borderRadius: 14,
+              background: title.trim()
+                ? "var(--mint-deep)"
+                : "rgba(79,156,106,0.4)",
+              color: "#fff",
               border: "none",
-              background: title.trim() ? "var(--accent)" : "var(--accent-soft)",
-              color: "white",
               cursor: title.trim() ? "pointer" : "not-allowed",
-              fontSize: 16,
-              fontWeight: 500,
-              transition: "background 150ms ease",
+              fontSize: 15,
+              fontWeight: 600,
+              letterSpacing: "-0.01em",
+              boxShadow: title.trim()
+                ? "0 6px 16px rgba(79,156,106,0.4)"
+                : "none",
             }}
           >
             Готово
@@ -299,85 +411,130 @@ export default function TaskEditModal({ open, onClose, task, spheres, defaultSph
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Row({
+  Icon,
+  label,
+  children,
+  onClick,
+  last,
+}: {
+  Icon: (p: { size?: number; stroke?: string; strokeWidth?: number }) => React.JSX.Element;
+  label: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+  last?: boolean;
+}) {
   return (
     <div
+      onClick={onClick}
       style={{
-        fontSize: 11,
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        color: "var(--text-muted)",
-        opacity: 0.7,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "12px 0",
+        borderBottom: last ? "none" : "1px solid var(--ink-05)",
+        cursor: onClick ? "pointer" : "default",
       }}
     >
+      <Icon size={17} stroke="var(--ink-60)" strokeWidth={1.8} />
+      <div
+        style={{
+          flex: 1,
+          fontSize: 14,
+          fontWeight: 500,
+          color: "var(--ink)",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {label}
+      </div>
       {children}
     </div>
   );
 }
 
-function SphereButton({
-  selected,
-  color,
+function SphereChipButton({
+  active,
   label,
-  emoji,
+  color,
   onClick,
 }: {
-  selected: boolean;
-  color: string;
+  active: boolean;
   label: string;
-  emoji?: string;
+  color?: string;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      className="tap mono lower"
       style={{
+        padding: "6px 11px",
+        borderRadius: 10,
+        background: active && color ? color : "var(--paper-warm)",
+        border: `1px solid ${active && color ? color : "var(--ink-05)"}`,
+        color: "var(--ink)",
+        fontSize: 11,
+        fontWeight: 600,
+        cursor: "pointer",
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        padding: "7px 11px",
-        borderRadius: 999,
-        border: selected ? `1.5px solid ${color}` : "1px solid var(--hairline)",
-        background: selected ? `${color}26` : "white",
-        color: "var(--text)",
-        fontSize: 13,
-        fontWeight: 500,
-        cursor: "pointer",
+        letterSpacing: "0.01em",
       }}
     >
-      <span style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-      {emoji && <span>{emoji}</span>}
-      <span>{label}</span>
+      {color && (
+        <SphereIcon
+          name={label}
+          size={11}
+          stroke="var(--ink)"
+          strokeWidth={2.2}
+        />
+      )}
+      {label}
     </button>
   );
 }
 
-function ToggleChip({
-  active,
-  onClick,
-  label,
+function Toggle({
+  on,
+  onChange,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
+  on: boolean;
+  onChange: (v: boolean) => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => onChange(!on)}
+      role="switch"
+      aria-checked={on}
       style={{
-        padding: "7px 12px",
-        borderRadius: 999,
-        border: active ? "1.5px solid var(--accent)" : "1px solid var(--hairline)",
-        background: active ? "var(--accent-tint)" : "white",
-        color: active ? "var(--accent-deep)" : "var(--text)",
-        fontSize: 13,
-        fontWeight: 500,
+        width: 40,
+        height: 24,
+        borderRadius: 12,
+        background: on ? "var(--mint-deep)" : "var(--ink-20)",
+        position: "relative",
+        border: "none",
         cursor: "pointer",
+        transition: "background 200ms var(--ease-out)",
+        flexShrink: 0,
       }}
     >
-      {label}
+      <div
+        style={{
+          position: "absolute",
+          left: on ? 18 : 2,
+          top: 2,
+          width: 20,
+          height: 20,
+          borderRadius: 10,
+          background: "#fff",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+          transition: "left 220ms var(--ease-spring)",
+        }}
+      />
     </button>
   );
 }
