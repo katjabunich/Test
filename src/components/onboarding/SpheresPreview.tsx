@@ -5,7 +5,7 @@ import MockTasksContent from "@/components/onboarding/MockTasksContent";
 
 export default function SpheresPreview() {
   return (
-    <PhoneFrame tilt={2}>
+    <PhoneFrame tilt={3}>
       <MockTasksContent />
     </PhoneFrame>
   );

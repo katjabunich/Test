@@ -5,38 +5,48 @@ import { Icons } from "@/components/Icons";
 import HeroPreview from "@/components/onboarding/HeroPreview";
 import SpheresPreview from "@/components/onboarding/SpheresPreview";
 import RingPreview from "@/components/onboarding/RingPreview";
+import SlideBackground from "@/components/onboarding/SlideBackground";
+import FloatingDecor from "@/components/onboarding/FloatingDecor";
 
 const STORAGE_KEY = "dela.onboarded.v1";
 
 type Slide = {
   eyebrow: string;
+  eyebrowDot: string;     // sphere-style colour dot before the eyebrow
   title: string;
   body: string;
   cta: string;
   visual: React.ReactNode;
+  tilt: number;
 };
 
 const SLIDES: Slide[] = [
   {
-    eyebrow: "ПЕРВЫЙ ВЗГЛЯД",
+    eyebrow: "Первый взгляд",
+    eyebrowDot: "#f5c563",
     title: "Доброе утро",
     body: "Открываешь утром — и сразу видно, что делать сегодня. Без вкладок и поиска.",
     cta: "Дальше",
     visual: <HeroPreview />,
+    tilt: -4,
   },
   {
-    eyebrow: "КАК ЭТО УСТРОЕНО",
+    eyebrow: "Как это устроено",
+    eyebrowDot: "#86c79a",
     title: "Своя жизнь по сферам",
     body: "Работа, дом, канал, голландский, AI — у каждой свой цвет. Сразу видно, что относится к чему.",
     cta: "Дальше",
     visual: <SpheresPreview />,
+    tilt: 3,
   },
   {
-    eyebrow: "ЕЖЕДНЕВНЫЙ РИТМ",
+    eyebrow: "Ежедневный ритм",
+    eyebrowDot: "#b5a3df",
     title: "7 дней подряд — праздник",
     body: "Тап по кольцу — отметила. Дойдёшь до 7, 30, 100 дней — будут конфетти.",
     cta: "Готова, поехали",
     visual: <RingPreview />,
+    tilt: -3,
   },
 ];
 
@@ -76,38 +86,20 @@ export default function Onboarding() {
         overflow: "hidden",
       }}
     >
-      {/* Soft mint wash top-right */}
+      {/* Vivid mesh background per slide — re-mounts on step change so its
+         crossfade re-fires. */}
       <div
-        aria-hidden
+        key={`bg-${step}`}
         style={{
           position: "absolute",
-          top: -180,
-          right: -150,
-          width: 460,
-          height: 460,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(closest-side, rgba(134,199,154,0.28), transparent 70%)",
-          pointerEvents: "none",
+          inset: 0,
+          animation: "slide-in 600ms var(--ease-out) both",
         }}
-      />
-      {/* Soft peach bottom-left */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          bottom: -200,
-          left: -150,
-          width: 460,
-          height: 460,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(closest-side, rgba(243,167,139,0.22), transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
+      >
+        <SlideBackground variant={step as 0 | 1 | 2} />
+      </div>
 
-      {/* Top bar */}
+      {/* Top bar: pagination + skip */}
       <div
         style={{
           padding: "20px 22px 0",
@@ -116,6 +108,7 @@ export default function Onboarding() {
           gap: 16,
           position: "relative",
           flexShrink: 0,
+          zIndex: 2,
         }}
       >
         <div style={{ display: "flex", gap: 6 }}>
@@ -137,82 +130,93 @@ export default function Onboarding() {
         <button
           type="button"
           onClick={finish}
-          className="tap mono lower"
+          className="tap"
           style={{
             background: "transparent",
             border: "none",
             color: "var(--ink-60)",
-            fontSize: 11,
-            fontWeight: 600,
+            fontSize: 14,
+            fontWeight: 500,
             padding: "4px 8px",
             cursor: "pointer",
-            letterSpacing: "0.13em",
-            textTransform: "uppercase",
+            letterSpacing: "-0.005em",
           }}
         >
-          Пропустить
+          пропустить
         </button>
       </div>
 
-      {/* Phone mockup — hero of each slide */}
-      <PhoneStage step={step}>
-        <div
-          key={step}
-          style={{
-            animation: "splash-in 460ms var(--ease-spring) both",
-          }}
-        >
-          {slide.visual}
-        </div>
+      {/* Phone stage with floating decor */}
+      <PhoneStage step={step} variant={step as 0 | 1 | 2}>
+        {slide.visual}
       </PhoneStage>
 
-      {/* Text + CTA */}
+      {/* Text */}
       <div
         style={{
           padding: "0 28px 0",
           flexShrink: 0,
           position: "relative",
+          zIndex: 2,
         }}
         key={`text-${step}`}
       >
         <div
-          className="mono"
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "var(--mint-deep)",
-            letterSpacing: "0.14em",
-            marginBottom: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 10,
             opacity: 0,
-            animation: "slide-in 320ms 80ms var(--ease-out) forwards",
+            animation: "slide-in 360ms 80ms var(--ease-out) forwards",
           }}
         >
-          {slide.eyebrow}
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              background: slide.eyebrowDot,
+              boxShadow: `0 0 0 3px ${slide.eyebrowDot}33`,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {slide.eyebrow}
+          </span>
         </div>
         <h2
-          aria-label={`${slide.title}.`}
           style={{
-            fontSize: 26,
+            fontSize: 30,
             fontWeight: 700,
-            letterSpacing: "-0.028em",
-            lineHeight: 1.08,
+            letterSpacing: "-0.032em",
+            lineHeight: 1.05,
             color: "var(--ink)",
             margin: 0,
-            marginBottom: 10,
+            marginBottom: 12,
+            opacity: 0,
+            animation: "slide-in 460ms 200ms var(--ease-out) forwards",
+            textWrap: "balance" as React.CSSProperties["textWrap"],
           }}
         >
-          <StaggeredHeading text={slide.title} />
+          {slide.title}
           <span style={{ color: "var(--mint-deep)" }}>.</span>
         </h2>
         <p
           style={{
-            fontSize: 14.5,
-            color: "var(--ink-60)",
+            fontSize: 15.5,
+            color: "var(--ink-80)",
             lineHeight: 1.5,
             letterSpacing: "-0.005em",
             margin: 0,
             opacity: 0,
-            animation: "slide-in 360ms 600ms var(--ease-out) forwards",
+            animation: "slide-in 420ms 380ms var(--ease-out) forwards",
             maxWidth: 380,
           }}
         >
@@ -227,6 +231,7 @@ export default function Onboarding() {
           justifyContent: "flex-end",
           position: "relative",
           flexShrink: 0,
+          zIndex: 2,
         }}
       >
         <button
@@ -237,7 +242,7 @@ export default function Onboarding() {
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            padding: "13px 22px",
+            padding: "14px 24px",
             borderRadius: 999,
             background: "var(--mint-deep)",
             color: "#fff",
@@ -246,26 +251,28 @@ export default function Onboarding() {
             fontSize: 15,
             fontWeight: 600,
             letterSpacing: "-0.01em",
-            boxShadow: "0 6px 16px rgba(79,156,106,0.4)",
+            boxShadow:
+              "0 6px 16px rgba(79,156,106,0.4), 0 1px 0 rgba(255,255,255,0.25) inset",
           }}
         >
           {slide.cta}
-          <Icons.Chevron size={16} stroke="#fff" strokeWidth={2.2} />
+          <Icons.Chevron size={16} stroke="#fff" strokeWidth={2.4} />
         </button>
       </div>
     </div>
   );
 }
 
-/** Wraps the phone visual in a scaled stage so a fixed-pixel 220×475
-   PhoneFrame fits any viewport. Also key={step} so the entry animation
-   re-fires on slide change. */
+/** Wraps the phone visual in a scaled stage and overlays floating decor.
+   The fixed-pixel 220×475 PhoneFrame fits any viewport via this scale. */
 function PhoneStage({
   children,
-  step: _step,
+  step,
+  variant,
 }: {
   children: React.ReactNode;
   step: number;
+  variant: 0 | 1 | 2;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -274,9 +281,8 @@ function PhoneStage({
     const update = () => {
       if (!ref.current) return;
       const rect = ref.current.getBoundingClientRect();
-      // Phone natural size 220×475 plus a little gap for the tilt overflow.
-      const targetW = 230;
-      const targetH = 490;
+      const targetW = 250; // a bit of margin for floating decor + tilt
+      const targetH = 500;
       const s = Math.min(1, rect.width / targetW, rect.height / targetH);
       setScale(s);
     };
@@ -294,40 +300,51 @@ function PhoneStage({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "12px 0",
+        padding: "10px 0",
         position: "relative",
+        zIndex: 2,
       }}
     >
       <div
+        key={`phone-${step}`}
         style={{
-          transform: `scale(${scale})`,
-          transformOrigin: "center",
+          position: "relative",
+          width: 250 * scale,
+          height: 500 * scale,
+          animation: "splash-in 540ms var(--ease-spring) both",
         }}
       >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function StaggeredHeading({ text }: { text: string }) {
-  const chars = Array.from(text);
-  const stepMs = chars.length > 18 ? 18 : 28;
-  return (
-    <>
-      {chars.map((ch, i) => (
-        <span
-          key={i}
+        {/* Floating decor sits in the same scaled box as the phone so it
+           tracks together. Decor positions are percentages relative to
+           this container. */}
+        <div
           style={{
-            display: "inline-block",
-            whiteSpace: "pre",
-            opacity: 0,
-            animation: `text-stagger-in 360ms ${i * stepMs}ms var(--ease-out) forwards`,
+            position: "absolute",
+            inset: 0,
+            transform: `scale(${scale})`,
+            transformOrigin: "center",
           }}
         >
-          {ch}
-        </span>
-      ))}
-    </>
+          {/* Phone is centred inside this 250×500 box */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            {children}
+          </div>
+          <FloatingDecor variant={variant} />
+        </div>
+      </div>
+      <style>{`
+        @keyframes decor-float {
+          0%   { transform: translateY(0)   var(--decor-rot, rotate(0deg)); }
+          100% { transform: translateY(-6px) var(--decor-rot, rotate(0deg)); }
+        }
+      `}</style>
+    </div>
   );
 }

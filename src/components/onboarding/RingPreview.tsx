@@ -16,7 +16,7 @@ export default function RingPreview() {
   }, []);
 
   return (
-    <PhoneFrame tilt={-2}>
+    <PhoneFrame tilt={-3}>
       <MockHabitContent />
     </PhoneFrame>
   );
