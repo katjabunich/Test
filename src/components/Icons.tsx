@@ -161,6 +161,62 @@ export const Icons = {
 
 export type IconKey = keyof typeof Icons;
 
+/** Curated set of habit icons — surfaced in the habit edit modal as
+   quick-pick chips. The user can also type a custom emoji. */
+export const HABIT_PRESET_ICONS: IconKey[] = [
+  "Drop", "Run", "Book", "Lotus", "Globe", "Smile", "Cpu", "Note",
+];
+
+/** Storage convention: habit.emoji holds either ":<IconKey>" (built-in
+   line-art icon) or a custom emoji character. parseHabitIcon decodes it. */
+export function parseHabitIcon(value: string | null | undefined):
+  | { kind: "icon"; iconKey: IconKey }
+  | { kind: "emoji"; emoji: string }
+  | { kind: "none" } {
+  if (!value) return { kind: "none" };
+  if (value.startsWith(":")) {
+    const key = value.slice(1);
+    if (key in Icons) return { kind: "icon", iconKey: key as IconKey };
+  }
+  return { kind: "emoji", emoji: value };
+}
+
+/** Render whatever a habit's stored icon-or-emoji evaluates to. Used inside
+   habit rings + habit cards. Falls back to a small dot if nothing is set. */
+export function HabitIcon({
+  value,
+  size,
+  stroke,
+  strokeWidth,
+}: {
+  value: string | null | undefined;
+  size: number;
+  stroke?: string;
+  strokeWidth?: number;
+}) {
+  const parsed = parseHabitIcon(value);
+  if (parsed.kind === "icon") {
+    const Comp = Icons[parsed.iconKey];
+    return <Comp size={size} stroke={stroke} strokeWidth={strokeWidth ?? 2} />;
+  }
+  if (parsed.kind === "emoji") {
+    return (
+      <span
+        style={{
+          fontSize: Math.round(size * 0.95),
+          lineHeight: 1,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {parsed.emoji}
+      </span>
+    );
+  }
+  return <Icons.Dot size={size} stroke={stroke ?? "currentColor"} />;
+}
+
 /** Map sphere name to a default icon — used by hero card, sphere list, etc.
    Custom (user-created) spheres fall back to a dot. */
 const NAME_TO_ICON: Record<string, IconKey> = {

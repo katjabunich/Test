@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Habit, HabitScheduleType } from "@/lib/data";
 import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
-import { Icons } from "@/components/Icons";
+import { HABIT_PRESET_ICONS, HabitIcon, Icons, parseHabitIcon } from "@/components/Icons";
 
 const COLORS = [
   "#86c79a", "#f3a78b", "#f5c563", "#7d96a8",
@@ -31,7 +31,8 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("");
+  // Stored value: ":<IconKey>" for built-in line-art icon, or a raw emoji.
+  const [iconValue, setIconValue] = useState<string>(`:${HABIT_PRESET_ICONS[0]}`);
   const [color, setColor] = useState(COLORS[0]);
   const [scheduleType, setScheduleType] = useState<HabitScheduleType>("daily");
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -41,14 +42,14 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
     if (!open) return;
     if (habit) {
       setName(habit.name);
-      setEmoji(habit.emoji ?? "");
+      setIconValue(habit.emoji ?? `:${HABIT_PRESET_ICONS[0]}`);
       setColor(habit.color || COLORS[0]);
       setScheduleType(habit.schedule_type);
       const v = habit.schedule_value as { days?: number[] } | null;
       setDays(v?.days ?? [1, 2, 3, 4, 5]);
     } else {
       setName("");
-      setEmoji("");
+      setIconValue(`:${HABIT_PRESET_ICONS[0]}`);
       setColor(COLORS[0]);
       setScheduleType("daily");
       setDays([1, 2, 3, 4, 5]);
@@ -65,7 +66,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
       try {
         const payload = {
           name: trimmed,
-          emoji: emoji.trim() || null,
+          emoji: iconValue || null,
           color,
           schedule_type: scheduleType,
           schedule_value:
@@ -98,6 +99,11 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
       prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort(),
     );
   }
+
+  // Show whatever is currently selected in the preview tile
+  const previewParsed = parseHabitIcon(iconValue);
+  const customEmojiValue =
+    previewParsed.kind === "emoji" ? previewParsed.emoji : "";
 
   return (
     <div
@@ -150,22 +156,29 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           {isEdit ? "ПРИВЫЧКА" : "НОВАЯ ПРИВЫЧКА"}
         </div>
 
+        {/* Icon preview + name */}
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-          <input
-            value={emoji}
-            onChange={(e) => setEmoji(e.target.value.slice(0, 4))}
-            placeholder="🎹"
+          <div
             style={{
               width: 56,
-              padding: "12px 0",
-              fontSize: 22,
-              border: "1px solid var(--ink-10)",
-              borderRadius: 12,
-              background: "var(--paper-warm)",
-              outline: "none",
-              textAlign: "center",
+              height: 56,
+              borderRadius: 14,
+              background: color,
+              border: `1px solid ${color}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              color: "var(--ink)",
             }}
-          />
+          >
+            <HabitIcon
+              value={iconValue}
+              size={26}
+              stroke="currentColor"
+              strokeWidth={2}
+            />
+          </div>
           <input
             ref={inputRef}
             value={name}
@@ -191,6 +204,87 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           />
         </div>
 
+        {/* Icon picker */}
+        <div
+          className="mono"
+          style={{
+            fontSize: 10.5,
+            fontWeight: 600,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "0.1em",
+          }}
+        >
+          ИКОНКА
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(8, 1fr)",
+            gap: 6,
+            marginBottom: 10,
+          }}
+        >
+          {HABIT_PRESET_ICONS.map((key) => {
+            const active = iconValue === `:${key}`;
+            const Comp = Icons[key];
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setIconValue(`:${key}`)}
+                aria-label={key}
+                className="tap"
+                style={{
+                  height: 38,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 10,
+                  border: `1px solid ${active ? "var(--ink)" : "var(--ink-10)"}`,
+                  background: active ? "var(--ink)" : "var(--paper-warm)",
+                  color: active ? "var(--paper)" : "var(--ink-80)",
+                  cursor: "pointer",
+                }}
+              >
+                <Comp size={18} stroke="currentColor" strokeWidth={1.8} />
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+          <span
+            className="mono lower"
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "var(--ink-60)",
+              flexShrink: 0,
+            }}
+          >
+            или эмодзи:
+          </span>
+          <input
+            value={customEmojiValue}
+            onChange={(e) => {
+              const v = e.target.value.slice(0, 4);
+              if (v) setIconValue(v);
+            }}
+            placeholder="🎹"
+            style={{
+              width: 70,
+              padding: "8px 0",
+              fontSize: 18,
+              border: "1px solid var(--ink-10)",
+              borderRadius: 10,
+              background: "var(--paper-warm)",
+              outline: "none",
+              textAlign: "center",
+            }}
+          />
+        </div>
+
+        {/* Color */}
         <div
           className="mono"
           style={{
@@ -228,6 +322,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           ))}
         </div>
 
+        {/* Schedule */}
         <div
           className="mono"
           style={{

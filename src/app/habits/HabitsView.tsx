@@ -5,21 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Habit, HabitLog } from "@/lib/data";
 import HabitCard from "@/components/HabitCard";
 import HabitEditModal from "@/components/HabitEditModal";
-import { Icons } from "@/components/Icons";
+import { HabitIcon } from "@/components/Icons";
 import { computeStreak, groupLogsByHabit } from "@/lib/habits";
-
-const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
-  "Вода": "Drop",
-  "Бег": "Run",
-  "Чтение": "Book",
-  "Медитация": "Lotus",
-  "Голландский": "Globe",
-  "Пианино": "Smile",
-};
-
-function pickIcon(name: string): keyof typeof Icons {
-  return HABIT_NAME_TO_ICON[name] ?? "Loop";
-}
 
 export default function HabitsView({
   habits,
@@ -57,8 +44,6 @@ export default function HabitsView({
     [withStreak],
   );
 
-  const TopIcon = top ? Icons[pickIcon(top.habit.name)] : null;
-
   return (
     <>
       <div style={{ padding: "8px 22px 18px" }}>
@@ -90,7 +75,7 @@ export default function HabitsView({
       </div>
 
       {/* Hero — best streak */}
-      {top && top.streak > 0 && TopIcon && (
+      {top && top.streak > 0 && (
         <div style={{ padding: "0 18px 14px" }}>
           <div
             style={{
@@ -109,9 +94,15 @@ export default function HabitsView({
                 bottom: -22,
                 opacity: 0.16,
                 pointerEvents: "none",
+                color: "var(--ink)",
               }}
             >
-              <TopIcon size={150} stroke="var(--ink)" strokeWidth={1.3} />
+              <HabitIcon
+                value={top.habit.emoji}
+                size={150}
+                stroke="currentColor"
+                strokeWidth={1.3}
+              />
             </div>
             <div
               className="mono"

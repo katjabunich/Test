@@ -3,23 +3,9 @@
 import { useMemo, useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
-import { computeStreak, isScheduledOn } from "@/lib/habits";
+import { computeStreak } from "@/lib/habits";
 import { addDays, today } from "@/lib/date";
-import { Icons } from "@/components/Icons";
-
-const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
-  "Вода": "Drop",
-  "Бег": "Run",
-  "Чтение": "Book",
-  "Медитация": "Lotus",
-  "Голландский": "Globe",
-  "Голл.": "Globe",
-  "Пианино": "Smile",
-};
-
-function pickIcon(habit: Habit): keyof typeof Icons {
-  return HABIT_NAME_TO_ICON[habit.name] ?? "Dot";
-}
+import { HabitIcon } from "@/components/Icons";
 
 /** Habit list row per v4: paperWarm card with thin ring on the left,
     name + week progress in the middle, big streak number on the right. */
@@ -66,7 +52,6 @@ export default function HabitCard({
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(7, weekDone) / 7);
-  const IconComp = Icons[pickIcon(habit)];
 
   return (
     <div
@@ -138,11 +123,13 @@ export default function HabitCard({
             alignItems: "center",
             justifyContent: "center",
             transition: "background 220ms var(--ease-out)",
+            color: doneToday ? "var(--ink)" : color,
           }}
         >
-          <IconComp
+          <HabitIcon
+            value={habit.emoji}
             size={20}
-            stroke={doneToday ? "var(--ink)" : color}
+            stroke="currentColor"
             strokeWidth={2}
           />
         </div>

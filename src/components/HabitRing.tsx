@@ -4,26 +4,11 @@ import { useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
 import { today } from "@/lib/date";
-import { Icons } from "@/components/Icons";
-
-const HABIT_NAME_TO_ICON: Record<string, keyof typeof Icons> = {
-  "Вода": "Drop",
-  "Бег": "Run",
-  "Чтение": "Book",
-  "Медитация": "Lotus",
-  "Голландский": "Globe",
-  "Голл.": "Globe",
-  "Пианино": "Smile",
-};
-
-function pickIcon(habit: Habit): keyof typeof Icons {
-  if (HABIT_NAME_TO_ICON[habit.name]) return HABIT_NAME_TO_ICON[habit.name];
-  return "Dot";
-}
+import { HabitIcon } from "@/components/Icons";
 
 /** Ring per v4: thin 2px stroke, no surrounding container. Centre disk
-    fills with the habit colour when done; otherwise the line-art icon
-    sits on paper. weekDone fills the progress arc. */
+    fills with the habit colour when done; otherwise its built-in icon /
+    custom emoji sits on paper. weekDone fills the progress arc. */
 export default function HabitRing({
   habit,
   doneToday,
@@ -55,7 +40,7 @@ export default function HabitRing({
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(7, weekDone) / 7);
-  const IconComp = Icons[pickIcon(habit)];
+  const iconSize = Math.round(size * 0.42);
 
   return (
     <button
@@ -76,6 +61,7 @@ export default function HabitRing({
         padding: 0,
         flexShrink: 0,
         opacity: isPending ? 0.7 : 1,
+        width: 76,
       }}
     >
       <div style={{ position: "relative", width: size, height: size }}>
@@ -116,11 +102,13 @@ export default function HabitRing({
             alignItems: "center",
             justifyContent: "center",
             transition: "background 220ms var(--ease-out)",
+            color: optimistic ? "var(--ink)" : color,
           }}
         >
-          <IconComp
-            size={Math.round(size * 0.4)}
-            stroke={optimistic ? "var(--ink)" : color}
+          <HabitIcon
+            value={habit.emoji}
+            size={iconSize}
+            stroke="currentColor"
             strokeWidth={2}
           />
         </div>
@@ -131,10 +119,14 @@ export default function HabitRing({
           fontSize: 10,
           color: "var(--ink-60)",
           fontWeight: 500,
-          maxWidth: size + 18,
+          width: "100%",
+          textAlign: "center",
+          lineHeight: 1.25,
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
           overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          wordBreak: "break-word",
         }}
       >
         {habit.name}
