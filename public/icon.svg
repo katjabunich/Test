@@ -1,55 +1,41 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Warm sunrise sky: peach top → butter near horizon -->
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#f4a787"/>
-      <stop offset="55%" stop-color="#f5c563"/>
-      <stop offset="100%" stop-color="#fadfa8"/>
-    </linearGradient>
-    <!-- Mint-deep ground -->
-    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#86c79a"/>
-      <stop offset="100%" stop-color="#3f8a5e"/>
-    </linearGradient>
-    <!-- The sun itself -->
+    <!-- Sun: warm peach/butter to cream radial -->
     <radialGradient id="sun" cx="0.5" cy="0.45" r="0.55">
       <stop offset="0%"   stop-color="#fffaf2"/>
-      <stop offset="70%"  stop-color="#fff0c8"/>
-      <stop offset="100%" stop-color="#ffd57a"/>
+      <stop offset="55%"  stop-color="#fff0c8"/>
+      <stop offset="100%" stop-color="#f5c563"/>
     </radialGradient>
-    <!-- Glow halo around the sun -->
+    <!-- Soft halo behind sun -->
     <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%"   stop-color="#fff5d6" stop-opacity="0.55"/>
-      <stop offset="60%"  stop-color="#fff5d6" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#fff5d6" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#fff5d6" stop-opacity="0.6"/>
+      <stop offset="60%"  stop-color="#f4936e" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#f4936e" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- Top half: sky -->
-  <rect width="512" height="320" fill="url(#sky)"/>
+  <!-- Warm paper background, full bleed for "any maskable" -->
+  <rect width="512" height="512" fill="#fbf6ee"/>
 
-  <!-- Soft halo -->
-  <circle cx="256" cy="320" r="220" fill="url(#halo)"/>
+  <!-- Halo -->
+  <circle cx="256" cy="186" r="220" fill="url(#halo)"/>
 
-  <!-- Sun (centered exactly on horizon) -->
-  <circle cx="256" cy="320" r="118" fill="url(#sun)"/>
+  <!-- Sun -->
+  <circle cx="256" cy="186" r="128" fill="url(#sun)"/>
 
-  <!-- Ground covers the lower half of the sun + a bit -->
-  <rect y="320" width="512" height="192" fill="url(#ground)"/>
+  <!-- Task list under the sun -->
+  <!-- Row 1: mint-deep check + ink-80 stroke (done) -->
+  <path d="M 132 372 L 155 393 L 192 354"
+        stroke="#4f9c6a" stroke-width="11"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="212" y="364" width="172" height="9" rx="4.5"
+        fill="#2d2620" fill-opacity="0.82"/>
 
-  <!-- Bright horizon line where sky meets ground -->
-  <line x1="0" y1="320" x2="512" y2="320"
-        stroke="#fffaf2" stroke-width="2.5" opacity="0.8"/>
+  <!-- Row 2: ink-40 stroke (todo) -->
+  <rect x="132" y="412" width="248" height="9" rx="4.5"
+        fill="#2d2620" fill-opacity="0.38"/>
 
-  <!-- Reflection / wave on the ground beneath the sun -->
-  <path d="M 130 360 Q 256 348 382 360"
-        stroke="#fffaf2" stroke-width="2.5" fill="none"
-        stroke-linecap="round" opacity="0.5"/>
-  <path d="M 170 388 Q 256 380 342 388"
-        stroke="#fffaf2" stroke-width="2" fill="none"
-        stroke-linecap="round" opacity="0.35"/>
-
-  <!-- A small star/spark above the sun for tiny detail -->
-  <circle cx="380" cy="125" r="4" fill="#fffaf2" opacity="0.7"/>
-  <circle cx="425" cy="180" r="2.5" fill="#fffaf2" opacity="0.6"/>
+  <!-- Row 3: ink-40 shorter stroke (todo) -->
+  <rect x="132" y="452" width="160" height="9" rx="4.5"
+        fill="#2d2620" fill-opacity="0.38"/>
 </svg>

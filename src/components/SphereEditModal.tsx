@@ -7,9 +7,9 @@ import { Icons } from "@/components/Icons";
 
 const COLORS = [
   "#86c79a", // mint
-  "#f3a78b", // peach
+  "#f4936e", // peach
   "#f5c563", // butter
-  "#7d96a8", // pool
+  "#6ba4c2", // pool
   "#b5a3df", // lilac
   "#e89bb0", // blush
   "#0ABAB5", // tiffany

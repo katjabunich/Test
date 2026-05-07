@@ -59,6 +59,14 @@ const labelStyle = {
   letterSpacing: "-0.005em",
 } as const;
 
+/** Section heading used between groups on Today/Tasks/Settings/Habits. */
+const sectionHeadingStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "var(--ink-80)",
+  letterSpacing: "-0.005em",
+} as const;
+
 export default function TodayView({
   todayTasks,
   upcomingTasks,
@@ -196,10 +204,10 @@ export default function TodayView({
             </div>
             <h1
               style={{
-                fontSize: 32,
+                fontSize: 36,
                 fontWeight: 700,
-                letterSpacing: "-0.034em",
-                lineHeight: 1.08,
+                letterSpacing: "-0.036em",
+                lineHeight: 1,
                 color: "var(--ink)",
                 margin: 0,
               }}
@@ -303,13 +311,45 @@ export default function TodayView({
                 background: "var(--paper-warm)",
                 border: "1px solid var(--ink-05)",
                 borderRadius: 22,
-                padding: "32px 18px",
+                padding: "28px 18px 32px",
                 textAlign: "center",
                 color: "var(--ink-60)",
                 fontSize: 14.5,
                 lineHeight: 1.5,
               }}
             >
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 64 64"
+                style={{ display: "block", margin: "0 auto 12px" }}
+                aria-hidden
+              >
+                <defs>
+                  <radialGradient id="empty-sun" cx="0.5" cy="0.45" r="0.55">
+                    <stop offset="0%" stopColor="#fffaf2" />
+                    <stop offset="60%" stopColor="#fff0c8" />
+                    <stop offset="100%" stopColor="#f5c563" />
+                  </radialGradient>
+                </defs>
+                <circle cx="32" cy="22" r="14" fill="url(#empty-sun)" />
+                <path
+                  d="M 14 46 L 19 51 L 27 42"
+                  stroke="var(--mint-deep)"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <rect
+                  x="32"
+                  y="46"
+                  width="20"
+                  height="2"
+                  rx="1"
+                  fill="var(--ink-40)"
+                />
+              </svg>
               Чисто. Можно отдыхать или добавить дело — кнопка плюса внизу.
             </div>
           )}
@@ -323,7 +363,7 @@ export default function TodayView({
                 padding: "8px 4px 0",
               }}
             >
-              <span style={labelStyle}>
+              <span style={sectionHeadingStyle}>
                 Дальше · <span className="tnum">{restTasks.length}</span>
               </span>
               {overdueCount > 0 && (
@@ -373,7 +413,7 @@ export default function TodayView({
                 padding: "16px 4px 0",
               }}
             >
-              <span style={labelStyle}>
+              <span style={sectionHeadingStyle}>
                 На неделе · <span className="tnum">{upcomingTasks.length}</span>
               </span>
             </div>
@@ -500,19 +540,6 @@ function HeroNextTask({
         </div>
       </div>
 
-      <div
-        style={{
-          fontSize: 12,
-          fontWeight: 500,
-          opacity: 0.65,
-          marginBottom: 4,
-          position: "relative",
-          color: "var(--ink)",
-          letterSpacing: "-0.005em",
-        }}
-      >
-        Следующая
-      </div>
       <div
         style={{
           fontSize: 26,

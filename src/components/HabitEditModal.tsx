@@ -6,7 +6,7 @@ import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
 import { HABIT_PRESET_ICONS, HabitIcon, Icons, parseHabitIcon } from "@/components/Icons";
 
 const COLORS = [
-  "#86c79a", "#f3a78b", "#f5c563", "#7d96a8",
+  "#86c79a", "#f4936e", "#f5c563", "#6ba4c2",
   "#b5a3df", "#e89bb0", "#0ABAB5", "#4f9c6a",
 ];
 

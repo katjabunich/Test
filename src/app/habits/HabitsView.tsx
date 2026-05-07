@@ -78,7 +78,8 @@ export default function HabitsView({
         <div style={{ padding: "0 18px 14px" }}>
           <div
             style={{
-              background: "var(--mint)",
+              background: "rgba(134,199,154,0.18)",
+              border: "1.5px solid rgba(134,199,154,0.40)",
               borderRadius: 22,
               padding: "18px 20px",
               position: "relative",
@@ -193,9 +194,9 @@ export default function HabitsView({
             <div
               style={{
                 fontSize: 13,
-                fontWeight: 500,
-                color: "var(--ink-60)",
-                padding: "0 4px 6px",
+                fontWeight: 600,
+                color: "var(--ink-80)",
+                padding: "0 4px 8px",
                 letterSpacing: "-0.005em",
               }}
             >

@@ -92,10 +92,12 @@ export default function BottomNav() {
             className="tap"
             style={{
               width: 36,
-              height: 36,
+              height: 40,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
+              gap: 4,
               color: isActive ? "var(--ink)" : "var(--ink-40)",
             }}
           >
@@ -103,6 +105,15 @@ export default function BottomNav() {
               size={24}
               stroke="currentColor"
               strokeWidth={isActive ? 2.2 : 1.7}
+            />
+            <span
+              aria-hidden
+              style={{
+                width: 3,
+                height: 3,
+                borderRadius: 2,
+                background: isActive ? "var(--ink)" : "transparent",
+              }}
             />
           </Link>
         );

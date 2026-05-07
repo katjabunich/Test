@@ -3,8 +3,8 @@
 import { Icons, type IconKey } from "@/components/Icons";
 
 const MINT = "#86c79a";
-const PEACH = "#f3a78b";
-const POOL = "#7d96a8";
+const PEACH = "#f4936e";
+const POOL = "#6ba4c2";
 const LILAC = "#b5a3df";
 const BUTTER = "#f5c563";
 

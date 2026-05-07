@@ -41,9 +41,11 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
         <div
           style={{
             fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            padding: "0 4px 10px",
+            fontWeight: 600,
+            color: "var(--ink-80)",
+            padding: "0 4px 8px",
+            borderBottom: "1px solid var(--ink-10)",
+            marginBottom: 10,
             letterSpacing: "-0.005em",
           }}
         >
@@ -162,9 +164,11 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
         <div
           style={{
             fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            padding: "0 4px 10px",
+            fontWeight: 600,
+            color: "var(--ink-80)",
+            padding: "0 4px 8px",
+            borderBottom: "1px solid var(--ink-10)",
+            marginBottom: 10,
             letterSpacing: "-0.005em",
           }}
         >

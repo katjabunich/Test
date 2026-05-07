@@ -54,16 +54,13 @@ export default function TaskItem({
     });
   }
 
-  // Sphere-tinted paper card. Overdue keeps the warm clay wash so the
-  // alert is still legible; tasks without a sphere stay paper-warm.
-  const cardBg = overdue
-    ? "rgba(217,106,82,0.10)"
-    : sphere
+  // Sphere-tinted paper card; overdue keeps its sphere tint and gets a
+  // clay accent stripe on the left edge so the sphere code stays legible
+  // even on a list full of overdue tasks.
+  const cardBg = sphere
     ? `${sphere.color}1F` // ~12% tint of the sphere colour
     : "var(--paper-warm)";
-  const cardBorder = overdue
-    ? "rgba(217,106,82,0.22)"
-    : sphere
+  const cardBorder = sphere
     ? `${sphere.color}40` // ~25% of the sphere colour
     : "var(--ink-05)";
 
@@ -75,8 +72,9 @@ export default function TaskItem({
       style={{
         background: cardBg,
         border: `1px solid ${cardBorder}`,
+        borderLeft: overdue ? "3px solid var(--alert)" : `1px solid ${cardBorder}`,
         borderRadius: 16,
-        padding: "12px 14px",
+        padding: overdue ? "12px 14px 12px 12px" : "12px 14px",
         display: "flex",
         alignItems: "center",
         gap: 12,

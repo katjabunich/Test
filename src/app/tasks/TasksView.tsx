@@ -204,9 +204,9 @@ export default function TasksView({
               >
                 <span
                   style={{
-                    fontSize: 13.5,
+                    fontSize: 13,
                     fontWeight: 600,
-                    color: g.accent ?? "var(--ink-80)",
+                    color: "var(--ink-80)",
                     letterSpacing: "-0.005em",
                   }}
                 >
@@ -217,7 +217,7 @@ export default function TasksView({
                   style={{
                     fontSize: 12,
                     fontWeight: 500,
-                    color: g.accent ?? "var(--ink-40)",
+                    color: "var(--ink-40)",
                     opacity: 0.7,
                   }}
                 >
@@ -283,19 +283,20 @@ function FilterChip({
   active: boolean;
   onClick: () => void;
 }) {
-  // Sphere chip: tinted bg in its colour; active = saturated colour bg.
-  // Neutral "Все" chip: paper-warm; active = ink.
+  // Active sphere chip wears its saturated colour. Inactive chips —
+  // neutral paper-warm with just a coloured marker dot — so the colour
+  // "fires" only inside task cards, not twice in a row above them.
   const bg = color
     ? active
       ? color
-      : `${color}26` // ~15% sphere-tint
+      : "var(--paper-warm)"
     : active
     ? "var(--ink)"
     : "var(--paper-warm)";
   const border = color
     ? active
       ? color
-      : `${color}55`
+      : "var(--ink-05)"
     : active
     ? "var(--ink)"
     : "var(--ink-05)";
@@ -305,7 +306,9 @@ function FilterChip({
     ? "var(--paper)"
     : "var(--ink)";
   const countColor = color
-    ? "var(--ink)"
+    ? active
+      ? "var(--ink)"
+      : "var(--ink-40)"
     : active
     ? "var(--paper)"
     : "var(--ink-40)";
