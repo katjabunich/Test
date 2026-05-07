@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
     title: "День за днём",
     body: (
       <>
-        Привычки растут стриком — <span className="mark-butter">день за днём</span>.
+        Привычки растут страйком — <span className="mark-butter">день за днём</span>.
       </>
     ),
     cta: "Готова, поехали",

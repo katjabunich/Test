@@ -12,17 +12,53 @@ let ctx: AudioCtx | null = null;
 
 function getCtx(): AudioCtx | null {
   if (typeof window === "undefined") return null;
-  if (ctx) return ctx;
-  const Ctor =
-    window.AudioContext ||
-    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!Ctor) return null;
-  try {
-    ctx = new Ctor();
-  } catch {
-    return null;
+  if (!ctx) {
+    const Ctor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    try {
+      ctx = new Ctor();
+    } catch {
+      return null;
+    }
+  }
+  // iOS Safari starts AudioContext in "suspended" state — calling resume()
+  // inside a user-gesture callback (which is where these sound functions
+  // are always called from) brings it to "running". Without this the very
+  // first tap silently produces no sound.
+  if (ctx.state === "suspended") {
+    void ctx.resume();
   }
   return ctx;
+}
+
+/** Hidden DOM nodes used to coax iOS Safari into producing a tiny haptic
+   tick. iOS doesn't support navigator.vibrate, but a programmatic click on
+   a checkbox or a label-for relationship sometimes triggers the system
+   selection-haptic in PWA standalone mode. Best-effort fallback. */
+let iosHapticInput: HTMLInputElement | null = null;
+function getIOSHapticInput(): HTMLInputElement | null {
+  if (typeof document === "undefined") return null;
+  if (iosHapticInput) return iosHapticInput;
+  const el = document.createElement("input");
+  el.type = "checkbox";
+  el.setAttribute("aria-hidden", "true");
+  el.tabIndex = -1;
+  el.style.cssText =
+    "position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
+  document.body.appendChild(el);
+  iosHapticInput = el;
+  return el;
+}
+
+function isIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  // iPad on iOS 13+ identifies as "MacIntel" with touch — include that.
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && (navigator as Navigator & { maxTouchPoints?: number }).maxTouchPoints! > 1)
+  );
 }
 
 export function isSoundEnabled(): boolean {
@@ -175,11 +211,44 @@ export function playWhoosh() {
 function vibrate(pattern: number | number[]) {
   if (!isHapticEnabled()) return;
   if (typeof navigator === "undefined") return;
-  if (typeof navigator.vibrate !== "function") return;
-  try {
-    navigator.vibrate(pattern);
-  } catch {
-    /* iOS Safari throws on some versions — silently ignore */
+
+  // Android / Chrome / Firefox path — actually works.
+  if (typeof navigator.vibrate === "function") {
+    try {
+      navigator.vibrate(pattern);
+      return;
+    } catch {
+      /* fall through to iOS fallback */
+    }
+  }
+
+  // iOS fallback: programmatic click on a hidden checkbox sometimes
+  // triggers Apple's selection-haptic in PWA standalone mode. Doesn't
+  // work in regular Safari tabs, but at least the toggle isn't a lie
+  // for users who add the app to home screen.
+  if (isIOS()) {
+    const el = getIOSHapticInput();
+    if (!el) return;
+    const fire = () => {
+      try {
+        el.click();
+      } catch {
+        /* ignore */
+      }
+    };
+    // For simple ticks: one click. For patterns (celebrate): stagger
+    // a few clicks roughly matching the rhythm.
+    if (typeof pattern === "number") {
+      fire();
+    } else {
+      let delay = 0;
+      pattern.forEach((ms, i) => {
+        if (i % 2 === 0) {
+          setTimeout(fire, delay);
+        }
+        delay += ms;
+      });
+    }
   }
 }
 

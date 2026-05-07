@@ -115,7 +115,7 @@ export default function HabitsView({
                 position: "relative",
               }}
             >
-              Лучший стрик
+              Лучший страйк
             </div>
             <div
               style={{
@@ -195,7 +195,7 @@ export default function HabitsView({
         {habits.length === 0 ? (
           <div
             style={{
-              padding: "32px 22px 36px",
+              padding: "32px 22px 24px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
@@ -206,7 +206,31 @@ export default function HabitsView({
             }}
           >
             <HabitsEmpty />
-            Пока пусто. Жми <span className="mark-butter">+ чтобы добавить</span>.
+            Пока пусто. Создай <span className="mark-butter">первую привычку</span>.
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setModalOpen(true);
+              }}
+              className="tap"
+              style={{
+                display: "inline-block",
+                marginTop: 18,
+                padding: "12px 22px",
+                borderRadius: 14,
+                border: "none",
+                background: "var(--ink-strong)",
+                color: "var(--paper)",
+                fontSize: 14,
+                fontWeight: 600,
+                letterSpacing: "-0.005em",
+                cursor: "pointer",
+                boxShadow: "0 6px 16px rgba(31,24,19,0.22)",
+              }}
+            >
+              + Добавить привычку
+            </button>
           </div>
         ) : (
           <>
@@ -232,6 +256,30 @@ export default function HabitsView({
                 }}
               />
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setModalOpen(true);
+              }}
+              className="tap"
+              style={{
+                width: "100%",
+                marginTop: 8,
+                padding: "12px 16px",
+                borderRadius: 14,
+                border: "1.5px dashed var(--ink-20)",
+                background: "transparent",
+                textAlign: "center",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ink-60)",
+                cursor: "pointer",
+                letterSpacing: "-0.005em",
+              }}
+            >
+              + Добавить привычку
+            </button>
           </>
         )}
       </div>
