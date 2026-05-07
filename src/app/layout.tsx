@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Lora, Inter } from "next/font/google";
+import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
@@ -10,7 +10,8 @@ import PageTransition from "@/components/PageTransition";
 /* Two-family system:
    - Lora: warm soft serif for emotional moments (H1s, hero title,
      streak number, onboarding titles). Modern soft serif, full Cyrillic.
-   - Inter: workhorse sans for body, lists, labels, UI chrome. */
+   - Manrope: workhorse sans for body, lists, labels, UI chrome. Native
+     Cyrillic by Mikhail Sharanda, slightly rounded geometric. */
 const serif = Lora({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-serif",
@@ -18,7 +19,7 @@ const serif = Lora({
   weight: ["500", "600", "700"],
 });
 
-const sans = Inter({
+const sans = Manrope({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-sans",
   display: "swap",
