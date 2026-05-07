@@ -15,7 +15,7 @@ type Slide = {
 
 const SLIDES: Slide[] = [
   {
-    illustration: "/illustrations/onboarding-morning.png",
+    illustration: "/illustrations/onboarding-morning.jpg",
     alt: "Утро у окна с восходом, кофе и блокнотом",
     title: "Утро без хаоса",
     body: (
@@ -27,7 +27,7 @@ const SLIDES: Slide[] = [
     cta: "Дальше",
   },
   {
-    illustration: "/illustrations/onboarding-spheres.png",
+    illustration: "/illustrations/onboarding-spheres.jpg",
     alt: "Уютный момент с дневником и закладками разных цветов",
     title: "Сферы жизни",
     body: (
@@ -39,7 +39,7 @@ const SLIDES: Slide[] = [
     cta: "Дальше",
   },
   {
-    illustration: "/illustrations/onboarding-streak.png",
+    illustration: "/illustrations/onboarding-streak.jpg",
     alt: "Девушка бежит по тропе, цепочка следов уходит назад",
     title: "День за днём",
     body: (
