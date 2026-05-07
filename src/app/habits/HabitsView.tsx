@@ -49,10 +49,11 @@ export default function HabitsView({
       <div style={{ padding: "8px 22px 18px" }}>
         <h1
           style={{
+            fontFamily: "var(--font-emphasis)",
             fontSize: 36,
-            fontWeight: 700,
-            letterSpacing: "-0.036em",
-            lineHeight: 1,
+            fontWeight: 600,
+            letterSpacing: "-0.025em",
+            lineHeight: 1.04,
             color: "var(--ink)",
             margin: 0,
           }}
@@ -128,10 +129,11 @@ export default function HabitsView({
               <div
                 className="tnum"
                 style={{
+                  fontFamily: "var(--font-emphasis)",
                   fontSize: 64,
-                  fontWeight: 700,
-                  letterSpacing: "-0.045em",
-                  lineHeight: 0.85,
+                  fontWeight: 600,
+                  letterSpacing: "-0.035em",
+                  lineHeight: 0.88,
                   color: "var(--ink)",
                 }}
               >

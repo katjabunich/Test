@@ -46,10 +46,11 @@ export default function MockTasksContent() {
       </div>
       <div
         style={{
+          fontFamily: "var(--font-emphasis)",
           fontSize: 26,
-          fontWeight: 700,
-          letterSpacing: "-0.04em",
-          lineHeight: 0.95,
+          fontWeight: 600,
+          letterSpacing: "-0.025em",
+          lineHeight: 1.04,
           color: "var(--ink)",
           ...enter(200),
         }}

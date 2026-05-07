@@ -100,10 +100,11 @@ export default function TasksView({
       <div style={{ padding: "8px 22px 16px" }}>
         <h1
           style={{
+            fontFamily: "var(--font-emphasis)",
             fontSize: 36,
-            fontWeight: 700,
-            letterSpacing: "-0.036em",
-            lineHeight: 1,
+            fontWeight: 600,
+            letterSpacing: "-0.025em",
+            lineHeight: 1.04,
             color: "var(--ink)",
             margin: 0,
           }}

@@ -36,10 +36,11 @@ export default function MockHabitContent() {
       </div>
       <div
         style={{
+          fontFamily: "var(--font-emphasis)",
           fontSize: 22,
-          fontWeight: 700,
-          letterSpacing: "-0.034em",
-          lineHeight: 1.04,
+          fontWeight: 600,
+          letterSpacing: "-0.02em",
+          lineHeight: 1.06,
           color: "var(--ink)",
         }}
       >

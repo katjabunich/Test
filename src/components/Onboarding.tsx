@@ -261,10 +261,11 @@ export default function Onboarding() {
         </div>
         <h2
           style={{
+            fontFamily: "var(--font-emphasis)",
             fontSize: 26,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.06,
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
             color: "var(--ink)",
             margin: "0 0 10px",
             opacity: 0,

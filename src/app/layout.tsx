@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Onest } from "next/font/google";
+import { Lora, Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
@@ -7,12 +7,22 @@ import SplashScreen from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
 
-/* Geist clone with full Cyrillic support — visually nearly identical. */
-const display = Onest({
+/* Two-family system:
+   - Lora: warm soft serif for emotional moments (H1s, hero title,
+     streak number, onboarding titles). Modern soft serif, full Cyrillic.
+   - Inter: workhorse sans for body, lists, labels, UI chrome. */
+const serif = Lora({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
-  variable: "--font-geist",
+  variable: "--font-serif",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
+});
+
+const sans = Inter({
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -35,7 +45,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ru" className={display.variable}>
+    <html lang="ru" className={`${sans.variable} ${serif.variable}`}>
       <body>
         <main>
           <PageTransition>{children}</PageTransition>

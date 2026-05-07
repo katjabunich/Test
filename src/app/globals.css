@@ -24,8 +24,9 @@
   --pool:        #6ba4c2;
   --alert:       #d96a52;
 
-  /* Type stacks */
-  --font-display: var(--font-geist), -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  /* Type stacks — sans for body/UI, serif for emotional headings */
+  --font-display: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-emphasis: var(--font-serif), "New York", "Charter", Georgia, serif;
 
   /* Geometry */
   --radius-sm: 10px;
