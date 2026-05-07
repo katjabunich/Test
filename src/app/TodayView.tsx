@@ -259,15 +259,16 @@ export default function TodayView({
           </div>
         </div>
 
-        {/* Habit rings — no container */}
+        {/* Habit rings — left-aligned, fixed gap so adding a 2nd habit
+           stays next to the first instead of jumping to the far edge. */}
         {habitsToday.length > 0 && (
           <div
             style={{
               padding: "0 22px 22px",
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-start",
               alignItems: "flex-start",
-              gap: 4,
+              gap: 14,
               overflowX: "auto",
               scrollbarWidth: "none",
             }}

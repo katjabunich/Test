@@ -54,14 +54,27 @@ export default function TaskItem({
     });
   }
 
+  // Sphere-tinted paper card. Overdue keeps the warm clay wash so the
+  // alert is still legible; tasks without a sphere stay paper-warm.
+  const cardBg = overdue
+    ? "rgba(217,106,82,0.10)"
+    : sphere
+    ? `${sphere.color}1F` // ~12% tint of the sphere colour
+    : "var(--paper-warm)";
+  const cardBorder = overdue
+    ? "rgba(217,106,82,0.22)"
+    : sphere
+    ? `${sphere.color}40` // ~25% of the sphere colour
+    : "var(--ink-05)";
+
   return (
     <div
       role="button"
       tabIndex={0}
       onClick={() => onEdit?.(task)}
       style={{
-        background: overdue ? "rgba(217,106,82,0.06)" : "var(--paper-warm)",
-        border: `1px solid ${overdue ? "rgba(217,106,82,0.18)" : "var(--ink-05)"}`,
+        background: cardBg,
+        border: `1px solid ${cardBorder}`,
         borderRadius: 16,
         padding: "12px 14px",
         display: "flex",

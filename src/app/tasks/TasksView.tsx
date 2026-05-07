@@ -13,8 +13,6 @@ type Group = {
   label: string;
   /** Text colour for the group label */
   accent?: string;
-  /** Soft background colour for the group label pill */
-  tint?: string;
   items: Task[];
 };
 
@@ -44,26 +42,11 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({
-    key: "overdue", label: "Просрочено", items: overdue,
-    accent: "var(--alert)", tint: "rgba(217,106,82,0.10)",
-  });
-  if (todays.length) groups.push({
-    key: "today", label: "Сегодня", items: todays,
-    accent: "var(--mint-deep)", tint: "rgba(134,199,154,0.18)",
-  });
-  if (week.length) groups.push({
-    key: "week", label: "На этой неделе", items: week,
-    accent: "var(--ink-80)", tint: "var(--paper-warm)",
-  });
-  if (later.length) groups.push({
-    key: "later", label: "Позже", items: later,
-    accent: "var(--ink-60)", tint: "var(--paper-warm)",
-  });
-  if (noDate.length) groups.push({
-    key: "nodate", label: "Без даты", items: noDate,
-    accent: "var(--ink-60)", tint: "var(--paper-warm)",
-  });
+  if (overdue.length) groups.push({ key: "overdue", label: "Просрочено", items: overdue, accent: "var(--alert)" });
+  if (todays.length)  groups.push({ key: "today",   label: "Сегодня",        items: todays });
+  if (week.length)    groups.push({ key: "week",    label: "На этой неделе", items: week });
+  if (later.length)   groups.push({ key: "later",   label: "Позже",          items: later });
+  if (noDate.length)  groups.push({ key: "nodate",  label: "Без даты",       items: noDate });
   return groups;
 }
 
@@ -210,56 +193,44 @@ export default function TasksView({
         ) : (
           groups.map((g) => (
             <div key={g.key}>
+              {/* Plain text section header — label + count, hairline below */}
               <div
                 style={{
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: "baseline",
                   gap: 8,
-                  padding: "0 4px 10px",
+                  padding: "0 4px 8px",
                 }}
               >
                 <span
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "5px 11px",
-                    borderRadius: 999,
-                    background: g.tint ?? "var(--paper-warm)",
-                    border: `1px solid ${g.accent ?? "var(--ink-10)"}1F`,
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: g.accent ?? "var(--ink-80)",
+                    letterSpacing: "-0.005em",
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: g.accent ?? "var(--ink-60)",
-                      letterSpacing: "-0.005em",
-                    }}
-                  >
-                    {g.label}
-                  </span>
-                  <span
-                    className="tnum"
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: g.accent ?? "var(--ink-40)",
-                      opacity: 0.7,
-                    }}
-                  >
-                    {g.items.length}
-                  </span>
+                  {g.label}
                 </span>
-                <div
+                <span
+                  className="tnum"
                   style={{
-                    flex: 1,
-                    height: 1,
-                    background: "var(--ink-10)",
-                    marginLeft: 4,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: g.accent ?? "var(--ink-40)",
+                    opacity: 0.7,
                   }}
-                />
+                >
+                  · {g.items.length}
+                </span>
               </div>
+              <div
+                style={{
+                  height: 1,
+                  background: "var(--ink-10)",
+                  margin: "0 4px 12px",
+                }}
+              />
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 7 }}
               >

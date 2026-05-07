@@ -1,6 +1,6 @@
 {
-  "name": "Дела",
-  "short_name": "Дела",
+  "name": "DoIt",
+  "short_name": "DoIt",
   "description": "Задачи и привычки на сегодня",
   "start_url": "/",
   "display": "standalone",

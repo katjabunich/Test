@@ -16,10 +16,10 @@ const display = Onest({
 });
 
 export const metadata: Metadata = {
-  title: "Дела",
+  title: "DoIt",
   description: "Задачи и привычки на сегодня",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Дела" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "DoIt" },
   icons: { apple: "/icon-192.png", icon: "/icon-512.png" },
 };
 
