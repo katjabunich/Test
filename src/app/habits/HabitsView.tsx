@@ -50,9 +50,9 @@ export default function HabitsView({
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
-            fontSize: 36,
-            fontWeight: 600,
-            letterSpacing: "-0.025em",
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
             lineHeight: 1.04,
             color: "var(--ink)",
             margin: 0,
@@ -74,15 +74,15 @@ export default function HabitsView({
         </div>
       </div>
 
-      {/* Hero — best streak */}
+      {/* Hero — best streak (full-bleed mint, emotional centre) */}
       {top && top.streak > 0 && (
-        <div style={{ padding: "0 18px 14px" }}>
+        <div style={{ padding: "0 0 18px" }}>
           <div
             style={{
-              background: "rgba(134,199,154,0.18)",
-              border: "1.5px solid rgba(134,199,154,0.40)",
+              background: "var(--mint)",
               borderRadius: 22,
-              padding: "18px 20px",
+              margin: "0 18px",
+              padding: "22px 22px 24px",
               position: "relative",
               overflow: "hidden",
             }}
@@ -91,16 +91,16 @@ export default function HabitsView({
               aria-hidden
               style={{
                 position: "absolute",
-                right: -22,
-                bottom: -22,
-                opacity: 0.16,
+                right: -28,
+                bottom: -28,
+                opacity: 0.25,
                 pointerEvents: "none",
-                color: "var(--ink)",
+                color: "var(--paper)",
               }}
             >
               <HabitIcon
                 value={top.habit.emoji}
-                size={150}
+                size={170}
                 stroke="currentColor"
                 strokeWidth={1.3}
               />
@@ -109,8 +109,8 @@ export default function HabitsView({
               style={{
                 fontSize: 12,
                 fontWeight: 500,
-                color: "var(--ink)",
-                opacity: 0.7,
+                color: "var(--paper)",
+                opacity: 0.85,
                 letterSpacing: "-0.005em",
                 position: "relative",
               }}
@@ -120,32 +120,45 @@ export default function HabitsView({
             <div
               style={{
                 display: "flex",
-                alignItems: "flex-end",
-                gap: 14,
-                marginTop: 6,
+                alignItems: "center",
+                gap: 18,
+                marginTop: 10,
                 position: "relative",
               }}
             >
               <div
-                className="tnum"
                 style={{
-                  fontFamily: "var(--font-emphasis)",
-                  fontSize: 64,
-                  fontWeight: 600,
-                  letterSpacing: "-0.035em",
-                  lineHeight: 0.88,
-                  color: "var(--ink)",
+                  width: 118,
+                  height: 118,
+                  borderRadius: "50%",
+                  border: "2.5px solid var(--paper)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
                 }}
               >
-                {top.streak}
+                <div
+                  className="tnum"
+                  style={{
+                    fontFamily: "var(--font-emphasis)",
+                    fontSize: 76,
+                    fontWeight: 700,
+                    letterSpacing: "-0.04em",
+                    lineHeight: 0.9,
+                    color: "var(--paper)",
+                  }}
+                >
+                  {top.streak}
+                </div>
               </div>
-              <div style={{ paddingBottom: 6 }}>
+              <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 500,
-                    color: "var(--ink)",
-                    opacity: 0.7,
+                    color: "var(--paper)",
+                    opacity: 0.85,
                     letterSpacing: "-0.005em",
                   }}
                 >
@@ -154,10 +167,13 @@ export default function HabitsView({
                 <div
                   style={{
                     marginTop: 4,
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: "var(--ink)",
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: "var(--paper)",
                     letterSpacing: "-0.01em",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {top.habit.name}
@@ -179,17 +195,18 @@ export default function HabitsView({
         {habits.length === 0 ? (
           <div
             style={{
-              padding: "40px 22px",
+              padding: "32px 22px 36px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
               background: "var(--paper-warm)",
               border: "1px solid var(--ink-05)",
-              borderRadius: 16,
+              borderRadius: 22,
               lineHeight: 1.5,
             }}
           >
-            Пока пусто. Жми + чтобы добавить.
+            <HabitsEmpty />
+            Пока пусто. Жми <span className="mark-butter">+ чтобы добавить</span>.
           </div>
         ) : (
           <>
@@ -225,5 +242,34 @@ export default function HabitsView({
         habit={editing}
       />
     </>
+  );
+}
+
+function HabitsEmpty() {
+  return (
+    <svg
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      style={{ display: "block", margin: "0 auto 14px" }}
+      aria-hidden
+    >
+      <circle
+        cx="34"
+        cy="34"
+        r="22"
+        fill="none"
+        stroke="var(--ink-10)"
+        strokeWidth="3"
+      />
+      <path
+        d="M 34 12 A 22 22 0 0 1 56 34"
+        fill="none"
+        stroke="var(--mint-deep)"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <circle cx="34" cy="34" r="4" fill="var(--mint-deep)" />
+    </svg>
   );
 }

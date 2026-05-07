@@ -101,9 +101,9 @@ export default function TasksView({
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
-            fontSize: 36,
-            fontWeight: 600,
-            letterSpacing: "-0.025em",
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
             lineHeight: 1.04,
             color: "var(--ink)",
             margin: 0,
@@ -180,16 +180,29 @@ export default function TasksView({
         {groups.length === 0 ? (
           <div
             style={{
-              padding: "40px 22px",
+              padding: "32px 22px 36px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
+              lineHeight: 1.5,
               background: "var(--paper-warm)",
               border: "1px solid var(--ink-05)",
-              borderRadius: 16,
+              borderRadius: 22,
             }}
           >
-            {filter ? "В этой сфере пусто." : "Пока пусто. Жми + внизу."}
+            {filter ? (
+              <>
+                <FilteredEmpty
+                  color={sphereById.get(filter)?.color ?? "var(--mint)"}
+                />
+                В этой сфере пусто.
+              </>
+            ) : (
+              <>
+                <TasksEmpty />
+                Пока пусто. Жми <span className="mark-butter">+ внизу</span>.
+              </>
+            )}
           </div>
         ) : (
           groups.map((g) => (
@@ -264,6 +277,59 @@ export default function TasksView({
         defaultSphereId={filter}
       />
     </>
+  );
+}
+
+function TasksEmpty() {
+  return (
+    <svg
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      style={{ display: "block", margin: "0 auto 14px" }}
+      aria-hidden
+    >
+      <defs>
+        <radialGradient id="tasks-empty-sun" cx="0.5" cy="0.45" r="0.55">
+          <stop offset="0%" stopColor="#fffaf2" />
+          <stop offset="60%" stopColor="#fff0c8" />
+          <stop offset="100%" stopColor="#f5c563" />
+        </radialGradient>
+      </defs>
+      <circle cx="34" cy="22" r="14" fill="url(#tasks-empty-sun)" />
+      <circle
+        cx="18"
+        cy="50"
+        r="5.2"
+        fill="none"
+        stroke="var(--ink-40)"
+        strokeWidth="2.2"
+      />
+      <rect
+        x="28"
+        y="48.5"
+        width="26"
+        height="2.4"
+        rx="1.2"
+        fill="var(--ink-20)"
+      />
+    </svg>
+  );
+}
+
+function FilteredEmpty({ color }: { color: string }) {
+  return (
+    <svg
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      style={{ display: "block", margin: "0 auto 14px" }}
+      aria-hidden
+    >
+      <circle cx="34" cy="34" r="14" fill={color} opacity="0.85" />
+      <circle cx="14" cy="34" r="3" fill="var(--ink-20)" />
+      <circle cx="54" cy="34" r="3" fill="var(--ink-20)" />
+    </svg>
   );
 }
 

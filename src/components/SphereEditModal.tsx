@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
 import { createSphere, deleteSphere, updateSphere } from "@/lib/actions";
 import { Icons } from "@/components/Icons";
+import { feedbackModalOpen } from "@/lib/feedback";
 
 const COLORS = [
   "#86c79a", // mint
@@ -32,6 +33,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    feedbackModalOpen();
     if (sphere) {
       setName(sphere.name);
       setEmoji(sphere.emoji ?? "");
@@ -244,16 +246,16 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               padding: "15px 0",
               borderRadius: 14,
               background: name.trim()
-                ? "var(--mint-deep)"
-                : "rgba(79,156,106,0.4)",
-              color: "#fff",
+                ? "var(--ink-strong)"
+                : "var(--ink-20)",
+              color: "var(--paper)",
               border: "none",
               cursor: name.trim() ? "pointer" : "not-allowed",
               fontSize: 15,
               fontWeight: 600,
               letterSpacing: "-0.01em",
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(79,156,106,0.4)"
+                ? "0 6px 16px rgba(31,24,19,0.28)"
                 : "none",
             }}
           >

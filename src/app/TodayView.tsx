@@ -10,6 +10,7 @@ import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
+import { feedbackTaskComplete } from "@/lib/feedback";
 
 const NAME_KEY = "dela.name";
 
@@ -205,9 +206,9 @@ export default function TodayView({
             <h1
               style={{
                 fontFamily: "var(--font-emphasis)",
-                fontSize: 36,
-                fontWeight: 600,
-                letterSpacing: "-0.025em",
+                fontSize: 40,
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
                 lineHeight: 1.04,
                 color: "var(--ink)",
                 margin: 0,
@@ -351,7 +352,7 @@ export default function TodayView({
                   fill="var(--ink-40)"
                 />
               </svg>
-              Чисто. Можно отдыхать или добавить дело — кнопка плюса внизу.
+              Чисто. Можно <span className="mark-butter">отдыхать</span> или добавить дело — кнопка плюса внизу.
             </div>
           )}
 
@@ -451,6 +452,7 @@ function HeroNextTask({
 
   function handleComplete() {
     setOptimisticDone(true);
+    feedbackTaskComplete();
     startTransition(async () => {
       try {
         await completeTask(task.id);
@@ -544,9 +546,9 @@ function HeroNextTask({
       <div
         style={{
           fontFamily: "var(--font-emphasis)",
-          fontSize: 26,
-          fontWeight: 600,
-          letterSpacing: "-0.02em",
+          fontSize: 28,
+          fontWeight: 700,
+          letterSpacing: "-0.025em",
           lineHeight: 1.18,
           color: "var(--ink)",
           position: "relative",

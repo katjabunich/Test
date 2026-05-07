@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import type { Habit, HabitScheduleType } from "@/lib/data";
 import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
 import { HABIT_PRESET_ICONS, HabitIcon, Icons, parseHabitIcon } from "@/components/Icons";
+import { feedbackModalOpen } from "@/lib/feedback";
 
 const COLORS = [
   "#86c79a", "#f4936e", "#f5c563", "#6ba4c2",
@@ -40,6 +41,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    feedbackModalOpen();
     if (habit) {
       setName(habit.name);
       setIconValue(habit.emoji ?? `:${HABIT_PRESET_ICONS[0]}`);
@@ -411,16 +413,16 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               padding: "15px 0",
               borderRadius: 14,
               background: name.trim()
-                ? "var(--mint-deep)"
-                : "rgba(79,156,106,0.4)",
-              color: "#fff",
+                ? "var(--ink-strong)"
+                : "var(--ink-20)",
+              color: "var(--paper)",
               border: "none",
               cursor: name.trim() ? "pointer" : "not-allowed",
               fontSize: 15,
               fontWeight: 600,
               letterSpacing: "-0.01em",
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(79,156,106,0.4)"
+                ? "0 6px 16px rgba(31,24,19,0.28)"
                 : "none",
             }}
           >

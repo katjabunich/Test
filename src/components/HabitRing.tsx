@@ -6,6 +6,7 @@ import { toggleHabitLog } from "@/lib/actions";
 import { today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
+import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
 
 /** Ring per v4: thin 2px stroke, no surrounding container. Centre disk
     fills with the habit colour when done; otherwise its built-in icon /
@@ -36,6 +37,9 @@ export default function HabitRing({
       const predicted = streak + 1;
       if (isStreakMilestone(predicted)) {
         void fireConfetti(habit.color || undefined);
+        feedbackStreakMilestone();
+      } else {
+        feedbackHabitComplete();
       }
     }
     setOptimistic(!wasDone);

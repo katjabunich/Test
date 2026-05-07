@@ -3,10 +3,11 @@
 /* v4 — Tiffany mint accent + warm paper palette */
 :root {
   /* Surfaces — warm paper, ink */
-  --paper:       #fbf6ee;
-  --paper-warm:  #f4ecdf;
-  --paper-deep:  #ede2ce;
+  --paper:       #f5ede0;
+  --paper-warm:  #ede0cd;
+  --paper-deep:  #e3d4ba;
   --ink:         #2d2620;
+  --ink-strong:  #1f1813;
   --ink-80:      rgba(45,38,32,0.82);
   --ink-60:      rgba(45,38,32,0.6);
   --ink-40:      rgba(45,38,32,0.38);
@@ -75,6 +76,15 @@ button, input, textarea, select {
 .tnum {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Butter highlight — editorial marker for key words */
+.mark-butter {
+  background: linear-gradient(180deg, transparent 60%, rgba(245,197,99,0.55) 60%);
+  padding: 0 2px;
+  border-radius: 1px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Tap feedback */

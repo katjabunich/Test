@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { Sphere, Task } from "@/lib/data";
 import { completeTask } from "@/lib/actions";
 import { isPast, isToday, fromIsoDate } from "@/lib/date";
+import { feedbackTaskComplete } from "@/lib/feedback";
 
 function dueLabel(due: string | null): { text: string; tone: "muted" | "warn" } | null {
   if (!due) return null;
@@ -45,6 +46,7 @@ export default function TaskItem({
   function handleComplete(e: React.MouseEvent) {
     e.stopPropagation();
     setOptimisticDone(true);
+    feedbackTaskComplete();
     startTransition(async () => {
       try {
         await completeTask(task.id);

@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
+import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 
 export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
+  const [sound, setSound] = useState(true);
+  const [haptic, setHaptic] = useState(true);
+
+  useEffect(() => {
+    setSound(isSoundEnabled());
+    setHaptic(isHapticEnabled());
+  }, []);
 
   return (
     <>
@@ -15,9 +23,9 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
-            fontSize: 36,
-            fontWeight: 600,
-            letterSpacing: "-0.025em",
+            fontSize: 40,
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
             lineHeight: 1.04,
             color: "var(--ink)",
             margin: 0,
@@ -65,13 +73,15 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
           {spheres.length === 0 ? (
             <div
               style={{
-                padding: "24px 14px",
+                padding: "28px 14px 32px",
                 textAlign: "center",
                 color: "var(--ink-60)",
                 fontSize: 14,
+                lineHeight: 1.5,
               }}
             >
-              Пока пусто.
+              <SpheresEmpty />
+              Пока пусто. Создай <span className="mark-butter">первую сферу</span>.
             </div>
           ) : (
             spheres.map((s, i) => (
@@ -190,6 +200,24 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             value="PWA"
             accent
           />
+          <SettingsToggleRow
+            Icon={Icons.Volume}
+            label="Звуки"
+            checked={sound}
+            onChange={(v) => {
+              setSound(v);
+              setSoundEnabled(v);
+            }}
+          />
+          <SettingsToggleRow
+            Icon={Icons.Vibrate}
+            label="Вибрация"
+            checked={haptic}
+            onChange={(v) => {
+              setHaptic(v);
+              setHapticEnabled(v);
+            }}
+          />
           <SettingsRow
             Icon={Icons.Bell}
             label="Уведомления"
@@ -280,5 +308,98 @@ function SettingsRow({
       </span>
       <Icons.Chevron size={15} stroke="var(--ink-40)" />
     </div>
+  );
+}
+
+function SettingsToggleRow({
+  Icon,
+  label,
+  checked,
+  onChange,
+}: {
+  Icon: (p: { size?: number; stroke?: string; strokeWidth?: number }) => React.JSX.Element;
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "14px",
+        borderBottom: "1px solid var(--ink-05)",
+        background: "transparent",
+        border: "none",
+        width: "100%",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <Icon size={18} stroke="var(--ink-60)" strokeWidth={1.8} />
+      <span
+        style={{
+          flex: 1,
+          fontSize: 14.5,
+          fontWeight: 500,
+          color: "var(--ink)",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        aria-hidden
+        style={{
+          width: 38,
+          height: 22,
+          borderRadius: 12,
+          background: checked ? "var(--mint-deep)" : "var(--ink-20)",
+          position: "relative",
+          transition: "background 200ms var(--ease-out)",
+          flexShrink: 0,
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            top: 2,
+            left: checked ? 18 : 2,
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: "var(--paper)",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.18)",
+            transition: "left 200ms var(--ease-out)",
+          }}
+        />
+      </span>
+    </button>
+  );
+}
+
+function SpheresEmpty() {
+  return (
+    <svg
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      style={{ display: "block", margin: "0 auto 14px" }}
+      aria-hidden
+    >
+      <circle cx="22" cy="24" r="6" fill="var(--peach)" opacity="0.85" />
+      <circle cx="46" cy="22" r="6" fill="var(--mint)" opacity="0.85" />
+      <circle cx="34" cy="46" r="6" fill="var(--lilac)" opacity="0.85" />
+      <path
+        d="M 22 24 L 46 22 L 34 46 Z"
+        fill="none"
+        stroke="var(--ink-20)"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

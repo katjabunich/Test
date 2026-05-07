@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { feedbackSplashOut } from "@/lib/feedback";
 
 const SESSION_KEY = "dela.splashShown";
 
@@ -18,7 +19,10 @@ export default function SplashScreen() {
       return;
     }
     sessionStorage.setItem(SESSION_KEY, "1");
-    const t1 = setTimeout(() => setPhase("out"), 2200);
+    const t1 = setTimeout(() => {
+      setPhase("out");
+      feedbackSplashOut();
+    }, 2200);
     const t2 = setTimeout(() => setPhase("gone"), 2700);
     return () => {
       clearTimeout(t1);

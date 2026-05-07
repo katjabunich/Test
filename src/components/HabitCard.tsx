@@ -7,6 +7,7 @@ import { computeStreak } from "@/lib/habits";
 import { addDays, today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
+import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
 
 /** Habit list row per v4: paperWarm card with thin ring on the left,
     name + week progress in the middle, big streak number on the right. */
@@ -31,6 +32,7 @@ export default function HabitCard({
   useEffect(() => {
     if (streak > prevStreak.current && isStreakMilestone(streak)) {
       void fireConfetti(habit.color || undefined);
+      feedbackStreakMilestone();
     }
     prevStreak.current = streak;
   }, [streak, habit.color]);
@@ -46,7 +48,13 @@ export default function HabitCard({
   function toggleToday() {
     const next = new Set(localLogged);
     if (next.has(t)) next.delete(t);
-    else next.add(t);
+    else {
+      next.add(t);
+      // Tick on toggle-on; milestone celebration handled by the streak effect
+      // above so it doesn't fire alongside the regular tick.
+      const wouldBeMilestone = isStreakMilestone(streak + 1);
+      if (!wouldBeMilestone) feedbackHabitComplete();
+    }
     setLocalLogged(next);
     startTransition(async () => {
       try {

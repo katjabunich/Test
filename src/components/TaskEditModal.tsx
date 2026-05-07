@@ -5,6 +5,7 @@ import type { Recurrence, Sphere, Task } from "@/lib/data";
 import { createTask, deleteTask, updateTask } from "@/lib/actions";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { fromIsoDate, today as todayIso } from "@/lib/date";
+import { feedbackModalOpen } from "@/lib/feedback";
 
 const RECURRENCE_LABELS: Record<NonNullable<Recurrence>, string> = {
   daily: "каждый день",
@@ -43,6 +44,7 @@ export default function TaskEditModal({
 
   useEffect(() => {
     if (!open) return;
+    feedbackModalOpen();
     if (task) {
       setTitle(task.title);
       setSphereId(task.sphere_id);
@@ -390,16 +392,16 @@ export default function TaskEditModal({
               padding: "15px 0",
               borderRadius: 14,
               background: title.trim()
-                ? "var(--mint-deep)"
-                : "rgba(79,156,106,0.4)",
-              color: "#fff",
+                ? "var(--ink-strong)"
+                : "var(--ink-20)",
+              color: "var(--paper)",
               border: "none",
               cursor: title.trim() ? "pointer" : "not-allowed",
               fontSize: 15,
               fontWeight: 600,
               letterSpacing: "-0.01em",
               boxShadow: title.trim()
-                ? "0 6px 16px rgba(79,156,106,0.4)"
+                ? "0 6px 16px rgba(31,24,19,0.28)"
                 : "none",
             }}
           >

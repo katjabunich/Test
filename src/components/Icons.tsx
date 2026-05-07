@@ -66,32 +66,45 @@ export const Icons = {
   Check: (p: Props) => <I {...p} strokeWidth={2.4} d="M5 12l5 5L20 7" />,
   Chevron: (p: Props) => <I {...p} d="M9 6l6 6-6 6" />,
   ChevronDown: (p: Props) => <I {...p} d="M6 9l6 6 6-6" />,
+  /* Coffee cup with steam — sphere "Работа" */
   Briefcase: (p: Props) => (
     <I {...p}>
-      <rect x="3" y="7" width="18" height="13" rx="2" />
-      <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18" />
+      <path d="M4 10h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z" />
+      <path d="M17 12h2a2.5 2.5 0 0 1 0 5h-2" />
+      <path d="M8 4c0 1.2 1 1.4 1 2.6S8 8 8 9" />
+      <path d="M12 4c0 1.2 1 1.4 1 2.6S12 8 12 9" />
     </I>
   ),
+  /* House with chimney — sphere "Дом" */
   Home: (p: Props) => (
-    <I {...p} d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z" />
+    <I {...p}>
+      <path d="M3 12.5l9-8 9 8V21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+      <path d="M10 22v-6.5h4V22" />
+      <path d="M16 5.4V9" />
+    </I>
   ),
+  /* Microphone with sound waves — sphere "Канал" */
   Video: (p: Props) => (
     <I {...p}>
-      <rect x="3" y="6" width="13" height="12" rx="2" />
-      <path d="M16 10l5-3v10l-5-3z" />
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+      <path d="M12 17.5V21M9 21h6" />
     </I>
   ),
+  /* Tulip — sphere "Голландский" */
   Globe: (p: Props) => (
     <I {...p}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      <path d="M12 3c-3 1.6-4.5 4.4-4.5 7 1 1 2.5 1.2 4.5 1.2s3.5-.2 4.5-1.2c0-2.6-1.5-5.4-4.5-7z" />
+      <path d="M12 3v8.2" />
+      <path d="M12 21v-8" />
+      <path d="M12 18c-3 0-5.2-2-5.2-5 3 0 5.2 2 5.2 5z" />
     </I>
   ),
+  /* Sparkle — sphere "AI" */
   Cpu: (p: Props) => (
     <I {...p}>
-      <rect x="6" y="6" width="12" height="12" rx="2" />
-      <rect x="9" y="9" width="6" height="6" />
-      <path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3" />
+      <path d="M12 3l1.7 5.6 5.6 1.7-5.6 1.7L12 17.6l-1.7-5.6L4.7 10.3l5.6-1.7z" />
+      <path d="M19 4.5v2.5M19 16v2.5M5 16.5v2" />
     </I>
   ),
   Drop: (p: Props) => <I {...p} d="M12 3l5.5 7a7 7 0 1 1-11 0z" />,
@@ -155,6 +168,20 @@ export const Icons = {
   Dot: (p: Props) => (
     <I {...p}>
       <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" />
+    </I>
+  ),
+  Volume: (p: Props) => (
+    <I {...p}>
+      <path d="M4 10v4h3l5 4V6L7 10z" />
+      <path d="M15 9c1.2 1.4 1.2 4.6 0 6" />
+      <path d="M17.5 6.5c2.4 2.6 2.4 8.4 0 11" />
+    </I>
+  ),
+  Vibrate: (p: Props) => (
+    <I {...p}>
+      <rect x="9" y="4" width="6" height="16" rx="1.5" />
+      <path d="M5 9l-1 1 1 1M5 13l-1 1 1 1" />
+      <path d="M19 9l1 1-1 1M19 13l1 1-1 1" />
     </I>
   ),
 };
