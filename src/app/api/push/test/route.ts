@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -9,8 +8,33 @@ function clean(v: string | undefined): string {
   return (v ?? "").trim().replace(/[\r\n]/g, "");
 }
 
+/* GET = a sanity probe so we can curl/visit the route and confirm
+   the latest deploy is live before troubleshooting POST. */
+export async function GET() {
+  try {
+    const mod = await import("web-push");
+    return NextResponse.json({
+      alive: true,
+      webpush: typeof mod.default?.setVapidDetails === "function" ? "loaded" : "missing",
+      env: {
+        pub_len: clean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY).length,
+        priv_len: clean(process.env.VAPID_PRIVATE_KEY).length,
+        subject_set: !!clean(process.env.VAPID_SUBJECT),
+      },
+    });
+  } catch (e) {
+    const m = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    return NextResponse.json({ alive: true, error: `import failed: ${m}` }, { status: 500 });
+  }
+}
+
 export async function POST() {
   try {
+    const webpushMod = await import("web-push").catch((e) => {
+      throw new Error(`web-push import failed: ${e instanceof Error ? e.message : String(e)}`);
+    });
+    const webpush = webpushMod.default;
+
     const supabase = await createClient();
     const {
       data: { user },
