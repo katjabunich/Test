@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
+import PasswordChangeModal from "@/components/PasswordChangeModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 
@@ -15,6 +16,7 @@ export default function SettingsView({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
+  const [pwOpen, setPwOpen] = useState(false);
   const [sound, setSound] = useState(true);
   const [haptic, setHaptic] = useState(true);
 
@@ -226,6 +228,37 @@ export default function SettingsView({
               {userEmail ?? "—"}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={() => setPwOpen(true)}
+            className="tap"
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "14px",
+              background: "transparent",
+              border: "none",
+              borderBottom: "1px solid var(--ink-05)",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <Icons.Lock size={18} stroke="var(--ink-60)" strokeWidth={1.8} />
+            <span
+              style={{
+                flex: 1,
+                fontSize: 14.5,
+                fontWeight: 500,
+                color: "var(--ink)",
+                letterSpacing: "-0.005em",
+              }}
+            >
+              Сменить пароль
+            </span>
+            <Icons.Chevron size={15} stroke="var(--ink-40)" />
+          </button>
           <form action="/auth/sign-out" method="post">
             <button
               type="submit"
@@ -339,6 +372,7 @@ export default function SettingsView({
         onClose={() => setModalOpen(false)}
         sphere={editing}
       />
+      <PasswordChangeModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </>
   );
 }
