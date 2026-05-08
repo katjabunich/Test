@@ -10,9 +10,8 @@ import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
+import { updateDisplayName } from "@/lib/profile";
 import { feedbackTaskComplete } from "@/lib/feedback";
-
-const NAME_KEY = "dela.name";
 
 const MONTHS_GENITIVE = [
   "января", "февраля", "марта", "апреля", "мая", "июня",
@@ -74,34 +73,23 @@ export default function TodayView({
   spheres,
   habits,
   logs,
+  initialName,
 }: {
   todayTasks: Task[];
   upcomingTasks: Task[];
   spheres: Sphere[];
   habits: Habit[];
   logs: HabitLog[];
+  initialName: string | null;
 }) {
   const router = useRouter();
   const search = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
-  const [name, setName] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(initialName);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
-
-  // Display name lives in localStorage. Inline-editable in the greeting;
-  // listening to the storage event keeps it in sync if multiple tabs are
-  // open or another component (Settings) updates it.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setName(localStorage.getItem(NAME_KEY));
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === NAME_KEY) setName(e.newValue);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
   useEffect(() => {
     if (editingName) nameInputRef.current?.focus();
@@ -113,12 +101,12 @@ export default function TodayView({
   }
   function commitName() {
     const trimmed = nameDraft.trim().slice(0, 30);
-    if (typeof window !== "undefined") {
-      if (trimmed) localStorage.setItem(NAME_KEY, trimmed);
-      else localStorage.removeItem(NAME_KEY);
-    }
     setName(trimmed || null);
     setEditingName(false);
+    // Fire-and-forget: cloud-persist via Supabase auth user_metadata.
+    void updateDisplayName(trimmed).catch((e) => {
+      console.error("updateDisplayName:", e);
+    });
   }
 
   // ?new=1 from BottomNav FAB → open task creation

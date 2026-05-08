@@ -5,11 +5,13 @@ import {
   fetchTodayTasks,
   fetchUpcomingTasks,
 } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
 import TodayView from "./TodayView";
 
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
+  const user = await requireUser();
   const [todayTasks, upcomingTasks, spheres, habits, logs] = await Promise.all([
     fetchTodayTasks(),
     fetchUpcomingTasks(7),
@@ -18,6 +20,12 @@ export default async function TodayPage() {
     fetchRecentHabitLogs(7),
   ]);
 
+  const meta = (user.user_metadata ?? {}) as { display_name?: string | null };
+  const initialName =
+    typeof meta.display_name === "string" && meta.display_name.trim()
+      ? meta.display_name.trim()
+      : null;
+
   return (
     <TodayView
       todayTasks={todayTasks}
@@ -25,6 +33,7 @@ export default async function TodayPage() {
       spheres={spheres}
       habits={habits}
       logs={logs}
+      initialName={initialName}
     />
   );
 }

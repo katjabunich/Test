@@ -45,27 +45,8 @@ export default function LoginForm({ next }: { next: string }) {
         background: "var(--paper)",
         padding:
           "max(36px, calc(env(safe-area-inset-top) + 24px)) 22px max(28px, calc(env(safe-area-inset-bottom) + 22px))",
-        position: "relative",
       }}
     >
-      {/* Decorative sphere chips floating at the top, hint of the app palette. */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "max(20px, calc(env(safe-area-inset-top) + 8px))",
-          left: 22,
-          display: "flex",
-          gap: 6,
-        }}
-      >
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--peach)" }} />
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--mint)" }} />
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--lilac)" }} />
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--butter)" }} />
-        <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--pool)" }} />
-      </div>
-
       <div
         style={{
           flex: 1,
@@ -75,23 +56,8 @@ export default function LoginForm({ next }: { next: string }) {
           maxWidth: 380,
           width: "100%",
           margin: "0 auto",
-          paddingTop: 24,
         }}
       >
-        <div
-          style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--ink-60)",
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            marginBottom: 12,
-          }}
-        >
-          DoIt
-        </div>
-
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
@@ -185,15 +151,14 @@ export default function LoginForm({ next }: { next: string }) {
           {mode === "signin" ? "Войти через Google" : "Зарегистрироваться через Google"}
         </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "6px 0 18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 18px" }}>
           <span style={{ flex: 1, height: 1, background: "var(--ink-10)" }} />
           <span
             style={{
-              fontFamily: "var(--font-emphasis)",
-              fontStyle: "italic",
-              fontSize: 13,
+              fontSize: 12,
+              fontWeight: 500,
               color: "var(--ink-40)",
-              letterSpacing: "0.02em",
+              letterSpacing: "-0.005em",
             }}
           >
             или

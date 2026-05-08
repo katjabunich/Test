@@ -3,7 +3,6 @@ import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import RegisterSW from "@/components/RegisterSW";
-import SplashScreen from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
 import { getUser } from "@/lib/auth";
@@ -55,7 +54,6 @@ export default async function RootLayout({
           <PageTransition>{children}</PageTransition>
         </main>
         {authed && <BottomNav />}
-        {authed && <SplashScreen />}
         {!authed && <Onboarding />}
         <RegisterSW />
       </body>
