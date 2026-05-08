@@ -42,6 +42,20 @@ export function checkSupabaseEnv(): EnvCheck {
   };
 }
 
+/* Server-only. Codes live in the `INVITE_CODES` env var as a
+   comma-separated list. Comparison is case-insensitive and ignores
+   surrounding whitespace so users can paste without worrying about
+   trailing spaces. Fails closed: an empty/unset env means no signup. */
+export function isValidInviteCode(input: string): boolean {
+  const raw = process.env.INVITE_CODES ?? "";
+  const codes = raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (codes.length === 0) return false;
+  return codes.includes(input.trim().toLowerCase());
+}
+
 export class MissingEnvError extends Error {
   constructor(missing: string[]) {
     super(`Missing env vars: ${missing.join(", ")}`);

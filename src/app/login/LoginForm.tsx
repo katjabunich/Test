@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { signInWithPassword, signUpWithPassword } from "./actions";
 import { useT } from "@/lib/i18n/client";
 
@@ -31,18 +30,6 @@ export default function LoginForm({ next }: { next: string }) {
         setBanner({ kind: "error", text: result.raw });
       }
     });
-  }
-
-  async function handleGoogle() {
-    setBanner(null);
-    const supabase = createClient();
-    const origin = window.location.origin;
-    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
-    });
-    if (error) setBanner({ kind: "error", text: error.message });
   }
 
   return (
@@ -134,49 +121,6 @@ export default function LoginForm({ next }: { next: string }) {
           />
         </div>
 
-        <button
-          type="button"
-          onClick={handleGoogle}
-          disabled={pending}
-          className="tap"
-          style={{
-            width: "100%",
-            padding: "14px 16px",
-            borderRadius: 14,
-            background: "var(--paper-warm)",
-            color: "var(--ink)",
-            border: "1px solid var(--ink-10)",
-            cursor: "pointer",
-            fontSize: 15,
-            fontWeight: 600,
-            letterSpacing: "-0.005em",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            marginBottom: 16,
-            boxShadow: "0 1px 0 rgba(255,255,255,0.6) inset",
-          }}
-        >
-          <GoogleGlyph />
-          {mode === "signin" ? t("login.google_signin") : t("login.google_signup")}
-        </button>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 18px" }}>
-          <span style={{ flex: 1, height: 1, background: "var(--ink-10)" }} />
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--ink-40)",
-              letterSpacing: "-0.005em",
-            }}
-          >
-            {t("login.or")}
-          </span>
-          <span style={{ flex: 1, height: 1, background: "var(--ink-10)" }} />
-        </div>
-
         <form action={handleSubmit}>
           <Field
             label={t("login.email")}
@@ -195,6 +139,17 @@ export default function LoginForm({ next }: { next: string }) {
             disabled={pending}
             hint={mode === "signup" ? t("login.pw_hint") : undefined}
           />
+          {mode === "signup" && (
+            <Field
+              label={t("login.invite")}
+              name="invite"
+              type="text"
+              autoComplete="off"
+              required
+              disabled={pending}
+              hint={t("login.invite_hint")}
+            />
+          )}
 
           {banner && (
             <div
@@ -372,25 +327,3 @@ function Field({
   );
 }
 
-function GoogleGlyph() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
-      <path
-        fill="#4285F4"
-        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62z"
-      />
-      <path
-        fill="#34A853"
-        d="M9 18c2.43 0 4.47-.81 5.96-2.18l-2.91-2.26c-.8.54-1.83.86-3.05.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.33A9 9 0 0 0 9 18z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M3.97 10.71A5.41 5.41 0 0 1 3.69 9c0-.59.1-1.17.28-1.71V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.04l3.02-2.33z"
-      />
-      <path
-        fill="#EA4335"
-        d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58A8.97 8.97 0 0 0 9 0 9 9 0 0 0 .95 4.96L3.97 7.3C4.68 5.16 6.66 3.58 9 3.58z"
-      />
-    </svg>
-  );
-}

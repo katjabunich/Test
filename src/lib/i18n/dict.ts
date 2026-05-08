@@ -71,13 +71,11 @@ export const DICT = {
     tab_signin:    { ru: "Войти",         en: "Sign in" },
     tab_signup:    { ru: "Регистрация",   en: "Sign up" },
 
-    google_signin: { ru: "Войти через Google",            en: "Continue with Google" },
-    google_signup: { ru: "Зарегистрироваться через Google", en: "Sign up with Google" },
-    or:            { ru: "или",                           en: "or" },
-
     email:         { ru: "Email",                         en: "Email" },
     password:      { ru: "Пароль",                        en: "Password" },
     pw_hint:       { ru: "От 8 символов",                 en: "8 characters or more" },
+    invite:        { ru: "Код приглашения",               en: "Invite code" },
+    invite_hint:   { ru: "Спроси у Кати",                 en: "Ask Katja" },
 
     cta_signin:    { ru: "Войти",                         en: "Sign in" },
     cta_signup:    { ru: "Зарегистрироваться",            en: "Sign up" },
@@ -90,6 +88,7 @@ export const DICT = {
     err_exists:    { ru: "Такой аккаунт уже существует — войди.", en: "An account already exists — sign in instead." },
     err_rate:      { ru: "Слишком много попыток. Подожди минуту.", en: "Too many attempts. Wait a minute." },
     err_confirm_email: { ru: "Подтверди email — мы отправили письмо со ссылкой. После подтверждения вернись и войди.", en: "Check your inbox — we sent a confirmation link. Come back to sign in once it's confirmed." },
+    err_bad_invite:{ ru: "Неверный код приглашения.",     en: "Invalid invite code." },
     footer:        { ru: "v2 · вход и облачная синхронизация", en: "v2 · auth and cloud sync" },
   },
 
