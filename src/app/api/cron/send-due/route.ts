@@ -16,6 +16,59 @@ function clean(v: string | undefined): string {
    runs because we filter on `reminded_at IS NULL` and stamp it the
    moment we send. Both GET and POST are accepted because cron services
    default to one or the other. */
+async function diag() {
+  const out: Record<string, unknown> = {
+    env: {
+      cron_secret_len: clean(process.env.CRON_SECRET).length,
+      supabase_url_len: clean(process.env.NEXT_PUBLIC_SUPABASE_URL).length,
+      service_role_len: clean(process.env.SUPABASE_SERVICE_ROLE_KEY).length,
+      vapid_pub_len: clean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY).length,
+      vapid_priv_len: clean(process.env.VAPID_PRIVATE_KEY).length,
+      vapid_subject: clean(process.env.VAPID_SUBJECT) || "(default)",
+    },
+  };
+
+  try {
+    const mod = await import("web-push");
+    out.webpush_import = "ok";
+    try {
+      const subjectRaw = clean(process.env.VAPID_SUBJECT) || "mailto:noreply@doit-tracker.app";
+      const subject =
+        subjectRaw.startsWith("mailto:") || subjectRaw.startsWith("https://")
+          ? subjectRaw
+          : `mailto:${subjectRaw}`;
+      mod.default.setVapidDetails(
+        subject,
+        clean(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY),
+        clean(process.env.VAPID_PRIVATE_KEY),
+      );
+      out.webpush_setvapid = "ok";
+    } catch (e) {
+      out.webpush_setvapid = `failed: ${e instanceof Error ? e.message : String(e)}`;
+    }
+  } catch (e) {
+    out.webpush_import = `failed: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
+  try {
+    const url = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const key = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+    if (!url || !key) {
+      out.supabase_client = "skipped (missing env)";
+    } else {
+      const admin = createServiceClient(url, key, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { error } = await admin.from("tasks").select("id").limit(1);
+      out.supabase_client = error ? `query_failed: ${error.message}` : "ok";
+    }
+  } catch (e) {
+    out.supabase_client = `failed: ${e instanceof Error ? e.message : String(e)}`;
+  }
+
+  return NextResponse.json(out);
+}
+
 async function handle(req: NextRequest) {
   const cronSecret = clean(process.env.CRON_SECRET);
   if (!cronSecret) {
@@ -158,6 +211,17 @@ async function handle(req: NextRequest) {
 
 async function safe(req: NextRequest) {
   try {
+    // Auth-gated diag mode: ?diag=1&token=<CRON_SECRET> returns the
+    // server's view of env vars, web-push init, and a tiny supabase
+    // ping — without sending any notifications.
+    if (req.nextUrl.searchParams.get("diag") === "1") {
+      const cronSecret = clean(process.env.CRON_SECRET);
+      const queryToken = (req.nextUrl.searchParams.get("token") ?? "").trim();
+      if (cronSecret && queryToken === cronSecret) {
+        return await diag();
+      }
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
     return await handle(req);
   } catch (e) {
     const m = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
