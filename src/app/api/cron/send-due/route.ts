@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { getSupabaseUrl } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ async function diag() {
   }
 
   try {
-    const url = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const url = getSupabaseUrl() ?? "";
     const key = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
     if (!url || !key) {
       out.supabase_client = "skipped (missing env)";
@@ -61,6 +62,7 @@ async function diag() {
       });
       const { error } = await admin.from("tasks").select("id").limit(1);
       out.supabase_client = error ? `query_failed: ${error.message}` : "ok";
+      out.supabase_url_sanitized_len = url.length;
     }
   } catch (e) {
     out.supabase_client = `failed: ${e instanceof Error ? e.message : String(e)}`;
@@ -95,7 +97,7 @@ async function handle(req: NextRequest) {
     );
   }
 
-  const supabaseUrl = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const supabaseUrl = getSupabaseUrl() ?? "";
   const serviceKey = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   if (!supabaseUrl || !serviceKey) {
     return NextResponse.json({ error: "supabase_env_missing" }, { status: 500 });
