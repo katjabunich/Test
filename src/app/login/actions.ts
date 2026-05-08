@@ -50,6 +50,8 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
   const password = String(formData.get("password") ?? "");
   const invite = String(formData.get("invite") ?? "");
   const origin = String(formData.get("origin") ?? "").trim();
+  const langRaw = String(formData.get("lang") ?? "");
+  const lang = langRaw === "en" ? "en" : "ru";
 
   if (!email || !password) return { code: "required" };
   if (password.length < 8) return { code: "pw_short" };
@@ -59,10 +61,15 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
 
   const supabase = await createClient();
   const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
+  /* Pass `lang` via user metadata so the on-signup DB trigger seeds
+     default spheres in the user's language. */
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: emailRedirectTo ? { emailRedirectTo } : undefined,
+    options: {
+      data: { lang },
+      ...(emailRedirectTo ? { emailRedirectTo } : {}),
+    },
   });
   if (error) return { code: classify(error.message), raw: error.message };
 

@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { signInWithPassword, signUpWithPassword } from "./actions";
-import { useT } from "@/lib/i18n/client";
+import { useT, useLang } from "@/lib/i18n/client";
 
 type Mode = "signin" | "signup";
 type Banner = { kind: "error" | "info"; text: string };
 
 export default function LoginForm({ next }: { next: string }) {
   const t = useT();
+  const lang = useLang();
   const [mode, setMode] = useState<Mode>("signin");
   const [banner, setBanner] = useState<Banner | null>(null);
   const [pending, startTransition] = useTransition();
@@ -16,6 +17,7 @@ export default function LoginForm({ next }: { next: string }) {
   function handleSubmit(formData: FormData) {
     setBanner(null);
     formData.set("next", next);
+    formData.set("lang", lang);
     if (typeof window !== "undefined") {
       formData.set("origin", window.location.origin);
     }
