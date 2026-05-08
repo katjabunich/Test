@@ -5,8 +5,11 @@
    unsubscribe and feeds the result to our /api/push routes. */
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  // Strip whitespace and any non-base64url chars that crept in via copy-
+  // paste (Vercel UI sometimes preserves trailing newlines).
+  const cleaned = base64String.trim().replace(/[^A-Za-z0-9_-]/g, "");
+  const padding = "=".repeat((4 - (cleaned.length % 4)) % 4);
+  const base64 = (cleaned + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
   const arr = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
@@ -91,10 +94,11 @@ export async function enablePush(): Promise<PushEnableResult> {
     }
     return { ok: true };
   } catch (e) {
+    const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
     return {
       ok: false,
       reason: "unknown",
-      raw: "subscribe threw: " + (e instanceof Error ? `${e.name}: ${e.message}` : String(e)),
+      raw: `subscribe threw: ${msg}; keyLen=${publicKey.length}`,
     };
   }
 }
