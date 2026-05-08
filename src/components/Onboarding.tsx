@@ -28,7 +28,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     cta: "Дальше",
-    focus: "center 75%",
+    focus: "center 95%",
   },
   {
     illustration: "/illustrations/onboarding-spheres.jpg",
