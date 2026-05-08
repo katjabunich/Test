@@ -11,6 +11,9 @@ type Slide = {
   title: string;
   body: React.ReactNode;
   cta: string;
+  /** Vertical anchor for `object-fit: cover`. 0% = top, 100% = bottom.
+      Tune per-image so the protagonist isn't clipped by the bottom card. */
+  focus: string;
 };
 
 const SLIDES: Slide[] = [
@@ -25,6 +28,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     cta: "Дальше",
+    focus: "center 35%",
   },
   {
     illustration: "/illustrations/onboarding-spheres.jpg",
@@ -37,6 +41,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     cta: "Дальше",
+    focus: "center 35%",
   },
   {
     illustration: "/illustrations/onboarding-streak.jpg",
@@ -48,6 +53,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     cta: "Готова, поехали",
+    focus: "center 30%",
   },
 ];
 
@@ -167,7 +173,7 @@ export default function Onboarding() {
           sizes="(max-width: 460px) 100vw, 460px"
           style={{
             objectFit: "cover",
-            objectPosition: "center top",
+            objectPosition: slide.focus,
           }}
         />
       </div>
