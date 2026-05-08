@@ -58,6 +58,19 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
     options: emailRedirectTo ? { emailRedirectTo } : undefined,
   });
   if (error) return { code: classify(error.message), raw: error.message };
-  if (!data.session) return { code: "confirm_email" };
+
+  // A DB trigger auto-confirms email_confirmed_at so the user is usable
+  // immediately even though Supabase Auth, configured for confirmation,
+  // returned a null session. Try the sign-in path so we land on a
+  // proper session in the same round trip.
+  if (!data.session) {
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) {
+      // Fall back to the original "check your inbox" flow if auto-sign-in
+      // failed for any reason (e.g. project actually requires confirmation
+      // in some unforeseen path).
+      return { code: "confirm_email" };
+    }
+  }
   redirect("/");
 }
