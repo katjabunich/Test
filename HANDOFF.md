@@ -155,6 +155,75 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 ---
 
+---
+
+## Push-уведомления (работает)
+
+End-to-end pipeline для push-напоминаний по задачам — **запущен и работает**.
+
+### Архитектура
+
+```
+Браузер юзера ──── /api/push/subscribe ────────→ doit_push_subscriptions (Supabase)
+                                                             ↑
+cron-job.org (каждые 5 мин) ──→ /api/cron/send-due ──── читает tasks WHERE remind_at <= now() AND reminded_at IS NULL
+                                       │
+                                       ↓
+                                  web-push → Apple Push / FCM → SW push event → showNotification
+```
+
+### Env-переменные (Vercel)
+
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — public, в браузер уходит. Длина 87.
+- `VAPID_PRIVATE_KEY` — server-only. Длина 43. **Sensitive**.
+- `VAPID_SUBJECT` — `mailto:katjabunich@gmail.com`. Контакт для push-сервисов.
+- `SUPABASE_SERVICE_ROLE_KEY` — нужен только cron'у, читает данные всех юзеров минуя RLS. **Sensitive, длинный JWT (~219)**.
+- `CRON_SECRET` — секрет для авторизации cron-job.org. **Sensitive, без спецсимволов** (URL-safe).
+
+VAPID-ключи генерируются `npx web-push generate-vapid-keys --json`.
+
+### Таблицы
+
+- `doit_push_subscriptions (id, user_id, endpoint, p256dh, auth, user_agent, created_at)` — подписка на push с устройства. RLS: юзер видит/правит только свои.
+- `tasks.remind_at TIMESTAMPTZ` — когда стрельнуть уведомлением. NULL = нет напоминания.
+- `tasks.reminded_at TIMESTAMPTZ` — когда уже стрельнули. NULL = ещё не отправляли. Очищается при правке `remind_at`.
+
+### Files
+
+- `public/sw.js` — service worker с `push` и `notificationclick` handlers.
+- `src/components/RegisterSW.tsx` — регистрирует SW один раз. **НЕ unregister'ить SW на каждой загрузке** — push subscription живёт на registration.
+- `src/lib/push.ts` — клиентские helpers `enablePush` / `disablePush` / `sendTestPush`.
+- `src/app/api/push/subscribe/route.ts` — POST, сохраняет подписку в БД.
+- `src/app/api/push/unsubscribe/route.ts` — POST, удаляет.
+- `src/app/api/push/test/route.ts` — POST, отправляет тестовый push текущему юзеру + GET probe.
+- `src/app/api/cron/send-due/route.ts` — POST/GET, авторизация по `Bearer` header или `?token=`. Опция `?diag=1&token=...` показывает env-проверку без отправки.
+
+### Внешний cron
+
+- Сервис: **cron-job.org** (бесплатный)
+- URL: `https://doit-tracker.vercel.app/api/cron/send-due?token=<CRON_SECRET>`
+- Schedule: every 5 minutes
+- Cron-job.org → History показывает выполнения.
+
+### Известные ограничения push
+
+- **iOS PWA only** — push на iPhone работает **только** если приложение добавлено на главный экран (Share → На экран Домой) и открыто из standalone-режима. iOS 16.4+. В обычной вкладке Safari — невозможно.
+- **Recurring tasks теряют remind_at** — когда задача с `recurrence` выполняется, `completeTask` создаёт следующий экземпляр без напоминания. Юзер ставит заново вручную. **Возможный fix**: в `completeTask` копировать time-of-day из старого `remind_at` и применять к новому `due_date`.
+- **5-минутная зернистость** — cron-job.org бьёт каждые 5 минут, поэтому уведомление приходит в окне ±5 мин от заданного времени. Минута меньше 5 = пользователь не получит немедленно (но в следующий тик придёт).
+- **Один-разовое напоминание** — после отправки `reminded_at` помечается, повторно не дёргает. Это правильное поведение для one-shot reminder, но **проигрывает** случаю «напомни если не выполнил».
+
+### Чтобы пересобрать pipeline в новой среде
+
+1. Сгенерировать VAPID-keys.
+2. Получить service_role-key из Supabase Settings → API.
+3. Сгенерировать рандомный CRON_SECRET без спецсимволов.
+4. Прописать всё в Vercel env, redeploy.
+5. Убедиться, что таблица `doit_push_subscriptions` создана + триггер на `auth.users` второй (`on_auth_user_created_seed_spheres`).
+6. Зарегистрировать cronjob на cron-job.org с GET URL + `?token=...`.
+7. Проверка: `?diag=1&token=...` должен вернуть все `ok` и нормальные длины.
+
+---
+
 ## Известные ограничения / нерешённое
 
 1. **iOS haptic в обычной Safari-вкладке не работает** — Apple запрет. Hidden-checkbox фолбэк помогает только в PWA standalone (после Share → «На главный»). Для полной поддержки нужно нативное приложение.
@@ -178,7 +247,7 @@ DoIt держится в Supabase-проекте **`plant-app`** (id `guypbszfnc
 
 - **Dark mode** — большая фича, отдельным релизом. Сейчас токены под light-only, нужна `prefers-color-scheme` реструктуризация
 - **Data viz** — calendar heatmap привычек, streak charts, weekly breakdown
-- **Push-notifications** — реальные напоминания через Service Worker + Web Push API (сейчас в Settings показано как disabled placeholder)
+- **Push-notifications для habits** — сейчас работают только для tasks. Аналогично можно сделать для привычек с per-habit `notify_at TIME` полем + cron-логикой что «сегодня плановый день привычки».
 - **Cloud sync / multi-device** — Supabase auth + RLS уже есть, но сейчас приложение для одного юзера; нужно вынести на multi-account flow
 - **Drag-to-reorder** для задач/привычек
 - **Widget support** для iOS PWA — ограничено, но возможно
