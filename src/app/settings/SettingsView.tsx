@@ -6,6 +6,7 @@ import SphereEditModal from "@/components/SphereEditModal";
 import PasswordChangeModal from "@/components/PasswordChangeModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
+import { isPushSupported, isPushEnabled, enablePush, disablePush, sendTestPush } from "@/lib/push";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 
@@ -24,11 +25,45 @@ export default function SettingsView({
   const [pwOpen, setPwOpen] = useState(false);
   const [sound, setSound] = useState(true);
   const [haptic, setHaptic] = useState(true);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushOn, setPushOn] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMsg, setPushMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setSound(isSoundEnabled());
     setHaptic(isHapticEnabled());
+    void (async () => {
+      const supported = await isPushSupported();
+      setPushSupported(supported);
+      if (supported) setPushOn(await isPushEnabled());
+    })();
   }, []);
+
+  async function togglePush() {
+    setPushBusy(true);
+    setPushMsg(null);
+    if (pushOn) {
+      const r = await disablePush();
+      if (r.ok) setPushOn(false);
+    } else {
+      const r = await enablePush();
+      if (r.ok) {
+        setPushOn(true);
+      } else {
+        setPushMsg(t(`settings.push_err_${r.reason}`));
+      }
+    }
+    setPushBusy(false);
+  }
+
+  async function sendTest() {
+    setPushBusy(true);
+    setPushMsg(null);
+    const r = await sendTestPush();
+    setPushMsg(r.ok ? t("settings.push_test_sent") : t("settings.push_test_failed"));
+    setPushBusy(false);
+  }
 
   return (
     <>
@@ -337,14 +372,51 @@ export default function SettingsView({
             }}
           />
           <LanguageRow lang={lang} onChange={setLang} />
-          <SettingsRow
+          <SettingsToggleRow
             Icon={Icons.Bell}
             label={t("settings.notify")}
-            value="—"
-            disabled
-            last
+            checked={pushOn}
+            disabled={!pushSupported || pushBusy}
+            onChange={() => void togglePush()}
+            last={!pushOn}
           />
+          {pushOn && (
+            <button
+              type="button"
+              onClick={() => void sendTest()}
+              disabled={pushBusy}
+              className="tap"
+              style={{
+                width: "100%",
+                padding: "12px 14px",
+                background: "transparent",
+                border: "none",
+                textAlign: "left",
+                fontSize: 13,
+                fontWeight: 500,
+                color: "var(--mint-deep)",
+                cursor: pushBusy ? "default" : "pointer",
+                opacity: pushBusy ? 0.5 : 1,
+                letterSpacing: "-0.005em",
+              }}
+            >
+              {t("settings.push_test")}
+            </button>
+          )}
         </div>
+        {pushMsg && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "8px 12px",
+              fontSize: 12.5,
+              color: "var(--ink-60)",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {pushMsg}
+          </div>
+        )}
       </div>
 
       <SphereEditModal
@@ -416,26 +488,32 @@ function SettingsToggleRow({
   label,
   checked,
   onChange,
+  disabled,
+  last,
 }: {
   Icon: (p: { size?: number; stroke?: string; strokeWidth?: number }) => React.JSX.Element;
   label: string;
   checked: boolean;
   onChange: (v: boolean) => void;
+  disabled?: boolean;
+  last?: boolean;
 }) {
   return (
     <button
       type="button"
-      onClick={() => onChange(!checked)}
+      onClick={() => !disabled && onChange(!checked)}
+      disabled={disabled}
       style={{
         display: "flex",
         alignItems: "center",
         gap: 12,
         padding: "14px",
-        borderBottom: "1px solid var(--ink-05)",
+        borderBottom: last ? "none" : "1px solid var(--ink-05)",
         background: "transparent",
         border: "none",
         width: "100%",
-        cursor: "pointer",
+        cursor: disabled ? "default" : "pointer",
+        opacity: disabled ? 0.5 : 1,
         textAlign: "left",
       }}
     >
