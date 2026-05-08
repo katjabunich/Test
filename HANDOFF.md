@@ -164,42 +164,13 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 ---
 
-## ⚠️ TODO: техдолг, напомнить Кате при следующем заходе
+## Supabase: проект, в котором живёт DoIt
 
-**Старый DB-триггер `on_auth_user_created` в Supabase до сих пор засеивает её личные дефолты** (Голландский / Канал / AI / Работа / Дом). Сейчас обходим костылём в `src/app/login/actions.ts` → функция `reseedSpheres`: после регистрации делаем `delete spheres → insert новые 3`. Костыль на 8 лишних запросов в БД на регистрацию.
+DoIt держится в Supabase-проекте **`plant-app`** (id `guypbszfncsskkqmfzfp`), не в `chemodan-app`. Если у Claude в MCP несколько проектов — это нужный.
 
-**Когда Катя в следующий раз попросит правку — напомни почистить триггер**, выполнив SQL в Supabase SQL Editor (см. ниже). После этого можно удалить `reseedSpheres` и оставить чистый код.
-
-```sql
-drop trigger if exists on_auth_user_created on auth.users;
-drop function if exists public.handle_new_user();
-
-create function public.handle_new_user()
-returns trigger language plpgsql security definer set search_path = public as $$
-declare user_lang text := coalesce(new.raw_user_meta_data->>'lang', 'ru');
-begin
-  if new.email_confirmed_at is null then
-    update auth.users set email_confirmed_at = now() where id = new.id;
-  end if;
-  if user_lang = 'en' then
-    insert into public.spheres (user_id, name, color, emoji, position) values
-      (new.id, 'Work',     '#f4936e', '💼', 0),
-      (new.id, 'Home',     '#86c79a', '🏡', 1),
-      (new.id, 'Personal', '#b5a3df', '🌿', 2);
-  else
-    insert into public.spheres (user_id, name, color, emoji, position) values
-      (new.id, 'Работа', '#f4936e', '💼', 0),
-      (new.id, 'Дом',    '#86c79a', '🏡', 1),
-      (new.id, 'Личное', '#b5a3df', '🌿', 2);
-  end if;
-  return new;
-end; $$;
-
-create trigger on_auth_user_created
-  after insert on auth.users for each row execute function public.handle_new_user();
-```
-
-После выполнения этого SQL → удалить `reseedSpheres` из `src/app/login/actions.ts` и убрать его вызов.
+На `auth.users` стоит два триггера:
+- `on_auth_user_auto_confirm` (BEFORE INSERT) → `auto_confirm_user_email()` — авто-подтверждает email, чтобы регистрация сразу давала рабочую сессию.
+- `on_auth_user_created_seed_spheres` (AFTER INSERT) → `handle_new_user_seed_spheres()` — засеивает 3 дефолтные сферы (Работа / Дом / Личное или Work / Home / Personal). Читает `raw_user_meta_data->>'lang'` для языка.
 
 ---
 

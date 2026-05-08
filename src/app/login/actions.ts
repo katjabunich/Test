@@ -3,33 +3,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { checkInviteCode } from "@/lib/env";
-import { DEFAULT_SPHERES, DEFAULT_SPHERES_EN } from "@/lib/constants";
-
-/* Replace whatever the on_auth_user_created DB trigger seeded with the
-   minimal generic set in the user's language. The trigger is left
-   untouched (its other job — auto-confirming email — still runs); we
-   just overwrite its sphere output here, no SQL migration required. */
-async function reseedSpheres(userId: string, lang: "ru" | "en") {
-  const supabase = await createClient();
-  const { error: delErr } = await supabase
-    .from("spheres")
-    .delete()
-    .eq("user_id", userId);
-  if (delErr) {
-    console.error("reseedSpheres delete:", delErr);
-    return;
-  }
-  const defaults = lang === "en" ? DEFAULT_SPHERES_EN : DEFAULT_SPHERES;
-  const rows = defaults.map((s, i) => ({
-    user_id: userId,
-    name: s.name,
-    color: s.color,
-    emoji: s.emoji,
-    position: i,
-  }));
-  const { error: insErr } = await supabase.from("spheres").insert(rows);
-  if (insErr) console.error("reseedSpheres insert:", insErr);
-}
 
 /* Error codes: client maps to translated strings via the i18n dict, so
    server actions stay locale-agnostic. */
@@ -113,6 +86,5 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
       return { code: "confirm_email" };
     }
   }
-  if (data.user?.id) await reseedSpheres(data.user.id, lang);
   redirect("/");
 }
