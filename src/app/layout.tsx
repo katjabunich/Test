@@ -56,7 +56,7 @@ export default async function RootLayout({
         </main>
         {authed && <BottomNav />}
         {authed && <SplashScreen />}
-        {authed && <Onboarding />}
+        {!authed && <Onboarding />}
         <RegisterSW />
       </body>
     </html>
