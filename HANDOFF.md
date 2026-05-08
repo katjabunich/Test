@@ -164,6 +164,45 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 ---
 
+## ⚠️ TODO: техдолг, напомнить Кате при следующем заходе
+
+**Старый DB-триггер `on_auth_user_created` в Supabase до сих пор засеивает её личные дефолты** (Голландский / Канал / AI / Работа / Дом). Сейчас обходим костылём в `src/app/login/actions.ts` → функция `reseedSpheres`: после регистрации делаем `delete spheres → insert новые 3`. Костыль на 8 лишних запросов в БД на регистрацию.
+
+**Когда Катя в следующий раз попросит правку — напомни почистить триггер**, выполнив SQL в Supabase SQL Editor (см. ниже). После этого можно удалить `reseedSpheres` и оставить чистый код.
+
+```sql
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user();
+
+create function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare user_lang text := coalesce(new.raw_user_meta_data->>'lang', 'ru');
+begin
+  if new.email_confirmed_at is null then
+    update auth.users set email_confirmed_at = now() where id = new.id;
+  end if;
+  if user_lang = 'en' then
+    insert into public.spheres (user_id, name, color, emoji, position) values
+      (new.id, 'Work',     '#f4936e', '💼', 0),
+      (new.id, 'Home',     '#86c79a', '🏡', 1),
+      (new.id, 'Personal', '#b5a3df', '🌿', 2);
+  else
+    insert into public.spheres (user_id, name, color, emoji, position) values
+      (new.id, 'Работа', '#f4936e', '💼', 0),
+      (new.id, 'Дом',    '#86c79a', '🏡', 1),
+      (new.id, 'Личное', '#b5a3df', '🌿', 2);
+  end if;
+  return new;
+end; $$;
+
+create trigger on_auth_user_created
+  after insert on auth.users for each row execute function public.handle_new_user();
+```
+
+После выполнения этого SQL → удалить `reseedSpheres` из `src/app/login/actions.ts` и убрать его вызов.
+
+---
+
 ## Что вне scope v6 (потенциальные следующие релизы)
 
 - **Dark mode** — большая фича, отдельным релизом. Сейчас токены под light-only, нужна `prefers-color-scheme` реструктуризация
@@ -180,11 +219,18 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 - **Бранч**: `claude/task-tracker-app-LqhzE` (любая разработка туда)
 - **Деплой**: `git push origin claude/task-tracker-app-LqhzE` → Vercel auto-deploy через ~2 мин на `doit-tracker.vercel.app`
-- **Build**: `cd /home/user/Test && npm run build` (Turbopack, ~10s)
-- **Никаких миграций без явного запроса** — Supabase schema стабильна
+- **Катя работает только с телефона через Vercel** — никакого `npm run dev` локально, никакого `.env.local`. Все env-переменные настраиваются через Vercel UI.
+- **Build**: `cd /home/user/Test && npm run build` (Turbopack, ~10s) — для локальной валидации перед коммитом
+- **Никаких миграций без явного запроса** — Supabase schema стабильна. Если правка требует SQL — спросить Катю (она не знает SQL, но может выполнить готовый блок в Supabase SQL Editor).
 - **Всегда коммит + push без merge в main** — пользовательница смотрит превью
 - **Перед коммитом**: запустить `npm run build`, убедиться что TypeScript проходит
 - **Commit сообщения**: концептуальные, со ссылкой на Claude session URL в конце через HEREDOC
+
+### Аутентификация и регистрация
+
+- **Email + пароль** (Google убран — был на signin/signup, теперь нет, чтобы не обходить инвайт-гейт).
+- **Инвайт-код**: при регистрации требуется код из env-переменной `INVITE_CODES` (server-only, comma-separated, case-insensitive). Сравнение в `src/lib/env.ts → checkInviteCode()`. Текущий код в Vercel — спросить у Кати если нужен.
+- **Локализация дефолтных сфер**: язык интерфейса на момент регистрации улетает в `raw_user_meta_data->lang`; функция `reseedSpheres` в `src/app/login/actions.ts` создаёт дефолты на этом языке.
 
 ---
 
