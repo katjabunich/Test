@@ -14,6 +14,9 @@ export default function LoginForm({ next }: { next: string }) {
   function handleSubmit(formData: FormData) {
     setError(null);
     formData.set("next", next);
+    if (typeof window !== "undefined") {
+      formData.set("origin", window.location.origin);
+    }
     startTransition(async () => {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
       const result = await action(formData);

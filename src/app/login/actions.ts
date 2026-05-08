@@ -32,6 +32,7 @@ export async function signInWithPassword(formData: FormData): Promise<AuthResult
 export async function signUpWithPassword(formData: FormData): Promise<AuthResult> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const origin = String(formData.get("origin") ?? "").trim();
 
   if (!email || !password) {
     return { error: "Введи email и пароль." };
@@ -41,7 +42,12 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: emailRedirectTo ? { emailRedirectTo } : undefined,
+  });
   if (error) {
     return { error: friendlyAuthError(error.message) };
   }
