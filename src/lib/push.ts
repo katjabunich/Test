@@ -125,8 +125,25 @@ export async function disablePush(): Promise<{ ok: boolean }> {
 export async function sendTestPush(): Promise<{ ok: boolean; raw?: string }> {
   try {
     const res = await fetch("/api/push/test", { method: "POST" });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) return { ok: false, raw: json.error || String(res.status) };
+    const json = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      sent?: number;
+      total?: number;
+      results?: Array<{ ok: boolean; status?: number; error?: string }>;
+    };
+    if (!res.ok) {
+      return { ok: false, raw: `${res.status} ${json.error ?? ""}`.trim() };
+    }
+    const sent = json.sent ?? 0;
+    const total = json.total ?? 0;
+    if (sent === 0 && total > 0) {
+      const firstErr = json.results?.find((r) => !r.ok);
+      const detail = firstErr ? `${firstErr.status ?? "?"} ${firstErr.error ?? ""}`.trim() : "";
+      return { ok: false, raw: `0/${total} delivered. ${detail}` };
+    }
+    if (sent === 0) {
+      return { ok: false, raw: "no subscriptions stored on server" };
+    }
     return { ok: true };
   } catch (e) {
     return { ok: false, raw: e instanceof Error ? e.message : String(e) };

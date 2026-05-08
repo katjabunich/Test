@@ -62,7 +62,12 @@ export default function SettingsView({
     setPushBusy(true);
     setPushMsg(null);
     const r = await sendTestPush();
-    setPushMsg(r.ok ? t("settings.push_test_sent") : t("settings.push_test_failed"));
+    if (r.ok) {
+      setPushMsg(t("settings.push_test_sent"));
+    } else {
+      const baseMsg = t("settings.push_test_failed");
+      setPushMsg(r.raw ? `${baseMsg}\n${r.raw}` : baseMsg);
+    }
     setPushBusy(false);
   }
 
