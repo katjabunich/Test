@@ -6,6 +6,7 @@ import RegisterSW from "@/components/RegisterSW";
 import SplashScreen from "@/components/SplashScreen";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
+import { getUser } from "@/lib/auth";
 
 /* Two-family system:
    - Lora: warm soft serif for emotional moments (H1s, hero title,
@@ -42,18 +43,20 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const user = await getUser();
+  const authed = !!user;
   return (
     <html lang="ru" className={`${sans.variable} ${serif.variable}`}>
       <body>
         <main>
           <PageTransition>{children}</PageTransition>
         </main>
-        <BottomNav />
-        <SplashScreen />
-        <Onboarding />
+        {authed && <BottomNav />}
+        {authed && <SplashScreen />}
+        {authed && <Onboarding />}
         <RegisterSW />
       </body>
     </html>

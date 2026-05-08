@@ -6,7 +6,13 @@ import SphereEditModal from "@/components/SphereEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 
-export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
+export default function SettingsView({
+  spheres,
+  userEmail,
+}: {
+  spheres: Sphere[];
+  userEmail: string | null;
+}) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
   const [sound, setSound] = useState(true);
@@ -183,6 +189,86 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             letterSpacing: "-0.005em",
           }}
         >
+          Аккаунт
+        </div>
+
+        <div
+          style={{
+            background: "var(--paper-warm)",
+            borderRadius: 18,
+            border: "1px solid var(--ink-05)",
+            overflow: "hidden",
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "14px",
+              borderBottom: "1px solid var(--ink-05)",
+            }}
+          >
+            <Icons.User size={18} stroke="var(--ink-60)" strokeWidth={1.8} />
+            <span
+              style={{
+                flex: 1,
+                fontSize: 14.5,
+                fontWeight: 500,
+                color: "var(--ink)",
+                letterSpacing: "-0.005em",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {userEmail ?? "—"}
+            </span>
+          </div>
+          <form action="/auth/sign-out" method="post">
+            <button
+              type="submit"
+              className="tap"
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "14px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+              }}
+            >
+              <Icons.LogOut size={18} stroke="var(--alert)" strokeWidth={1.8} />
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 14.5,
+                  fontWeight: 500,
+                  color: "var(--alert)",
+                  letterSpacing: "-0.005em",
+                }}
+              >
+                Выйти
+              </span>
+            </button>
+          </form>
+        </div>
+
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--ink-80)",
+            padding: "0 4px 8px",
+            borderBottom: "1px solid var(--ink-10)",
+            marginBottom: 10,
+            letterSpacing: "-0.005em",
+          }}
+        >
           Приложение
         </div>
 
@@ -219,15 +305,15 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             }}
           />
           <SettingsRow
+            Icon={Icons.Cloud}
+            label="Облако"
+            value="вкл"
+            accent
+          />
+          <SettingsRow
             Icon={Icons.Bell}
             label="Уведомления"
             value="—"
-            disabled
-          />
-          <SettingsRow
-            Icon={Icons.Cloud}
-            label="Резервная копия"
-            value="облако"
             disabled
             last
           />
@@ -242,9 +328,9 @@ export default function SettingsView({ spheres }: { spheres: Sphere[] }) {
             lineHeight: 1.6,
           }}
         >
-          v1 · приложение для одного пользователя.
+          v2 · вход и облачная синхронизация.
           <br />
-          Дальше: вход, цели, экспорт.
+          Дальше: уведомления, цели, экспорт.
         </p>
       </div>
 

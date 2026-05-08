@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { DEV_USER_ID } from "@/lib/constants";
+import { requireUser } from "@/lib/auth";
 import { nextOccurrence } from "@/lib/recurrence";
 import { today } from "@/lib/date";
 import type { Recurrence, HabitScheduleType, HabitScheduleValue } from "@/lib/data";
@@ -19,9 +19,10 @@ export type CreateTaskInput = {
 };
 
 export async function createTask(input: CreateTaskInput) {
+  const user = await requireUser();
   const supabase = await createClient();
   const { error } = await supabase.from("tasks").insert({
-    user_id: DEV_USER_ID,
+    user_id: user.id,
     title: input.title,
     sphere_id: input.sphere_id ?? null,
     due_date: input.due_date ?? null,
@@ -36,6 +37,7 @@ export async function createTask(input: CreateTaskInput) {
 }
 
 export async function updateTask(id: string, patch: Partial<CreateTaskInput>) {
+  await requireUser();
   const supabase = await createClient();
   const update: Record<string, unknown> = { ...patch };
   // Re-anchor recurrence if recurrence changed.
@@ -44,11 +46,7 @@ export async function updateTask(id: string, patch: Partial<CreateTaskInput>) {
       ? (patch.due_date ?? today())
       : null;
   }
-  const { error } = await supabase
-    .from("tasks")
-    .update(update)
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("tasks").update(update).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/");
   revalidatePath("/tasks");
@@ -56,13 +54,13 @@ export async function updateTask(id: string, patch: Partial<CreateTaskInput>) {
 
 /** Mark a task complete. If recurring, also create the next occurrence. */
 export async function completeTask(id: string) {
+  const user = await requireUser();
   const supabase = await createClient();
 
   const { data: task, error: readErr } = await supabase
     .from("tasks")
     .select("*")
     .eq("id", id)
-    .eq("user_id", DEV_USER_ID)
     .single();
   if (readErr) throw new Error(readErr.message);
   if (!task) return;
@@ -70,8 +68,7 @@ export async function completeTask(id: string) {
   const { error: updErr } = await supabase
     .from("tasks")
     .update({ completed_at: new Date().toISOString() })
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+    .eq("id", id);
   if (updErr) throw new Error(updErr.message);
 
   if (task.recurrence) {
@@ -79,7 +76,7 @@ export async function completeTask(id: string) {
     const next = nextOccurrence(anchor, task.recurrence);
     if (next) {
       await supabase.from("tasks").insert({
-        user_id: DEV_USER_ID,
+        user_id: user.id,
         title: task.title,
         sphere_id: task.sphere_id,
         due_date: next,
@@ -96,24 +93,21 @@ export async function completeTask(id: string) {
 }
 
 export async function uncompleteTask(id: string) {
+  await requireUser();
   const supabase = await createClient();
   const { error } = await supabase
     .from("tasks")
     .update({ completed_at: null })
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+    .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/");
   revalidatePath("/tasks");
 }
 
 export async function deleteTask(id: string) {
+  await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("tasks")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("tasks").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/");
   revalidatePath("/tasks");
@@ -122,17 +116,18 @@ export async function deleteTask(id: string) {
 /* ──────────────── Spheres ──────────────── */
 
 export async function createSphere(input: { name: string; color: string; emoji?: string | null }) {
+  const user = await requireUser();
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("spheres")
     .select("position")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .order("position", { ascending: false })
     .limit(1);
   const nextPos = existing && existing.length > 0 ? existing[0].position + 1 : 0;
 
   const { error } = await supabase.from("spheres").insert({
-    user_id: DEV_USER_ID,
+    user_id: user.id,
     name: input.name,
     color: input.color,
     emoji: input.emoji ?? null,
@@ -145,12 +140,9 @@ export async function createSphere(input: { name: string; color: string; emoji?:
 }
 
 export async function updateSphere(id: string, patch: { name?: string; color?: string; emoji?: string | null }) {
+  await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("spheres")
-    .update(patch)
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("spheres").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/settings");
   revalidatePath("/tasks");
@@ -158,12 +150,9 @@ export async function updateSphere(id: string, patch: { name?: string; color?: s
 }
 
 export async function deleteSphere(id: string) {
+  await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("spheres")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("spheres").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/settings");
   revalidatePath("/tasks");
@@ -181,17 +170,18 @@ export type CreateHabitInput = {
 };
 
 export async function createHabit(input: CreateHabitInput) {
+  const user = await requireUser();
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("habits")
     .select("position")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .order("position", { ascending: false })
     .limit(1);
   const nextPos = existing && existing.length > 0 ? existing[0].position + 1 : 0;
 
   const { error } = await supabase.from("habits").insert({
-    user_id: DEV_USER_ID,
+    user_id: user.id,
     name: input.name,
     emoji: input.emoji ?? null,
     color: input.color ?? null,
@@ -206,30 +196,25 @@ export async function createHabit(input: CreateHabitInput) {
 }
 
 export async function updateHabit(id: string, patch: Partial<CreateHabitInput> & { archived?: boolean }) {
+  await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("habits")
-    .update(patch)
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("habits").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/habits");
   revalidatePath("/");
 }
 
 export async function deleteHabit(id: string) {
+  await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("habits")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", DEV_USER_ID);
+  const { error } = await supabase.from("habits").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/habits");
   revalidatePath("/");
 }
 
 export async function toggleHabitLog(habitId: string, date: string) {
+  await requireUser();
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("habit_logs")

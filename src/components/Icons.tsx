@@ -184,6 +184,19 @@ export const Icons = {
       <path d="M19 9l1 1-1 1M19 13l1 1-1 1" />
     </I>
   ),
+  User: (p: Props) => (
+    <I {...p}>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
+    </I>
+  ),
+  LogOut: (p: Props) => (
+    <I {...p}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </I>
+  ),
 };
 
 export type IconKey = keyof typeof Icons;

@@ -1,16 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
-import { DEV_USER_ID } from "@/lib/constants";
+import { requireUser } from "@/lib/auth";
 import type { Sphere, Task, Habit, HabitLog } from "@/lib/data";
 import { addDays, today } from "@/lib/date";
+
+/* All reads rely on RLS for tenant isolation; the explicit user_id filter
+   is kept where it lets Postgres use the (user_id, …) index. habit_logs
+   has no user_id column — RLS does an EXISTS join through habits. */
 
 /* ──────────────── Spheres ──────────────── */
 
 export async function fetchSpheres(): Promise<Sphere[]> {
+  const user = await requireUser();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("spheres")
     .select("*")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .order("position", { ascending: true });
   if (error) {
     console.error("fetchSpheres:", error);
@@ -22,11 +27,12 @@ export async function fetchSpheres(): Promise<Sphere[]> {
 /* ──────────────── Tasks ──────────────── */
 
 export async function fetchTasks(): Promise<Task[]> {
+  const user = await requireUser();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .is("completed_at", null)
     .order("due_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
@@ -40,12 +46,13 @@ export async function fetchTasks(): Promise<Task[]> {
 /** Tasks that should appear on the Today screen:
     overdue (due_date < today) OR due today OR do_today flagged. */
 export async function fetchTodayTasks(): Promise<Task[]> {
+  const user = await requireUser();
   const supabase = await createClient();
   const t = today();
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .is("completed_at", null)
     .or(`due_date.lte.${t},do_today.eq.true`)
     .order("due_date", { ascending: true, nullsFirst: false })
@@ -59,13 +66,14 @@ export async function fetchTodayTasks(): Promise<Task[]> {
 
 /** Open tasks in the next N days (excluding today). */
 export async function fetchUpcomingTasks(days = 7): Promise<Task[]> {
+  const user = await requireUser();
   const supabase = await createClient();
   const t = today();
   const end = addDays(t, days);
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .is("completed_at", null)
     .gt("due_date", t)
     .lte("due_date", end)
@@ -80,11 +88,12 @@ export async function fetchUpcomingTasks(days = 7): Promise<Task[]> {
 /* ──────────────── Habits ──────────────── */
 
 export async function fetchHabits(): Promise<Habit[]> {
+  const user = await requireUser();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("habits")
     .select("*")
-    .eq("user_id", DEV_USER_ID)
+    .eq("user_id", user.id)
     .eq("archived", false)
     .order("position", { ascending: true });
   if (error) {
@@ -94,8 +103,9 @@ export async function fetchHabits(): Promise<Habit[]> {
   return (data ?? []) as Habit[];
 }
 
-/** Logs for the last N days for all habits. */
+/** Logs for the last N days for all habits. RLS filters by habit ownership. */
 export async function fetchRecentHabitLogs(days = 30): Promise<HabitLog[]> {
+  await requireUser();
   const supabase = await createClient();
   const since = addDays(today(), -days);
   const { data, error } = await supabase
