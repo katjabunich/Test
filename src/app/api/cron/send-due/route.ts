@@ -14,8 +14,9 @@ function clean(v: string | undefined): string {
    push to every subscription the owning user has, and mark them as
    reminded so the next run skips them. Idempotent across overlapping
    runs because we filter on `reminded_at IS NULL` and stamp it the
-   moment we send. */
-export async function POST(req: NextRequest) {
+   moment we send. Both GET and POST are accepted because cron services
+   default to one or the other. */
+async function handle(req: NextRequest) {
   const cronSecret = clean(process.env.CRON_SECRET);
   if (!cronSecret) {
     return NextResponse.json({ error: "cron_secret_missing" }, { status: 500 });
@@ -137,4 +138,12 @@ export async function POST(req: NextRequest) {
     failed,
     pruned: deadSubIds.length,
   });
+}
+
+export async function GET(req: NextRequest) {
+  return handle(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handle(req);
 }
