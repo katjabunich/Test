@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
-import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, addDays } from "@/lib/date";
 import { useT } from "@/lib/i18n/client";
 
@@ -177,7 +176,7 @@ export default function TasksView({
         {groups.length === 0 ? (
           <div
             style={{
-              padding: "32px 22px 36px",
+              padding: "28px 22px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
@@ -188,15 +187,9 @@ export default function TasksView({
             }}
           >
             {filter ? (
-              <>
-                <FilteredEmpty
-                  color={sphereById.get(filter)?.color ?? "var(--mint)"}
-                />
-                {t("tasks.empty_filter")}
-              </>
+              t("tasks.empty_filter")
             ) : (
               <>
-                <TasksEmpty />
                 {t("tasks.empty")}{" "}
                 <span className="mark-butter">{t("tasks.empty_hint")}</span>
               </>
@@ -275,59 +268,6 @@ export default function TasksView({
         defaultSphereId={filter}
       />
     </>
-  );
-}
-
-function TasksEmpty() {
-  return (
-    <svg
-      width="68"
-      height="68"
-      viewBox="0 0 68 68"
-      style={{ display: "block", margin: "0 auto 14px" }}
-      aria-hidden
-    >
-      <defs>
-        <radialGradient id="tasks-empty-sun" cx="0.5" cy="0.45" r="0.55">
-          <stop offset="0%" stopColor="#fffaf2" />
-          <stop offset="60%" stopColor="#fff0c8" />
-          <stop offset="100%" stopColor="#f5c563" />
-        </radialGradient>
-      </defs>
-      <circle cx="34" cy="22" r="14" fill="url(#tasks-empty-sun)" />
-      <circle
-        cx="18"
-        cy="50"
-        r="5.2"
-        fill="none"
-        stroke="var(--ink-40)"
-        strokeWidth="2.2"
-      />
-      <rect
-        x="28"
-        y="48.5"
-        width="26"
-        height="2.4"
-        rx="1.2"
-        fill="var(--ink-20)"
-      />
-    </svg>
-  );
-}
-
-function FilteredEmpty({ color }: { color: string }) {
-  return (
-    <svg
-      width="68"
-      height="68"
-      viewBox="0 0 68 68"
-      style={{ display: "block", margin: "0 auto 14px" }}
-      aria-hidden
-    >
-      <circle cx="34" cy="34" r="14" fill={color} opacity="0.85" />
-      <circle cx="14" cy="34" r="3" fill="var(--ink-20)" />
-      <circle cx="54" cy="34" r="3" fill="var(--ink-20)" />
-    </svg>
   );
 }
 

@@ -264,11 +264,19 @@ export function HabitIcon({
 }
 
 /** Map sphere name to a default icon — used by hero card, sphere list, etc.
-   Custom (user-created) spheres fall back to a dot. */
+   Both Russian and English default names are mapped so the icon shows
+   correctly regardless of the language the user signed up in. Custom
+   (user-created) spheres fall back to a dot. */
 const NAME_TO_ICON: Record<string, IconKey> = {
+  // Current defaults
   "Работа": "Briefcase",
-  "Канал": "Video",
   "Дом": "Home",
+  "Личное": "Lotus",
+  "Work": "Briefcase",
+  "Home": "Home",
+  "Personal": "Lotus",
+  // Legacy seeds (kept so users created before the cleanup keep their icons)
+  "Канал": "Video",
   "Голландский": "Globe",
   "AI": "Cpu",
 };

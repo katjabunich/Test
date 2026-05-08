@@ -196,7 +196,7 @@ export default function HabitsView({
         {habits.length === 0 ? (
           <div
             style={{
-              padding: "32px 22px 24px",
+              padding: "26px 22px 22px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
@@ -206,7 +206,6 @@ export default function HabitsView({
               lineHeight: 1.5,
             }}
           >
-            <HabitsEmpty />
             {t("habits.empty_body")}{" "}
             <span className="mark-butter">{t("habits.empty_title")}</span>.
             <button
@@ -218,17 +217,16 @@ export default function HabitsView({
               className="tap"
               style={{
                 display: "inline-block",
-                marginTop: 18,
-                padding: "12px 22px",
-                borderRadius: 14,
+                marginTop: 14,
+                padding: "10px 20px",
+                borderRadius: 12,
                 border: "none",
-                background: "var(--ink-strong)",
+                background: "var(--mint-deep)",
                 color: "var(--paper)",
-                fontSize: 14,
+                fontSize: 13.5,
                 fontWeight: 600,
                 letterSpacing: "-0.005em",
                 cursor: "pointer",
-                boxShadow: "0 6px 16px rgba(31,24,19,0.22)",
               }}
             >
               {t("habits.add")}
@@ -295,31 +293,3 @@ export default function HabitsView({
   );
 }
 
-function HabitsEmpty() {
-  return (
-    <svg
-      width="68"
-      height="68"
-      viewBox="0 0 68 68"
-      style={{ display: "block", margin: "0 auto 14px" }}
-      aria-hidden
-    >
-      <circle
-        cx="34"
-        cy="34"
-        r="22"
-        fill="none"
-        stroke="var(--ink-10)"
-        strokeWidth="3"
-      />
-      <path
-        d="M 34 12 A 22 22 0 0 1 56 34"
-        fill="none"
-        stroke="var(--mint-deep)"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <circle cx="34" cy="34" r="4" fill="var(--mint-deep)" />
-    </svg>
-  );
-}

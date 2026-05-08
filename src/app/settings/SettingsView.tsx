@@ -318,12 +318,6 @@ export default function SettingsView({
             overflow: "hidden",
           }}
         >
-          <SettingsRow
-            Icon={Icons.Phone}
-            label={t("settings.install")}
-            value={t("settings.install_val")}
-            accent
-          />
           <SettingsToggleRow
             Icon={Icons.Volume}
             label={t("settings.sound")}
@@ -344,12 +338,6 @@ export default function SettingsView({
           />
           <LanguageRow lang={lang} onChange={setLang} />
           <SettingsRow
-            Icon={Icons.Cloud}
-            label={t("settings.cloud")}
-            value={t("settings.cloud_val")}
-            accent
-          />
-          <SettingsRow
             Icon={Icons.Bell}
             label={t("settings.notify")}
             value="—"
@@ -357,19 +345,6 @@ export default function SettingsView({
             last
           />
         </div>
-
-        <p
-          style={{
-            marginTop: 22,
-            padding: "0 6px",
-            fontSize: 12,
-            color: "var(--ink-40)",
-            lineHeight: 1.6,
-            whiteSpace: "pre-line",
-          }}
-        >
-          {t("settings.footer")}
-        </p>
       </div>
 
       <SphereEditModal

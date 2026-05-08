@@ -83,14 +83,16 @@ export function setHapticEnabled(v: boolean) {
 
 /** Tick = wooden tap. Two layers stacked: a tiny noise click for the
    "attack" feel + a low sine "body" with quick pitch dip for warmth.
-   Result: organic percussive blip, not a microwave beep. */
+   Result: organic percussive blip, not a microwave beep. Bumped a hair
+   louder + slightly higher body pitch so it's actually perceptible on
+   phone speakers without becoming intrusive. */
 export function playTick() {
   if (!isSoundEnabled()) return;
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
 
-  // Click layer — 8ms noise burst, lowpass-filtered to remove harshness.
+  // Click layer — 12ms noise burst, lowpass-filtered to remove harshness.
   const clickBuf = c.createBuffer(1, Math.max(1, Math.floor(c.sampleRate * 0.012)), c.sampleRate);
   const clickData = clickBuf.getChannelData(0);
   for (let i = 0; i < clickData.length; i++) {
@@ -101,26 +103,26 @@ export function playTick() {
   clickSrc.buffer = clickBuf;
   const clickFilter = c.createBiquadFilter();
   clickFilter.type = "lowpass";
-  clickFilter.frequency.setValueAtTime(1800, now);
-  clickFilter.frequency.exponentialRampToValueAtTime(700, now + 0.012);
+  clickFilter.frequency.setValueAtTime(2200, now);
+  clickFilter.frequency.exponentialRampToValueAtTime(800, now + 0.012);
   const clickGain = c.createGain();
-  clickGain.gain.setValueAtTime(0.10, now);
+  clickGain.gain.setValueAtTime(0.22, now);
   clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
   clickSrc.connect(clickFilter).connect(clickGain).connect(c.destination);
   clickSrc.start(now);
 
-  // Body layer — sine with pitch dip 240 → 180 Hz, ~35ms
+  // Body layer — sine with pitch dip 320 → 230 Hz, ~50ms
   const body = c.createOscillator();
   body.type = "sine";
-  body.frequency.setValueAtTime(240, now);
-  body.frequency.exponentialRampToValueAtTime(180, now + 0.03);
+  body.frequency.setValueAtTime(320, now);
+  body.frequency.exponentialRampToValueAtTime(230, now + 0.04);
   const bodyGain = c.createGain();
   bodyGain.gain.setValueAtTime(0, now);
-  bodyGain.gain.linearRampToValueAtTime(0.07, now + 0.003);
-  bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+  bodyGain.gain.linearRampToValueAtTime(0.18, now + 0.003);
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
   body.connect(bodyGain).connect(c.destination);
   body.start(now);
-  body.stop(now + 0.06);
+  body.stop(now + 0.07);
 }
 
 /** Pop = soft "thup" for modal open. Lowpass-filtered noise puff +

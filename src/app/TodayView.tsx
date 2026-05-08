@@ -303,46 +303,22 @@ export default function TodayView({
                 background: "var(--paper-warm)",
                 border: "1px solid var(--ink-05)",
                 borderRadius: 22,
-                padding: "28px 18px 32px",
+                padding: "28px 22px",
                 textAlign: "center",
                 color: "var(--ink-60)",
                 fontSize: 14.5,
                 lineHeight: 1.5,
               }}
             >
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 64 64"
-                style={{ display: "block", margin: "0 auto 12px" }}
-                aria-hidden
-              >
-                <defs>
-                  <radialGradient id="empty-sun" cx="0.5" cy="0.45" r="0.55">
-                    <stop offset="0%" stopColor="#fffaf2" />
-                    <stop offset="60%" stopColor="#fff0c8" />
-                    <stop offset="100%" stopColor="#f5c563" />
-                  </radialGradient>
-                </defs>
-                <circle cx="32" cy="22" r="14" fill="url(#empty-sun)" />
-                <path
-                  d="M 14 46 L 19 51 L 27 42"
-                  stroke="var(--mint-deep)"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-                <rect
-                  x="32"
-                  y="46"
-                  width="20"
-                  height="2"
-                  rx="1"
-                  fill="var(--ink-40)"
-                />
-              </svg>
-              {t("today.empty_clean")}<span className="mark-butter">{t("today.empty_rest")}</span>{t("today.empty_tail")}
+              {upcomingTasks.length > 0 ? (
+                <>
+                  {t("today.empty_done_pre")}
+                  <span className="tnum mark-butter">{upcomingTasks.length}</span>
+                  {t("today.empty_done_post")}
+                </>
+              ) : (
+                t("today.empty_fresh")
+              )}
             </div>
           )}
 

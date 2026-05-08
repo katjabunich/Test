@@ -103,18 +103,15 @@ export const DICT = {
 
     next_task:    { ru: "Следующая задача", en: "Next task" },
     do_it:        { ru: "Сделать",          en: "Do it" },
-    no_tasks:     { ru: "На сегодня свободно", en: "Nothing on for today" },
-    no_tasks_hint:{ ru: "Тапни +, чтобы добавить.", en: "Tap + to add one." },
-
     h_today:    { ru: "Сегодня",            en: "Today" },
     h_overdue:  { ru: "Просрочено",         en: "Overdue" },
     h_week:     { ru: "На этой неделе",     en: "This week" },
     h_next:     { ru: "Дальше",             en: "Next up" },
     h_week_short:{ ru: "На неделе",         en: "This week" },
     overdue_count:{ ru: "просрочено",       en: "overdue" },
-    empty_clean:{ ru: "Чисто. Можно ",      en: "Clear. Time to " },
-    empty_rest:{ ru: "отдыхать",            en: "relax" },
-    empty_tail:{ ru: " или добавить дело — кнопка плюса внизу.", en: " or add a task — the plus button is below." },
+    empty_fresh: { ru: "Чисто. Добавь первое дело — кнопкой плюса внизу.", en: "Clean slate. Tap the + button below to add your first task." },
+    empty_done_pre:{ ru: "Свободно на сегодня. На неделе ещё ",  en: "All clear today. " },
+    empty_done_post:{ ru: " — посмотри.",                        en: " more this week — take a look." },
   },
 
   /* ──────────── Tasks ──────────── */
@@ -162,17 +159,10 @@ export const DICT = {
     sign_out:    { ru: "Выйти",          en: "Sign out" },
 
     h_app:       { ru: "Приложение",     en: "App" },
-    install:     { ru: "Установить на главный", en: "Add to home screen" },
-    install_val: { ru: "PWA",            en: "PWA" },
     sound:       { ru: "Звуки",          en: "Sound" },
     haptic:      { ru: "Вибрация",       en: "Haptic" },
-    cloud:       { ru: "Облако",         en: "Cloud" },
-    cloud_val:   { ru: "вкл",            en: "on" },
     notify:      { ru: "Уведомления",    en: "Notifications" },
     language:    { ru: "Язык",           en: "Language" },
-
-    footer:      { ru: "v2 · вход и облачная синхронизация.\nДальше: уведомления, цели, экспорт.",
-                   en: "v2 · auth and cloud sync.\nNext: notifications, goals, export." },
   },
 
   /* ──────────── Password modal ──────────── */
