@@ -33,11 +33,11 @@ export default function SettingsView({
   useEffect(() => {
     setSound(isSoundEnabled());
     setHaptic(isHapticEnabled());
-    void (async () => {
-      const supported = await isPushSupported();
-      setPushSupported(supported);
-      if (supported) setPushOn(await isPushEnabled());
-    })();
+    const supported = isPushSupported();
+    setPushSupported(supported);
+    if (supported) {
+      void isPushEnabled().then(setPushOn);
+    }
   }, []);
 
   async function togglePush() {
@@ -51,7 +51,8 @@ export default function SettingsView({
       if (r.ok) {
         setPushOn(true);
       } else {
-        setPushMsg(t(`settings.push_err_${r.reason}`));
+        const baseMsg = t(`settings.push_err_${r.reason}`);
+        setPushMsg(r.raw ? `${baseMsg}\n${r.raw}` : baseMsg);
       }
     }
     setPushBusy(false);
@@ -412,6 +413,8 @@ export default function SettingsView({
               fontSize: 12.5,
               color: "var(--ink-60)",
               letterSpacing: "-0.005em",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
             }}
           >
             {pushMsg}

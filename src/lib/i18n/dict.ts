@@ -168,6 +168,7 @@ export const DICT = {
     push_test_sent:   { ru: "Отправлено. Должно прийти через секунду.", en: "Sent. Should arrive in a second." },
     push_test_failed: { ru: "Не удалось отправить. Проверь, разрешены ли уведомления.", en: "Couldn't send. Check that notifications are allowed." },
     push_err_unsupported: { ru: "Этот браузер не умеет push-уведомления.", en: "This browser doesn't support push notifications." },
+    push_err_no_notification_api: { ru: "Уведомления недоступны (нужен iOS 16.4+ и установка на экран Домой).", en: "Notifications API not available (needs iOS 16.4+ and add-to-home-screen)." },
     push_err_denied:      { ru: "Разрешение не выдано — открой настройки браузера и разреши уведомления для DoIt.", en: "Permission denied — go to browser settings and allow notifications for DoIt." },
     push_err_no_vapid:    { ru: "Сервер не настроен (VAPID-ключ).", en: "Server isn't configured (VAPID key missing)." },
     push_err_server:      { ru: "Сервер не сохранил подписку.", en: "The server failed to store the subscription." },

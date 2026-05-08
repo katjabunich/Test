@@ -15,15 +15,19 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export type PushEnableResult =
   | { ok: true }
-  | { ok: false; reason: "unsupported" | "denied" | "no_vapid" | "server" | "unknown"; raw?: string };
+  | { ok: false; reason: "unsupported" | "denied" | "no_vapid" | "no_notification_api" | "server" | "unknown"; raw?: string };
 
-export async function isPushSupported(): Promise<boolean> {
+export function isPushSupported(): boolean {
   if (typeof window === "undefined") return false;
-  return "serviceWorker" in navigator && "PushManager" in window;
+  return (
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    typeof Notification !== "undefined"
+  );
 }
 
 export async function isPushEnabled(): Promise<boolean> {
-  if (!(await isPushSupported())) return false;
+  if (!isPushSupported()) return false;
   try {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription();
@@ -34,12 +38,28 @@ export async function isPushEnabled(): Promise<boolean> {
 }
 
 export async function enablePush(): Promise<PushEnableResult> {
-  if (!(await isPushSupported())) return { ok: false, reason: "unsupported" };
+  if (!isPushSupported()) return { ok: false, reason: "unsupported" };
+  if (typeof Notification === "undefined" || !Notification.requestPermission) {
+    return { ok: false, reason: "no_notification_api" };
+  }
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!publicKey) return { ok: false, reason: "no_vapid" };
+
+  // Ask for permission first, before any other awaits, so iOS keeps the
+  // user-gesture context that the prompt requires.
+  let perm: NotificationPermission;
   try {
-    const perm = await Notification.requestPermission();
-    if (perm !== "granted") return { ok: false, reason: "denied" };
+    perm = await Notification.requestPermission();
+  } catch (e) {
+    return {
+      ok: false,
+      reason: "unknown",
+      raw: "requestPermission threw: " + (e instanceof Error ? e.message : String(e)),
+    };
+  }
+  if (perm !== "granted") return { ok: false, reason: "denied" };
+
+  try {
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
@@ -65,10 +85,17 @@ export async function enablePush(): Promise<PushEnableResult> {
         user_agent: navigator.userAgent,
       }),
     });
-    if (!res.ok) return { ok: false, reason: "server", raw: String(res.status) };
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      return { ok: false, reason: "server", raw: `${res.status} ${txt}` };
+    }
     return { ok: true };
   } catch (e) {
-    return { ok: false, reason: "unknown", raw: e instanceof Error ? e.message : String(e) };
+    return {
+      ok: false,
+      reason: "unknown",
+      raw: "subscribe threw: " + (e instanceof Error ? `${e.name}: ${e.message}` : String(e)),
+    };
   }
 }
 
