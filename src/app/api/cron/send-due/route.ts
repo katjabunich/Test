@@ -21,9 +21,25 @@ async function handle(req: NextRequest) {
   if (!cronSecret) {
     return NextResponse.json({ error: "cron_secret_missing" }, { status: 500 });
   }
-  const auth = req.headers.get("authorization") ?? "";
-  if (auth !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const authHeader = (req.headers.get("authorization") ?? "").trim();
+  const queryToken = req.nextUrl.searchParams.get("token") ?? "";
+  const expected = `Bearer ${cronSecret}`;
+  const ok = authHeader === expected || queryToken.trim() === cronSecret;
+  if (!ok) {
+    // Give the operator enough to spot which side has the typo without
+    // leaking the secret itself.
+    const headerHint = authHeader
+      ? `len=${authHeader.length} prefix="${authHeader.slice(0, 7)}…"`
+      : "missing";
+    return NextResponse.json(
+      {
+        error: "unauthorized",
+        header: headerHint,
+        expected_len: expected.length,
+        secret_len: cronSecret.length,
+      },
+      { status: 401 },
+    );
   }
 
   const supabaseUrl = clean(process.env.NEXT_PUBLIC_SUPABASE_URL);
