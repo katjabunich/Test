@@ -2,7 +2,7 @@
 
 ## Что это за приложение
 
-**DoIt** (раньше «Dela») — персональный PWA-таск-трекер + habit-tracker для одного пользователя. Русскоязычный. Стек: **Next.js 16** (App Router, Turbopack) + **React** + **TypeScript** + **Supabase** (Postgres + auth). Деплой на **Vercel**: `test-self-iota-45.vercel.app`.
+**DoIt** (раньше «Dela») — персональный PWA-таск-трекер + habit-tracker для одного пользователя. Русскоязычный. Стек: **Next.js 16** (App Router, Turbopack) + **React** + **TypeScript** + **Supabase** (Postgres + auth). Деплой на **Vercel**: `doit-tracker.vercel.app` (старый алиас `test-self-iota-45.vercel.app` тоже работает).
 
 Концепция — приложение для одного человека (пользовательница katjabunich, она же katja), не SaaS. Цель — выйти из категории «бесплатное хобби-приложение» в категорию «приложение, за которое платят €10/мес».
 
@@ -179,7 +179,7 @@ UI-toggles в `/settings` — два рядка между «Установит�
 ## Workflow в этом проекте
 
 - **Бранч**: `claude/task-tracker-app-LqhzE` (любая разработка туда)
-- **Деплой**: `git push origin claude/task-tracker-app-LqhzE` → Vercel auto-deploy через ~2 мин на `test-self-iota-45.vercel.app`
+- **Деплой**: `git push origin claude/task-tracker-app-LqhzE` → Vercel auto-deploy через ~2 мин на `doit-tracker.vercel.app`
 - **Build**: `cd /home/user/Test && npm run build` (Turbopack, ~10s)
 - **Никаких миграций без явного запроса** — Supabase schema стабильна
 - **Всегда коммит + push без merge в main** — пользовательница смотрит превью
