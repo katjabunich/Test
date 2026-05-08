@@ -53,7 +53,7 @@ const SLIDES: Slide[] = [
       </>
     ),
     cta: "Готова, поехали",
-    focus: "center 30%",
+    focus: "center 60%",
   },
 ];
 
