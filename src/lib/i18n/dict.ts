@@ -89,6 +89,7 @@ export const DICT = {
     err_rate:      { ru: "Слишком много попыток. Подожди минуту.", en: "Too many attempts. Wait a minute." },
     err_confirm_email: { ru: "Подтверди email — мы отправили письмо со ссылкой. После подтверждения вернись и войди.", en: "Check your inbox — we sent a confirmation link. Come back to sign in once it's confirmed." },
     err_bad_invite:{ ru: "Неверный код приглашения.",     en: "Invalid invite code." },
+    err_invite_no_env:{ ru: "Переменная INVITE_CODES не задана в окружении Vercel (Production). Добавь её и сделай Redeploy.", en: "INVITE_CODES env var is not set on Vercel (Production). Add it and redeploy." },
     footer:        { ru: "v2 · вход и облачная синхронизация", en: "v2 · auth and cloud sync" },
   },
 

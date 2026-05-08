@@ -47,13 +47,19 @@ export function checkSupabaseEnv(): EnvCheck {
    surrounding whitespace so users can paste without worrying about
    trailing spaces. Fails closed: an empty/unset env means no signup. */
 export function isValidInviteCode(input: string): boolean {
+  return checkInviteCode(input) === "ok";
+}
+
+export type InviteCheck = "ok" | "no_env" | "mismatch";
+
+export function checkInviteCode(input: string): InviteCheck {
   const raw = process.env.INVITE_CODES ?? "";
   const codes = raw
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  if (codes.length === 0) return false;
-  return codes.includes(input.trim().toLowerCase());
+  if (codes.length === 0) return "no_env";
+  return codes.includes(input.trim().toLowerCase()) ? "ok" : "mismatch";
 }
 
 export class MissingEnvError extends Error {

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isValidInviteCode } from "@/lib/env";
+import { checkInviteCode } from "@/lib/env";
 
 /* Error codes: client maps to translated strings via the i18n dict, so
    server actions stay locale-agnostic. */
@@ -13,7 +13,8 @@ export type AuthErrCode =
   | "exists"
   | "rate"
   | "confirm_email"
-  | "bad_invite";
+  | "bad_invite"
+  | "invite_no_env";
 
 export type AuthResult = { code: AuthErrCode | null; raw?: string };
 
@@ -52,7 +53,9 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
 
   if (!email || !password) return { code: "required" };
   if (password.length < 8) return { code: "pw_short" };
-  if (!isValidInviteCode(invite)) return { code: "bad_invite" };
+  const inviteStatus = checkInviteCode(invite);
+  if (inviteStatus === "no_env") return { code: "invite_no_env" };
+  if (inviteStatus === "mismatch") return { code: "bad_invite" };
 
   const supabase = await createClient();
   const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
