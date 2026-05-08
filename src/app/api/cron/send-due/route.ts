@@ -140,10 +140,20 @@ async function handle(req: NextRequest) {
   });
 }
 
+async function safe(req: NextRequest) {
+  try {
+    return await handle(req);
+  } catch (e) {
+    const m = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    console.error("cron fatal:", e);
+    return NextResponse.json({ error: `fatal: ${m}` }, { status: 500 });
+  }
+}
+
 export async function GET(req: NextRequest) {
-  return handle(req);
+  return safe(req);
 }
 
 export async function POST(req: NextRequest) {
-  return handle(req);
+  return safe(req);
 }
