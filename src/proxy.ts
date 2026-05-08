@@ -2,8 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 
-/* Routes accessible without a session. /auth/* covers callback + sign-out. */
-const PUBLIC_PREFIXES = ["/login", "/auth"];
+/* Routes accessible without a session. /auth/* covers callback + sign-out.
+   /api/* is excluded so route handlers can return 401 JSON instead of an
+   HTML redirect that breaks fetch() callers. */
+const PUBLIC_PREFIXES = ["/login", "/auth", "/api"];
 
 export async function proxy(request: NextRequest) {
   const url = getSupabaseUrl();
