@@ -3,13 +3,30 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-type AuthResult = { error: string | null };
+/* Error codes: client maps to translated strings via the i18n dict, so
+   server actions stay locale-agnostic. */
+export type AuthErrCode =
+  | "required"
+  | "pw_short"
+  | "invalid"
+  | "exists"
+  | "rate"
+  | "confirm_email";
+
+export type AuthResult = { code: AuthErrCode | null; raw?: string };
 
 function safeNext(next: string | null): string {
   if (!next) return "/";
-  // Only allow same-origin paths to prevent open redirects.
   if (next.startsWith("/") && !next.startsWith("//")) return next;
   return "/";
+}
+
+function classify(message: string): AuthErrCode | null {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login")) return "invalid";
+  if (m.includes("already registered") || m.includes("user already")) return "exists";
+  if (m.includes("rate limit")) return "rate";
+  return null;
 }
 
 export async function signInWithPassword(formData: FormData): Promise<AuthResult> {
@@ -17,15 +34,11 @@ export async function signInWithPassword(formData: FormData): Promise<AuthResult
   const password = String(formData.get("password") ?? "");
   const next = safeNext(String(formData.get("next") ?? "/"));
 
-  if (!email || !password) {
-    return { error: "Введи email и пароль." };
-  }
+  if (!email || !password) return { code: "required" };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    return { error: friendlyAuthError(error.message) };
-  }
+  if (error) return { code: classify(error.message) ?? "invalid", raw: error.message };
   redirect(next);
 }
 
@@ -34,12 +47,8 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
   const password = String(formData.get("password") ?? "");
   const origin = String(formData.get("origin") ?? "").trim();
 
-  if (!email || !password) {
-    return { error: "Введи email и пароль." };
-  }
-  if (password.length < 8) {
-    return { error: "Пароль должен быть от 8 символов." };
-  }
+  if (!email || !password) return { code: "required" };
+  if (password.length < 8) return { code: "pw_short" };
 
   const supabase = await createClient();
   const emailRedirectTo = origin ? `${origin}/auth/callback` : undefined;
@@ -48,25 +57,7 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
     password,
     options: emailRedirectTo ? { emailRedirectTo } : undefined,
   });
-  if (error) {
-    return { error: friendlyAuthError(error.message) };
-  }
-  // If email confirmation is required, session will be null — show a hint
-  // instead of redirecting into a still-unauthed app.
-  if (!data.session) {
-    return {
-      error:
-        "Подтверди email — мы отправили письмо со ссылкой. После подтверждения вернись и войди.",
-    };
-  }
+  if (error) return { code: classify(error.message), raw: error.message };
+  if (!data.session) return { code: "confirm_email" };
   redirect("/");
-}
-
-function friendlyAuthError(message: string): string {
-  const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "Неверный email или пароль.";
-  if (m.includes("already registered") || m.includes("user already"))
-    return "Такой аккаунт уже существует — войди.";
-  if (m.includes("rate limit")) return "Слишком много попыток. Подожди минуту.";
-  return message;
 }

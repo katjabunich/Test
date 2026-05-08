@@ -5,13 +5,22 @@ import type { Sphere, Task } from "@/lib/data";
 import { completeTask } from "@/lib/actions";
 import { isPast, isToday, fromIsoDate } from "@/lib/date";
 import { feedbackTaskComplete } from "@/lib/feedback";
+import { useLang, useWeekdaysShort } from "@/lib/i18n/client";
+import type { Lang } from "@/lib/i18n/dict";
 
-function dueLabel(due: string | null): { text: string; tone: "muted" | "warn" } | null {
+function dueLabel(
+  due: string | null,
+  lang: Lang,
+  weekdays: readonly string[],
+): { text: string; tone: "muted" | "warn" } | null {
   if (!due) return null;
-  if (isToday(due)) return { text: "сегодня", tone: "muted" };
+  if (isToday(due)) return { text: lang === "en" ? "today" : "сегодня", tone: "muted" };
   if (isPast(due)) {
     const d = fromIsoDate(due);
     const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (lang === "en") {
+      return { text: days === 1 ? "yesterday" : `${days}d ago`, tone: "warn" };
+    }
     return { text: days === 1 ? "вчера" : `${days} дн назад`, tone: "warn" };
   }
   const d = fromIsoDate(due);
@@ -19,8 +28,10 @@ function dueLabel(due: string | null): { text: string; tone: "muted" | "warn" } 
   t.setHours(0, 0, 0, 0);
   const diff = Math.round((d.getTime() - t.getTime()) / (1000 * 60 * 60 * 24));
   if (diff <= 7) {
-    const wd = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"][d.getDay()];
-    return { text: wd, tone: "muted" };
+    return { text: weekdays[d.getDay()], tone: "muted" };
+  }
+  if (lang === "en") {
+    return { text: `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`, tone: "muted" };
   }
   return { text: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`, tone: "muted" };
 }
@@ -37,9 +48,11 @@ export default function TaskItem({
   sphere: Sphere | null;
   onEdit?: (task: Task) => void;
 }) {
+  const lang = useLang();
+  const weekdaysShort = useWeekdaysShort();
   const [optimisticDone, setOptimisticDone] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const due = dueLabel(task.due_date);
+  const due = dueLabel(task.due_date, lang, weekdaysShort);
   const overdue = !!(task.due_date && isPast(task.due_date));
   const sphereColor = sphere?.color ?? "var(--ink-40)";
 

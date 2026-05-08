@@ -7,6 +7,7 @@ import HabitCard from "@/components/HabitCard";
 import HabitEditModal from "@/components/HabitEditModal";
 import { HabitIcon } from "@/components/Icons";
 import { computeStreak, groupLogsByHabit } from "@/lib/habits";
+import { useT } from "@/lib/i18n/client";
 
 export default function HabitsView({
   habits,
@@ -17,6 +18,7 @@ export default function HabitsView({
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const t = useT();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Habit | null>(null);
 
@@ -58,7 +60,7 @@ export default function HabitsView({
             margin: 0,
           }}
         >
-          Привычки
+          {t("habits.title")}
         </h1>
         <div
           style={{
@@ -69,8 +71,7 @@ export default function HabitsView({
             letterSpacing: "-0.005em",
           }}
         >
-          <span className="tnum">{habits.length}</span>{" "}
-          {habits.length === 1 ? "активная" : habits.length >= 2 && habits.length <= 4 ? "активные" : "активных"}
+          {t("habits.sub")}
         </div>
       </div>
 
@@ -115,7 +116,7 @@ export default function HabitsView({
                 position: "relative",
               }}
             >
-              Лучший страйк
+              {t("habits.best_streak")}
             </div>
             <div
               style={{
@@ -162,7 +163,7 @@ export default function HabitsView({
                     letterSpacing: "-0.005em",
                   }}
                 >
-                  дней подряд
+                  {t("habits.days")}
                 </div>
                 <div
                   style={{
@@ -206,7 +207,8 @@ export default function HabitsView({
             }}
           >
             <HabitsEmpty />
-            Пока пусто. Создай <span className="mark-butter">первую привычку</span>.
+            {t("habits.empty_body")}{" "}
+            <span className="mark-butter">{t("habits.empty_title")}</span>.
             <button
               type="button"
               onClick={() => {
@@ -229,7 +231,7 @@ export default function HabitsView({
                 boxShadow: "0 6px 16px rgba(31,24,19,0.22)",
               }}
             >
-              + Добавить привычку
+              {t("habits.add")}
             </button>
           </div>
         ) : (
@@ -243,7 +245,7 @@ export default function HabitsView({
                 letterSpacing: "-0.005em",
               }}
             >
-              Все привычки
+              {t("habits.title")}
             </div>
             {habits.map((habit) => (
               <HabitCard
@@ -278,7 +280,7 @@ export default function HabitsView({
                 letterSpacing: "-0.005em",
               }}
             >
-              + Добавить привычку
+              {t("habits.add")}
             </button>
           </>
         )}

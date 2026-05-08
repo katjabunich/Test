@@ -6,6 +6,8 @@ import SphereEditModal from "@/components/SphereEditModal";
 import PasswordChangeModal from "@/components/PasswordChangeModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
+import { useT, useLang, useSetLang } from "@/lib/i18n/client";
+import type { Lang } from "@/lib/i18n/dict";
 
 export default function SettingsView({
   spheres,
@@ -14,6 +16,9 @@ export default function SettingsView({
   spheres: Sphere[];
   userEmail: string | null;
 }) {
+  const t = useT();
+  const lang = useLang();
+  const { setLang } = useSetLang();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
   const [pwOpen, setPwOpen] = useState(false);
@@ -39,7 +44,7 @@ export default function SettingsView({
             margin: 0,
           }}
         >
-          Настройки
+          {t("settings.title")}
         </h1>
         <div
           style={{
@@ -50,7 +55,7 @@ export default function SettingsView({
             letterSpacing: "-0.005em",
           }}
         >
-          Сферы и аккаунт
+          {t("settings.sub")}
         </div>
       </div>
 
@@ -66,7 +71,7 @@ export default function SettingsView({
             letterSpacing: "-0.005em",
           }}
         >
-          Сферы жизни
+          {t("settings.h_spheres")}
         </div>
 
         <div
@@ -89,7 +94,7 @@ export default function SettingsView({
               }}
             >
               <SpheresEmpty />
-              Пока пусто. Создай <span className="mark-butter">первую сферу</span>.
+              {t("settings.no_spheres")}
             </div>
           ) : (
             spheres.map((s, i) => (
@@ -177,7 +182,7 @@ export default function SettingsView({
             letterSpacing: "-0.005em",
           }}
         >
-          + Добавить сферу
+          {t("settings.add_sphere")}
         </button>
 
         <div
@@ -191,7 +196,7 @@ export default function SettingsView({
             letterSpacing: "-0.005em",
           }}
         >
-          Аккаунт
+          {t("settings.h_account")}
         </div>
 
         <div
@@ -255,7 +260,7 @@ export default function SettingsView({
                 letterSpacing: "-0.005em",
               }}
             >
-              Сменить пароль
+              {t("settings.change_pw")}
             </span>
             <Icons.Chevron size={15} stroke="var(--ink-40)" />
           </button>
@@ -285,7 +290,7 @@ export default function SettingsView({
                   letterSpacing: "-0.005em",
                 }}
               >
-                Выйти
+                {t("settings.sign_out")}
               </span>
             </button>
           </form>
@@ -302,7 +307,7 @@ export default function SettingsView({
             letterSpacing: "-0.005em",
           }}
         >
-          Приложение
+          {t("settings.h_app")}
         </div>
 
         <div
@@ -315,13 +320,13 @@ export default function SettingsView({
         >
           <SettingsRow
             Icon={Icons.Phone}
-            label="Установить на главный"
-            value="PWA"
+            label={t("settings.install")}
+            value={t("settings.install_val")}
             accent
           />
           <SettingsToggleRow
             Icon={Icons.Volume}
-            label="Звуки"
+            label={t("settings.sound")}
             checked={sound}
             onChange={(v) => {
               setSound(v);
@@ -330,22 +335,23 @@ export default function SettingsView({
           />
           <SettingsToggleRow
             Icon={Icons.Vibrate}
-            label="Вибрация"
+            label={t("settings.haptic")}
             checked={haptic}
             onChange={(v) => {
               setHaptic(v);
               setHapticEnabled(v);
             }}
           />
+          <LanguageRow lang={lang} onChange={setLang} />
           <SettingsRow
             Icon={Icons.Cloud}
-            label="Облако"
-            value="вкл"
+            label={t("settings.cloud")}
+            value={t("settings.cloud_val")}
             accent
           />
           <SettingsRow
             Icon={Icons.Bell}
-            label="Уведомления"
+            label={t("settings.notify")}
             value="—"
             disabled
             last
@@ -359,11 +365,10 @@ export default function SettingsView({
             fontSize: 12,
             color: "var(--ink-40)",
             lineHeight: 1.6,
+            whiteSpace: "pre-line",
           }}
         >
-          v2 · вход и облачная синхронизация.
-          <br />
-          Дальше: уведомления, цели, экспорт.
+          {t("settings.footer")}
         </p>
       </div>
 
@@ -498,6 +503,77 @@ function SettingsToggleRow({
         />
       </span>
     </button>
+  );
+}
+
+function LanguageRow({
+  lang,
+  onChange,
+}: {
+  lang: Lang;
+  onChange: (l: Lang) => void;
+}) {
+  const t = useT();
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "10px 14px",
+        borderBottom: "1px solid var(--ink-05)",
+      }}
+    >
+      <Icons.Globe size={18} stroke="var(--ink-60)" strokeWidth={1.8} />
+      <span
+        style={{
+          flex: 1,
+          fontSize: 14.5,
+          fontWeight: 500,
+          color: "var(--ink)",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {t("settings.language")}
+      </span>
+      <div
+        role="tablist"
+        style={{
+          display: "inline-flex",
+          background: "var(--paper-deep)",
+          borderRadius: 12,
+          padding: 3,
+          gap: 2,
+        }}
+      >
+        {(["ru", "en"] as const).map((l) => {
+          const active = lang === l;
+          return (
+            <button
+              key={l}
+              type="button"
+              onClick={() => onChange(l)}
+              className="tap"
+              aria-pressed={active}
+              style={{
+                border: "none",
+                background: active ? "var(--paper)" : "transparent",
+                color: active ? "var(--ink)" : "var(--ink-60)",
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "5px 10px",
+                borderRadius: 9,
+                cursor: "pointer",
+                letterSpacing: "0.04em",
+                boxShadow: active ? "0 1px 2px rgba(45,38,32,0.12)" : "none",
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

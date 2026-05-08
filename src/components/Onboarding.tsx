@@ -2,63 +2,21 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useT, useLang, useSetLang } from "@/lib/i18n/client";
+import type { Lang } from "@/lib/i18n/dict";
 
 const STORAGE_KEY = "dela.onboarded.v1";
 
-type Slide = {
-  illustration: string;
-  alt: string;
-  title: string;
-  body: React.ReactNode;
-  cta: string;
-  /** Vertical anchor for `object-fit: cover`. 0% = top, 100% = bottom.
-      Tune per-image so the protagonist isn't clipped by the bottom card. */
-  focus: string;
-};
-
-const SLIDES: Slide[] = [
-  {
-    illustration: "/illustrations/onboarding-morning.jpg",
-    alt: "Утро у окна с восходом, кофе и блокнотом",
-    title: "Утро без хаоса",
-    body: (
-      <>
-        На <span className="mark-butter">одном экране</span> всё, что нужно
-        сделать сегодня.
-      </>
-    ),
-    cta: "Дальше",
-    focus: "center 95%",
-  },
-  {
-    illustration: "/illustrations/onboarding-spheres.jpg",
-    alt: "Уютный момент с дневником и закладками разных цветов",
-    title: "Сферы жизни",
-    body: (
-      <>
-        Работа, дом, отдых — у каждой{" "}
-        <span className="mark-butter">свой цвет</span>.
-      </>
-    ),
-    cta: "Дальше",
-    focus: "center 35%",
-  },
-  {
-    illustration: "/illustrations/onboarding-streak.jpg",
-    alt: "Девушка бежит по тропе, цепочка следов уходит назад",
-    title: "День за днём",
-    body: (
-      <>
-        Бегать утром, читать вечером — повторяй каждый день, и{" "}
-        <span className="mark-butter">привычка приживётся</span>.
-      </>
-    ),
-    cta: "Готова, поехали",
-    focus: "center 60%",
-  },
-];
+const SLIDES = [
+  { num: 1, illustration: "/illustrations/onboarding-morning.jpg", focus: "center 95%" },
+  { num: 2, illustration: "/illustrations/onboarding-spheres.jpg", focus: "center 35%" },
+  { num: 3, illustration: "/illustrations/onboarding-streak.jpg",  focus: "center 60%" },
+] as const;
 
 export default function Onboarding() {
+  const t = useT();
+  const lang = useLang();
+  const { setLang } = useSetLang();
   const [done, setDone] = useState(true);
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
@@ -106,6 +64,12 @@ export default function Onboarding() {
   }
 
   const slide = SLIDES[step];
+  const n = slide.num;
+  const title = t(`onb.s${n}_title`);
+  const cta = t(`onb.s${n}_cta`);
+  const pre = t(`onb.s${n}_pre`);
+  const mark = t(`onb.s${n}_mark`);
+  const post = t(`onb.s${n}_post`);
 
   return (
     <div
@@ -122,15 +86,20 @@ export default function Onboarding() {
         overflow: "hidden",
       }}
     >
-      {/* Skip button — top-right, no back chevron, no progress thread */}
+      {/* Top bar: language toggle + Skip */}
       <div
         style={{
           position: "absolute",
           top: "max(14px, calc(env(safe-area-inset-top) + 8px))",
+          left: 18,
           right: 18,
           zIndex: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
+        <LangToggle lang={lang} onChange={setLang} />
         <button
           type="button"
           onClick={finish}
@@ -149,13 +118,10 @@ export default function Onboarding() {
             letterSpacing: "-0.005em",
           }}
         >
-          Пропустить
+          {t("onb.skip")}
         </button>
       </div>
 
-      {/* Full-bleed illustration — fills the upper portion of the screen.
-         object-fit: cover keeps the protagonist centered as aspect ratios
-         shift between phone sizes. */}
       <div
         key={`illu-${step}`}
         style={{
@@ -168,7 +134,7 @@ export default function Onboarding() {
       >
         <Image
           src={slide.illustration}
-          alt={slide.alt}
+          alt={title}
           fill
           priority={step === 0}
           sizes="(max-width: 460px) 100vw, 460px"
@@ -179,8 +145,6 @@ export default function Onboarding() {
         />
       </div>
 
-      {/* Bottom card — slightly overlaps illustration via negative margin
-         to give depth, like Verbivy/CircleUp references. */}
       <div
         key={`card-${step}`}
         style={{
@@ -233,7 +197,7 @@ export default function Onboarding() {
             textWrap: "balance" as React.CSSProperties["textWrap"],
           }}
         >
-          {slide.title}
+          {title}
         </h2>
         <p
           style={{
@@ -244,10 +208,11 @@ export default function Onboarding() {
             margin: "0 0 18px",
           }}
         >
-          {slide.body}
+          {pre}
+          <span className="mark-butter">{mark}</span>
+          {post}
         </p>
 
-        {/* Pagination dots */}
         <div
           style={{
             display: "flex",
@@ -270,7 +235,6 @@ export default function Onboarding() {
           ))}
         </div>
 
-        {/* CTA — full-width ink-strong button */}
         <button
           type="button"
           onClick={goNext}
@@ -289,7 +253,7 @@ export default function Onboarding() {
             boxShadow: "0 6px 16px rgba(31,24,19,0.28)",
           }}
         >
-          {slide.cta}
+          {cta}
         </button>
 
         {step > 0 && (
@@ -309,10 +273,62 @@ export default function Onboarding() {
               letterSpacing: "-0.005em",
             }}
           >
-            Назад
+            {t("onb.back")}
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function LangToggle({
+  lang,
+  onChange,
+}: {
+  lang: Lang;
+  onChange: (l: Lang) => void;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Language"
+      style={{
+        display: "inline-flex",
+        background: "rgba(255,255,255,0.55)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        borderRadius: 14,
+        padding: 3,
+        gap: 2,
+      }}
+    >
+      {(["ru", "en"] as const).map((l) => {
+        const active = lang === l;
+        return (
+          <button
+            key={l}
+            type="button"
+            onClick={() => onChange(l)}
+            className="tap"
+            aria-pressed={active}
+            style={{
+              border: "none",
+              background: active ? "var(--paper)" : "transparent",
+              color: active ? "var(--ink)" : "var(--ink-60)",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "5px 10px",
+              borderRadius: 11,
+              cursor: "pointer",
+              letterSpacing: "0.04em",
+              boxShadow: active ? "0 1px 3px rgba(45,38,32,0.12)" : "none",
+              transition: "background 200ms var(--ease-out), color 200ms var(--ease-out)",
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        );
+      })}
     </div>
   );
 }

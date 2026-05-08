@@ -5,6 +5,7 @@ import type { Sphere } from "@/lib/data";
 import { createSphere, deleteSphere, updateSphere } from "@/lib/actions";
 import { Icons } from "@/components/Icons";
 import { feedbackModalOpen } from "@/lib/feedback";
+import { useT } from "@/lib/i18n/client";
 
 const COLORS = [
   "#86c79a", // mint
@@ -24,6 +25,7 @@ type Props = {
 };
 
 export default function SphereEditModal({ open, onClose, sphere }: Props) {
+  const t = useT();
   const isEdit = !!sphere;
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
@@ -75,7 +77,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
 
   function remove() {
     if (!sphere) return;
-    if (!confirm("Удалить сферу? Задачи в ней останутся, но без сферы.")) return;
+    if (!confirm(t("sphere.delete_confirm"))) return;
     startTransition(async () => {
       try {
         await deleteSphere(sphere.id);
@@ -133,7 +135,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "Сфера" : "Новая сфера"}
+          {isEdit ? t("sphere.title_edit") : t("sphere.title_new")}
         </div>
 
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
@@ -156,7 +158,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             ref={inputRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Название"
+            placeholder={t("sphere.name_ph")}
             style={{
               flex: 1,
               padding: "12px 14px",
@@ -186,7 +188,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          Цвет
+          {t("sphere.color_label")}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (
@@ -259,7 +261,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
                 : "none",
             }}
           >
-            Готово
+            {t("common.done")}
           </button>
         </div>
       </div>

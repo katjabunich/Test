@@ -7,10 +7,10 @@ import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isPast, isToday, today, addDays } from "@/lib/date";
+import { useT } from "@/lib/i18n/client";
 
 type Group = {
-  key: string;
-  label: string;
+  key: "overdue" | "today" | "week" | "later" | "nodate";
   /** Text colour for the group label */
   accent?: string;
   items: Task[];
@@ -42,11 +42,11 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", label: "Просрочено", items: overdue, accent: "var(--alert)" });
-  if (todays.length)  groups.push({ key: "today",   label: "Сегодня",        items: todays });
-  if (week.length)    groups.push({ key: "week",    label: "На этой неделе", items: week });
-  if (later.length)   groups.push({ key: "later",   label: "Позже",          items: later });
-  if (noDate.length)  groups.push({ key: "nodate",  label: "Без даты",       items: noDate });
+  if (overdue.length) groups.push({ key: "overdue", items: overdue, accent: "var(--alert)" });
+  if (todays.length)  groups.push({ key: "today",   items: todays });
+  if (week.length)    groups.push({ key: "week",    items: week });
+  if (later.length)   groups.push({ key: "later",   items: later });
+  if (noDate.length)  groups.push({ key: "nodate",  items: noDate });
   return groups;
 }
 
@@ -59,6 +59,7 @@ export default function TasksView({
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const t = useT();
   const [filter, setFilter] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
@@ -109,7 +110,7 @@ export default function TasksView({
             margin: 0,
           }}
         >
-          Задачи
+          {t("tasks.title")}
         </h1>
         {tasks.length > 0 && (
           <div
@@ -123,14 +124,10 @@ export default function TasksView({
               letterSpacing: "-0.005em",
             }}
           >
-            <span style={{ color: "var(--ink-60)" }}>
-              <span className="tnum">{tasks.length}</span>{" "}
-              {tasks.length === 1 ? "активная" : "активных"}
-            </span>
+            <span style={{ color: "var(--ink-60)" }}>{t("tasks.sub")}</span>
             {overdueCount > 0 && (
               <span style={{ color: "var(--alert)" }}>
-                · <span className="tnum">{overdueCount}</span>{" "}
-                {overdueCount === 1 ? "просрочена" : "просрочено"}
+                · <span className="tnum">{overdueCount}</span> {t("tasks.h_overdue").toLowerCase()}
               </span>
             )}
           </div>
@@ -149,7 +146,7 @@ export default function TasksView({
         }}
       >
         <FilterChip
-          label="Все"
+          label={t("tasks.filter_all")}
           count={tasks.length}
           active={filter === null}
           onClick={() => setFilter(null)}
@@ -195,12 +192,13 @@ export default function TasksView({
                 <FilteredEmpty
                   color={sphereById.get(filter)?.color ?? "var(--mint)"}
                 />
-                В этой сфере пусто.
+                {t("tasks.empty_filter")}
               </>
             ) : (
               <>
                 <TasksEmpty />
-                Пока пусто. Жми <span className="mark-butter">+ внизу</span>.
+                {t("tasks.empty")}{" "}
+                <span className="mark-butter">{t("tasks.empty_hint")}</span>
               </>
             )}
           </div>
@@ -224,7 +222,7 @@ export default function TasksView({
                     letterSpacing: "-0.005em",
                   }}
                 >
-                  {g.label}
+                  {t(`tasks.h_${g.key}`)}
                 </span>
                 <span
                   className="tnum"

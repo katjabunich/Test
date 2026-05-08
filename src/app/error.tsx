@@ -4,6 +4,7 @@
    default 500 page when a server component throws. */
 
 import { useEffect } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export default function GlobalError({
   error,
@@ -12,6 +13,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useT();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -26,10 +29,10 @@ export default function GlobalError({
       }}
     >
       <h1 style={{ fontSize: 22, fontWeight: 600, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-        Что-то пошло не так
+        {t("common.err_title")}
       </h1>
       <p style={{ color: "var(--text-muted)", lineHeight: 1.55, fontSize: 14 }}>
-        {error.message || "Неизвестная ошибка"}
+        {error.message || t("common.err_unknown")}
       </p>
       <button
         onClick={reset}
@@ -46,7 +49,7 @@ export default function GlobalError({
           cursor: "pointer",
         }}
       >
-        Повторить
+        {t("common.retry")}
       </button>
     </div>
   );

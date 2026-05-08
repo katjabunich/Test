@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { updatePassword } from "@/app/settings/password-actions";
 import { feedbackModalOpen } from "@/lib/feedback";
+import { useT } from "@/lib/i18n/client";
 
 type Props = { open: boolean; onClose: () => void };
 
 export default function PasswordChangeModal({ open, onClose }: Props) {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -29,11 +31,11 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
   function submit() {
     setError(null);
     if (password.length < 8) {
-      setError("Пароль должен быть от 8 символов.");
+      setError(t("login.err_pw_short"));
       return;
     }
     if (password !== confirm) {
-      setError("Пароли не совпадают.");
+      setError(t("login.err_pw_match"));
       return;
     }
     const fd = new FormData();
@@ -41,8 +43,12 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
     fd.set("confirm", confirm);
     startTransition(async () => {
       const result = await updatePassword(fd);
-      if (result.error) {
-        setError(result.error);
+      if (result.code) {
+        setError(t(`login.err_${result.code}`));
+        return;
+      }
+      if (result.raw) {
+        setError(result.raw);
         return;
       }
       setDone(true);
@@ -97,21 +103,21 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          Сменить пароль
+          {t("pw.title")}
         </div>
 
         <Field
           inputRef={inputRef}
-          label="Новый пароль"
+          label={t("pw.new_label")}
           name="password"
           value={password}
           onChange={setPassword}
           autoComplete="new-password"
-          hint="От 8 символов"
+          hint={t("pw.pw_hint")}
           disabled={pending || done}
         />
         <Field
-          label="Повтори новый пароль"
+          label={t("pw.confirm_label")}
           name="confirm"
           value={confirm}
           onChange={setConfirm}
@@ -153,7 +159,7 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               lineHeight: 1.45,
             }}
           >
-            Пароль обновлён ✓
+            {t("pw.success")}
           </div>
         )}
 
@@ -176,7 +182,7 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               letterSpacing: "-0.005em",
             }}
           >
-            Отмена
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -198,7 +204,7 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               opacity: pending ? 0.7 : 1,
             }}
           >
-            {pending ? "Минутку…" : done ? "Готово" : "Сохранить"}
+            {pending ? t("common.waiting") : done ? t("common.done") : t("common.save")}
           </button>
         </div>
       </div>

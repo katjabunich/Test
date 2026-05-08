@@ -12,44 +12,34 @@ import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
 import { updateDisplayName } from "@/lib/profile";
 import { feedbackTaskComplete } from "@/lib/feedback";
+import { useT, useLang, useMonths, useWeekdaysShort } from "@/lib/i18n/client";
+import type { Lang } from "@/lib/i18n/dict";
 
-const MONTHS_GENITIVE = [
-  "января", "февраля", "марта", "апреля", "мая", "июня",
-  "июля", "августа", "сентября", "октября", "ноября", "декабря",
-];
-const WEEKDAY_LONG = [
-  "воскресенье", "понедельник", "вторник", "среда",
-  "четверг", "пятница", "суббота",
-];
-const WEEKDAY_SHORT_LOWER = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
-
-const GREETINGS = {
-  morning: ["Доброе утро", "С добрым утром", "Утречко", "Доброго утра"],
-  day:     ["Добрый день", "Хорошего дня", "Привет"],
-  evening: ["Добрый вечер", "Вечер добрый", "Хорошего вечера"],
-  night:   ["Доброй ночи", "Уже поздно", "Тихой ночи"],
-};
-
-function pickGreeting(seed: string): string {
+function pickGreeting(t: (k: string) => string): string {
   const h = new Date().getHours();
-  const pool =
-    h < 5 ? GREETINGS.night :
-    h < 12 ? GREETINGS.morning :
-    h < 18 ? GREETINGS.day :
-    GREETINGS.evening;
-  // Stable per day: hash today's date so the user sees the same phrase
-  // throughout the day, but different from yesterday.
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-  return pool[Math.abs(hash) % pool.length];
+  if (h < 5)  return t("today.night");
+  if (h < 12) return t("today.morning");
+  if (h < 18) return t("today.afternoon");
+  return t("today.evening");
 }
 
-function formatDue(due: string | null, overdue: boolean): string {
-  if (!due) return "сегодня";
-  if (isToday(due)) return "сегодня";
-  if (overdue) return "вчера";
+function formatDue(
+  due: string | null,
+  overdue: boolean,
+  lang: Lang,
+  months: readonly string[],
+  weekdays: readonly string[],
+): string {
+  const today_s = lang === "en" ? "today" : "сегодня";
+  const yesterday_s = lang === "en" ? "yesterday" : "вчера";
+  if (!due) return today_s;
+  if (isToday(due)) return today_s;
+  if (overdue) return yesterday_s;
   const d = fromIsoDate(due);
-  return `${WEEKDAY_SHORT_LOWER[d.getDay()]} · ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`;
+  if (lang === "en") {
+    return `${weekdays[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
+  }
+  return `${weekdays[d.getDay()]} · ${d.getDate()} ${months[d.getMonth()]}`;
 }
 
 const labelStyle = {
@@ -84,6 +74,10 @@ export default function TodayView({
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const t = useT();
+  const lang = useLang();
+  const months = useMonths();
+  const weekdaysShort = useWeekdaysShort();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const [name, setName] = useState<string | null>(initialName);
@@ -124,18 +118,18 @@ export default function TodayView({
     return m;
   }, [spheres]);
 
-  const t = today();
-  const dateObj = fromIsoDate(t);
-  const habitsToday = habits.filter((h) => isScheduledOn(h, t));
+  const todayIso = today();
+  const dateObj = fromIsoDate(todayIso);
+  const habitsToday = habits.filter((h) => isScheduledOn(h, todayIso));
   const logsByHabit = useMemo(() => groupLogsByHabit(logs), [logs]);
 
   const doneTodaySet = useMemo(() => {
     const s = new Set<string>();
     logs.forEach((l) => {
-      if (l.date === t) s.add(l.habit_id);
+      if (l.date === todayIso) s.add(l.habit_id);
     });
     return s;
-  }, [logs, t]);
+  }, [logs, todayIso]);
 
   // Sort: overdue → today → do_today no-date
   const sortedTodayTasks = useMemo(() => {
@@ -167,7 +161,7 @@ export default function TodayView({
     if (!logged) return 0;
     let n = 0;
     for (let i = 0; i < 7; i++) {
-      if (logged.has(addDays(t, -i))) n++;
+      if (logged.has(addDays(todayIso, -i))) n++;
     }
     return n;
   }
@@ -187,9 +181,17 @@ export default function TodayView({
         >
           <div>
             <div style={{ ...labelStyle, marginBottom: 8 }}>
-              {WEEKDAY_LONG[dateObj.getDay()]},{" "}
-              <span className="tnum">{dateObj.getDate()}</span>{" "}
-              {MONTHS_GENITIVE[dateObj.getMonth()]}
+              {lang === "en" ? (
+                <>
+                  {months[dateObj.getMonth()]}{" "}
+                  <span className="tnum">{dateObj.getDate()}</span>
+                </>
+              ) : (
+                <>
+                  <span className="tnum">{dateObj.getDate()}</span>{" "}
+                  {months[dateObj.getMonth()]}
+                </>
+              )}
             </div>
             <h1
               style={{
@@ -217,7 +219,7 @@ export default function TodayView({
                       setEditingName(false);
                     }
                   }}
-                  placeholder="имя"
+                  placeholder={t("today.name_ph")}
                   maxLength={30}
                   style={{
                     background: "transparent",
@@ -249,7 +251,7 @@ export default function TodayView({
                     textUnderlineOffset: name ? undefined : "5px",
                   }}
                 >
-                  {name ?? "представься"}
+                  {name ?? t("today.name_ph")}
                 </button>
               )}
               !
@@ -340,7 +342,7 @@ export default function TodayView({
                   fill="var(--ink-40)"
                 />
               </svg>
-              Чисто. Можно <span className="mark-butter">отдыхать</span> или добавить дело — кнопка плюса внизу.
+              {t("today.empty_clean")}<span className="mark-butter">{t("today.empty_rest")}</span>{t("today.empty_tail")}
             </div>
           )}
 
@@ -354,7 +356,7 @@ export default function TodayView({
               }}
             >
               <span style={sectionHeadingStyle}>
-                Дальше · <span className="tnum">{restTasks.length}</span>
+                {t("today.h_next")} · <span className="tnum">{restTasks.length}</span>
               </span>
               {overdueCount > 0 && (
                 <span
@@ -374,7 +376,7 @@ export default function TodayView({
                     strokeWidth={2.2}
                   />
                   <span className="tnum">{overdueCount}</span>{" "}
-                  {overdueCount === 1 ? "просрочена" : "просрочено"}
+                  {t("today.overdue_count")}
                 </span>
               )}
             </div>
@@ -404,7 +406,7 @@ export default function TodayView({
               }}
             >
               <span style={sectionHeadingStyle}>
-                На неделе · <span className="tnum">{upcomingTasks.length}</span>
+                {t("today.h_week_short")} · <span className="tnum">{upcomingTasks.length}</span>
               </span>
             </div>
           )}
@@ -432,6 +434,10 @@ function HeroNextTask({
   sphere: Sphere | null;
   onEdit: () => void;
 }) {
+  const t = useT();
+  const lang = useLang();
+  const months = useMonths();
+  const weekdaysShort = useWeekdaysShort();
   const [optimisticDone, setOptimisticDone] = useState(false);
   const [, startTransition] = useTransition();
   const overdue = !!(task.due_date && isPast(task.due_date));
@@ -527,7 +533,7 @@ function HeroNextTask({
             letterSpacing: "-0.005em",
           }}
         >
-          {formatDue(task.due_date, overdue)}
+          {formatDue(task.due_date, overdue, lang, months, weekdaysShort)}
         </div>
       </div>
 
@@ -578,7 +584,7 @@ function HeroNextTask({
           }}
         >
           <Icons.Check size={15} stroke={color} strokeWidth={2.6} />
-          Сделать
+          {t("today.do_it")}
         </button>
         <button
           type="button"

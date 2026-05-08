@@ -3,10 +3,12 @@
 import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signInWithPassword, signUpWithPassword } from "./actions";
+import { useT } from "@/lib/i18n/client";
 
 type Mode = "signin" | "signup";
 
 export default function LoginForm({ next }: { next: string }) {
+  const t = useT();
   const [mode, setMode] = useState<Mode>("signin");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -20,7 +22,11 @@ export default function LoginForm({ next }: { next: string }) {
     startTransition(async () => {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
       const result = await action(formData);
-      if (result?.error) setError(result.error);
+      if (result?.code) {
+        setError(t(`login.err_${result.code}`));
+      } else if (result?.raw) {
+        setError(result.raw);
+      }
     });
   }
 
@@ -70,7 +76,7 @@ export default function LoginForm({ next }: { next: string }) {
             textWrap: "balance" as React.CSSProperties["textWrap"],
           }}
         >
-          {mode === "signin" ? "С возвращением" : "Заведи аккаунт"}
+          {mode === "signin" ? t("login.signin_title") : t("login.signup_title")}
         </h1>
         <p
           style={{
@@ -83,19 +89,21 @@ export default function LoginForm({ next }: { next: string }) {
         >
           {mode === "signin" ? (
             <>
-              Задачи и привычки на <span className="mark-butter">всех твоих устройствах</span>.
+              {t("login.signin_sub_pre")}
+              <span className="mark-butter">{t("login.signin_sub_mark")}</span>
+              {t("login.signin_sub_post")}
             </>
           ) : (
             <>
-              Сферы, задачи, привычки — <span className="mark-butter">синхронизация</span> в облаке.
+              {t("login.signup_sub_pre")}
+              <span className="mark-butter">{t("login.signup_sub_mark")}</span>
+              {t("login.signup_sub_post")}
             </>
           )}
         </p>
 
-        {/* Pill segmented mode toggle */}
         <div
           role="tablist"
-          aria-label="Режим входа"
           style={{
             display: "flex",
             background: "var(--paper-deep)",
@@ -111,7 +119,7 @@ export default function LoginForm({ next }: { next: string }) {
               setMode("signin");
               setError(null);
             }}
-            label="Войти"
+            label={t("login.tab_signin")}
           />
           <ModeTab
             active={mode === "signup"}
@@ -119,7 +127,7 @@ export default function LoginForm({ next }: { next: string }) {
               setMode("signup");
               setError(null);
             }}
-            label="Регистрация"
+            label={t("login.tab_signup")}
           />
         </div>
 
@@ -148,7 +156,7 @@ export default function LoginForm({ next }: { next: string }) {
           }}
         >
           <GoogleGlyph />
-          {mode === "signin" ? "Войти через Google" : "Зарегистрироваться через Google"}
+          {mode === "signin" ? t("login.google_signin") : t("login.google_signup")}
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 18px" }}>
@@ -161,14 +169,14 @@ export default function LoginForm({ next }: { next: string }) {
               letterSpacing: "-0.005em",
             }}
           >
-            или
+            {t("login.or")}
           </span>
           <span style={{ flex: 1, height: 1, background: "var(--ink-10)" }} />
         </div>
 
         <form action={handleSubmit}>
           <Field
-            label="Email"
+            label={t("login.email")}
             name="email"
             type="email"
             autoComplete="email"
@@ -176,13 +184,13 @@ export default function LoginForm({ next }: { next: string }) {
             disabled={pending}
           />
           <Field
-            label="Пароль"
+            label={t("login.password")}
             name="password"
             type="password"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             required
             disabled={pending}
-            hint={mode === "signup" ? "От 8 символов" : undefined}
+            hint={mode === "signup" ? t("login.pw_hint") : undefined}
           />
 
           {error && (
@@ -226,10 +234,10 @@ export default function LoginForm({ next }: { next: string }) {
             }}
           >
             {pending
-              ? "Минутку…"
+              ? t("common.waiting")
               : mode === "signin"
-                ? "Войти"
-                : "Зарегистрироваться"}
+                ? t("login.cta_signin")
+                : t("login.cta_signup")}
           </button>
         </form>
       </div>
@@ -244,7 +252,7 @@ export default function LoginForm({ next }: { next: string }) {
           lineHeight: 1.5,
         }}
       >
-        v2 · вход и облачная синхронизация
+        {t("login.footer")}
       </p>
     </div>
   );

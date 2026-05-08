@@ -8,6 +8,7 @@ import { addDays, today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
+import { useT } from "@/lib/i18n/client";
 
 /** Habit list row per v4: paperWarm card with thin ring on the left,
     name + week progress in the middle, big streak number on the right. */
@@ -20,6 +21,7 @@ export default function HabitCard({
   logged: Set<string>;
   onEdit: (habit: Habit) => void;
 }) {
+  const t = useT();
   const color = habit.color || "var(--mint)";
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
@@ -37,19 +39,19 @@ export default function HabitCard({
     prevStreak.current = streak;
   }, [streak, habit.color]);
 
-  const t = today();
-  const doneToday = localLogged.has(t);
+  const todayIso = today();
+  const doneToday = localLogged.has(todayIso);
   const weekDone = useMemo(() => {
     let n = 0;
-    for (let i = 0; i < 7; i++) if (localLogged.has(addDays(t, -i))) n++;
+    for (let i = 0; i < 7; i++) if (localLogged.has(addDays(todayIso, -i))) n++;
     return n;
-  }, [localLogged, t]);
+  }, [localLogged, todayIso]);
 
   function toggleToday() {
     const next = new Set(localLogged);
-    if (next.has(t)) next.delete(t);
+    if (next.has(todayIso)) next.delete(todayIso);
     else {
-      next.add(t);
+      next.add(todayIso);
       // Tick on toggle-on; milestone celebration handled by the streak effect
       // above so it doesn't fire alongside the regular tick.
       const wouldBeMilestone = isStreakMilestone(streak + 1);
@@ -58,7 +60,7 @@ export default function HabitCard({
     setLocalLogged(next);
     startTransition(async () => {
       try {
-        await toggleHabitLog(habit.id, t);
+        await toggleHabitLog(habit.id, todayIso);
       } catch {
         setLocalLogged(logged);
       }
@@ -177,7 +179,7 @@ export default function HabitCard({
             letterSpacing: "-0.005em",
           }}
         >
-          <span className="tnum">{weekDone}</span>/7 на неделе
+          <span className="tnum">{weekDone}</span>/7 {t("habits.week_progress")}
         </div>
       </div>
 
@@ -203,7 +205,7 @@ export default function HabitCard({
             letterSpacing: "-0.005em",
           }}
         >
-          дней
+          {t("habits.days")}
         </div>
       </div>
     </div>

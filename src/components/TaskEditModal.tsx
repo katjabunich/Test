@@ -6,12 +6,13 @@ import { createTask, deleteTask, updateTask } from "@/lib/actions";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { fromIsoDate, today as todayIso } from "@/lib/date";
 import { feedbackModalOpen } from "@/lib/feedback";
+import { useT, useLang } from "@/lib/i18n/client";
 
-const RECURRENCE_LABELS: Record<NonNullable<Recurrence>, string> = {
-  daily: "каждый день",
-  weekly: "каждую неделю",
-  biweekly: "раз в 2 недели",
-  monthly: "каждый месяц",
+const RECURRENCE_KEYS: Record<NonNullable<Recurrence>, string> = {
+  daily: "task.repeat_daily",
+  weekly: "task.repeat_weekly",
+  biweekly: "task.repeat_biweekly",
+  monthly: "task.repeat_monthly",
 };
 
 type Props = {
@@ -29,6 +30,8 @@ export default function TaskEditModal({
   spheres,
   defaultSphereId,
 }: Props) {
+  const t = useT();
+  const lang = useLang();
   const isEdit = !!task;
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -92,7 +95,7 @@ export default function TaskEditModal({
 
   function remove() {
     if (!task) return;
-    if (!confirm("Удалить задачу?")) return;
+    if (!confirm(t("task.delete_confirm"))) return;
     startTransition(async () => {
       try {
         await deleteTask(task.id);
@@ -105,8 +108,11 @@ export default function TaskEditModal({
 
   const dateLabel = (() => {
     if (!dueDate) return "—";
-    if (dueDate === todayIso()) return "Сегодня";
+    if (dueDate === todayIso()) return t("common.today");
     const d = fromIsoDate(dueDate);
+    if (lang === "en") {
+      return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+    }
     return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
   })();
 
@@ -157,7 +163,7 @@ export default function TaskEditModal({
             letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "Задача" : "Новая задача"}
+          {isEdit ? t("task.title_edit") : t("task.title_new")}
         </div>
 
         {/* Title input with mintDeep underline */}
@@ -172,7 +178,7 @@ export default function TaskEditModal({
             ref={inputRef}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Что нужно сделать"
+            placeholder={t("task.name_ph")}
             rows={2}
             style={{
               width: "100%",
@@ -206,7 +212,7 @@ export default function TaskEditModal({
             letterSpacing: "-0.005em",
           }}
         >
-          Сфера
+          {t("task.sphere_label")}
         </div>
         <div
           style={{
@@ -218,7 +224,7 @@ export default function TaskEditModal({
         >
           <SphereChipButton
             active={sphereId === null}
-            label="Без"
+            label={t("task.sphere_none")}
             onClick={() => setSphereId(null)}
           />
           {spheres.map((s) => (
@@ -233,7 +239,7 @@ export default function TaskEditModal({
         </div>
 
         {/* Rows */}
-        <Row Icon={Icons.Calendar} label="Дата">
+        <Row Icon={Icons.Calendar} label={t("task.date_label")}>
           <input
             type="date"
             value={dueDate}
@@ -266,13 +272,13 @@ export default function TaskEditModal({
           )}
         </Row>
 
-        <Row Icon={Icons.Sun} label="На сегодня">
+        <Row Icon={Icons.Sun} label={t("task.do_today")}>
           <Toggle on={doToday} onChange={setDoToday} />
         </Row>
 
         <Row
           Icon={Icons.Repeat}
-          label="Повтор"
+          label={t("task.repeat_label")}
           onClick={() => setRecurrenceOpen((v) => !v)}
         >
           <span
@@ -283,7 +289,7 @@ export default function TaskEditModal({
               letterSpacing: "-0.005em",
             }}
           >
-            {recurrence ? RECURRENCE_LABELS[recurrence] : "не повторять"}
+            {recurrence ? t(RECURRENCE_KEYS[recurrence]) : t("task.repeat_none")}
           </span>
         </Row>
         {recurrenceOpen && (
@@ -300,7 +306,7 @@ export default function TaskEditModal({
                 <SphereChipButton
                   key={r ?? "none"}
                   active={recurrence === r}
-                  label={r ? RECURRENCE_LABELS[r] : "не повторять"}
+                  label={r ? t(RECURRENCE_KEYS[r]) : t("task.repeat_none")}
                   onClick={() => {
                     setRecurrence(r);
                     setRecurrenceOpen(false);
@@ -313,7 +319,7 @@ export default function TaskEditModal({
 
         <Row
           Icon={Icons.Note}
-          label="Заметка"
+          label={t("task.note_label")}
           onClick={() => setNoteOpen((v) => !v)}
           last={!noteOpen}
         >
@@ -325,14 +331,14 @@ export default function TaskEditModal({
               letterSpacing: "-0.005em",
             }}
           >
-            {note ? `${note.slice(0, 14)}${note.length > 14 ? "…" : ""}` : "добавить…"}
+            {note ? `${note.slice(0, 14)}${note.length > 14 ? "…" : ""}` : `${t("common.add").toLowerCase()}…`}
           </span>
         </Row>
         {noteOpen && (
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="—"
+            placeholder={t("task.note_ph")}
             rows={3}
             style={{
               width: "100%",
@@ -405,7 +411,7 @@ export default function TaskEditModal({
                 : "none",
             }}
           >
-            Готово
+            {t("common.done")}
           </button>
         </div>
       </div>

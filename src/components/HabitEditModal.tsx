@@ -5,21 +5,16 @@ import type { Habit, HabitScheduleType } from "@/lib/data";
 import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
 import { HABIT_PRESET_ICONS, HabitIcon, Icons, parseHabitIcon } from "@/components/Icons";
 import { feedbackModalOpen } from "@/lib/feedback";
+import { useT, useLang } from "@/lib/i18n/client";
 
 const COLORS = [
   "#86c79a", "#f4936e", "#f5c563", "#6ba4c2",
   "#b5a3df", "#e89bb0", "#0ABAB5", "#4f9c6a",
 ];
 
-const WEEKDAYS = [
-  { i: 1, label: "Пн" },
-  { i: 2, label: "Вт" },
-  { i: 3, label: "Ср" },
-  { i: 4, label: "Чт" },
-  { i: 5, label: "Пт" },
-  { i: 6, label: "Сб" },
-  { i: 0, label: "Вс" },
-];
+const WEEKDAYS_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const WEEKDAYS_EN = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAY_INDEX = [1, 2, 3, 4, 5, 6, 0];
 
 type Props = {
   open: boolean;
@@ -28,6 +23,8 @@ type Props = {
 };
 
 export default function HabitEditModal({ open, onClose, habit }: Props) {
+  const t = useT();
+  const lang = useLang();
   const isEdit = !!habit;
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +82,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
 
   function remove() {
     if (!habit) return;
-    if (!confirm("Удалить привычку и весь её лог?")) return;
+    if (!confirm(t("habit.delete_confirm"))) return;
     startTransition(async () => {
       try {
         await deleteHabit(habit.id);
@@ -154,7 +151,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          {isEdit ? "Привычка" : "Новая привычка"}
+          {isEdit ? t("habit.title_edit") : t("habit.title_new")}
         </div>
 
         {/* Icon preview + name */}
@@ -184,7 +181,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             ref={inputRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Привычка"
+            placeholder={t("habit.name_ph")}
             style={{
               flex: 1,
               padding: "12px 14px",
@@ -215,7 +212,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          Иконка
+          {t("habit.icon_label")}
         </div>
         <div
           style={{
@@ -262,7 +259,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               letterSpacing: "-0.005em",
             }}
           >
-            или эмодзи:
+            {t("habit.or_emoji")}
           </span>
           <input
             value={customEmojiValue}
@@ -294,7 +291,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          Цвет
+          {t("habit.color_label")}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (
@@ -331,52 +328,55 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             letterSpacing: "-0.005em",
           }}
         >
-          Расписание
+          {t("habit.schedule_label")}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           <ScheduleChip
             active={scheduleType === "daily"}
-            label="каждый день"
+            label={t("habits.sched_daily")}
             onClick={() => setScheduleType("daily")}
           />
           <ScheduleChip
             active={scheduleType === "weekdays"}
-            label="по дням"
+            label={t("habits.sched_weekdays")}
             onClick={() => setScheduleType("weekdays")}
           />
           <ScheduleChip
             active={scheduleType === "n_per_week"}
-            label="без расписания"
+            label={t("habits.sched_n_per_week", { n: 3 })}
             onClick={() => setScheduleType("n_per_week")}
           />
         </div>
         {scheduleType === "weekdays" && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
-            {WEEKDAYS.map((d) => (
-              <button
-                key={d.i}
-                type="button"
-                onClick={() => toggleDay(d.i)}
-                className="tap"
-                style={{
-                  width: 40,
-                  height: 36,
-                  borderRadius: 999,
-                  border: days.includes(d.i)
-                    ? "1.5px solid var(--mint-deep)"
-                    : "1px solid var(--ink-10)",
-                  background: days.includes(d.i)
-                    ? "rgba(79,156,106,0.12)"
-                    : "var(--paper-warm)",
-                  color: days.includes(d.i) ? "var(--mint-deep)" : "var(--ink)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                {d.label}
-              </button>
-            ))}
+            {WEEKDAY_INDEX.map((idx, j) => {
+              const label = (lang === "en" ? WEEKDAYS_EN : WEEKDAYS_RU)[j];
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => toggleDay(idx)}
+                  className="tap"
+                  style={{
+                    width: 40,
+                    height: 36,
+                    borderRadius: 999,
+                    border: days.includes(idx)
+                      ? "1.5px solid var(--mint-deep)"
+                      : "1px solid var(--ink-10)",
+                    background: days.includes(idx)
+                      ? "rgba(79,156,106,0.12)"
+                      : "var(--paper-warm)",
+                    color: days.includes(idx) ? "var(--mint-deep)" : "var(--ink)",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -426,7 +426,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
                 : "none",
             }}
           >
-            Готово
+            {t("common.done")}
           </button>
         </div>
       </div>

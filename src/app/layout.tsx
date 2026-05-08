@@ -6,6 +6,8 @@ import RegisterSW from "@/components/RegisterSW";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
 import { getUser } from "@/lib/auth";
+import { getLang } from "@/lib/i18n/server";
+import { LanguageProvider } from "@/lib/i18n/client";
 
 /* Two-family system:
    - Lora: warm soft serif for emotional moments (H1s, hero title,
@@ -28,7 +30,7 @@ const sans = Manrope({
 
 export const metadata: Metadata = {
   title: "DoIt",
-  description: "Задачи и привычки на сегодня",
+  description: "Tasks and habits for today",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "DoIt" },
   icons: { apple: "/icon-192.png", icon: "/icon-512.png" },
@@ -45,17 +47,19 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = await getUser();
+  const [user, lang] = await Promise.all([getUser(), getLang()]);
   const authed = !!user;
   return (
-    <html lang="ru" className={`${sans.variable} ${serif.variable}`}>
+    <html lang={lang} className={`${sans.variable} ${serif.variable}`}>
       <body>
-        <main>
-          <PageTransition>{children}</PageTransition>
-        </main>
-        {authed && <BottomNav />}
-        {!authed && <Onboarding />}
-        <RegisterSW />
+        <LanguageProvider initial={lang}>
+          <main>
+            <PageTransition>{children}</PageTransition>
+          </main>
+          {authed && <BottomNav />}
+          {!authed && <Onboarding />}
+          <RegisterSW />
+        </LanguageProvider>
       </body>
     </html>
   );
