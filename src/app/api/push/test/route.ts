@@ -79,8 +79,8 @@ export async function POST() {
     }
 
     const payload = JSON.stringify({
-      title: "DoIt",
-      body: "Тестовое уведомление — труба работает 🎉",
+      title: "Тестовое уведомление",
+      body: "Труба работает 🎉",
       url: "/",
       tag: "test",
     });

@@ -169,9 +169,11 @@ async function handle(req: NextRequest) {
 
   for (const task of dueTasks) {
     const userSubs = subsByUser.get(task.user_id) ?? [];
+    /* iOS already prints the app's manifest name above each push, so a
+       title of "DoIt" would just repeat what the OS shows. Use the task
+       title itself as the headline instead. */
     const payload = JSON.stringify({
-      title: "DoIt",
-      body: task.title,
+      title: task.title,
       url: "/",
       tag: `task-${task.id}`,
     });
