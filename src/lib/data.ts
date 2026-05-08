@@ -22,6 +22,8 @@ export type Task = {
   note: string | null;
   recurrence: Recurrence;
   recurrence_anchor: string | null;
+  remind_at: string | null;       // ISO timestamp — when to fire push
+  reminded_at: string | null;     // ISO timestamp — when push was sent
   completed_at: string | null;    // ISO timestamp
   created_at: string;
 };

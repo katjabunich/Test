@@ -220,6 +220,8 @@ export const DICT = {
     do_today:      { ru: "Сделать сегодня",  en: "Do today" },
     note_label:    { ru: "Заметка",          en: "Note" },
     note_ph:       { ru: "Подробности",      en: "Details" },
+    remind_label:  { ru: "Напомнить",        en: "Remind me" },
+    remind_clear:  { ru: "Убрать напоминание", en: "Clear reminder" },
     repeat_label:  { ru: "Повтор",           en: "Repeat" },
     repeat_none:   { ru: "Однократно",       en: "Never" },
     repeat_daily:  { ru: "Каждый день",      en: "Daily" },

@@ -16,6 +16,7 @@ export type CreateTaskInput = {
   do_today?: boolean;
   note?: string | null;
   recurrence?: Recurrence;
+  remind_at?: string | null;       // ISO timestamp; null = no reminder
 };
 
 export async function createTask(input: CreateTaskInput) {
@@ -30,6 +31,7 @@ export async function createTask(input: CreateTaskInput) {
     note: input.note ?? null,
     recurrence: input.recurrence ?? null,
     recurrence_anchor: input.recurrence ? (input.due_date ?? today()) : null,
+    remind_at: input.remind_at ?? null,
   });
   if (error) throw new Error(error.message);
   revalidatePath("/");
@@ -45,6 +47,11 @@ export async function updateTask(id: string, patch: Partial<CreateTaskInput>) {
     update.recurrence_anchor = patch.recurrence
       ? (patch.due_date ?? today())
       : null;
+  }
+  // Editing the reminder clears any prior "already sent" mark so the new
+  // time fires fresh.
+  if ("remind_at" in patch) {
+    update.reminded_at = null;
   }
   const { error } = await supabase.from("tasks").update(update).eq("id", id);
   if (error) throw new Error(error.message);

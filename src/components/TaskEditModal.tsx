@@ -43,6 +43,7 @@ export default function TaskEditModal({
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [recurrenceOpen, setRecurrenceOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [remindAtLocal, setRemindAtLocal] = useState<string>("");
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export default function TaskEditModal({
       setNote(task.note ?? "");
       setRecurrence(task.recurrence);
       setNoteOpen(!!task.note);
+      setRemindAtLocal(task.remind_at ? isoToLocalInput(task.remind_at) : "");
     } else {
       setTitle("");
       setSphereId(defaultSphereId ?? null);
@@ -64,6 +66,7 @@ export default function TaskEditModal({
       setNote("");
       setRecurrence(null);
       setNoteOpen(false);
+      setRemindAtLocal("");
     }
     setRecurrenceOpen(false);
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -83,6 +86,7 @@ export default function TaskEditModal({
           do_today: doToday,
           note: note.trim() || null,
           recurrence,
+          remind_at: remindAtLocal ? localInputToIso(remindAtLocal) : null,
         };
         if (isEdit && task) await updateTask(task.id, payload);
         else await createTask(payload);
@@ -317,6 +321,46 @@ export default function TaskEditModal({
           </div>
         )}
 
+        <Row Icon={Icons.Bell} label={t("task.remind_label")}>
+          <input
+            type="datetime-local"
+            value={remindAtLocal}
+            onChange={(e) => setRemindAtLocal(e.target.value)}
+            className="tnum"
+            style={{
+              fontFamily: "inherit",
+              fontSize: 13,
+              fontWeight: 600,
+              color: remindAtLocal ? "var(--ink-80)" : "var(--ink-40)",
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              textAlign: "right",
+              padding: 0,
+              letterSpacing: "-0.005em",
+            }}
+          />
+          {remindAtLocal && (
+            <button
+              type="button"
+              onClick={() => setRemindAtLocal("")}
+              aria-label={t("task.remind_clear")}
+              className="tap"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--ink-40)",
+                fontSize: 16,
+                lineHeight: 1,
+                padding: "0 0 0 4px",
+              }}
+            >
+              ×
+            </button>
+          )}
+        </Row>
+
         <Row
           Icon={Icons.Note}
           label={t("task.note_label")}
@@ -503,6 +547,22 @@ function SphereChipButton({
       {label}
     </button>
   );
+}
+
+/* `<input type="datetime-local">` works in local time. We store ISO/UTC,
+   so convert at the boundary. */
+function isoToLocalInput(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const offsetMs = d.getTimezoneOffset() * 60 * 1000;
+  return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function localInputToIso(local: string): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
 }
 
 function Toggle({
