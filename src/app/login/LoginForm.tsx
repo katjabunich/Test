@@ -6,15 +6,16 @@ import { signInWithPassword, signUpWithPassword } from "./actions";
 import { useT } from "@/lib/i18n/client";
 
 type Mode = "signin" | "signup";
+type Banner = { kind: "error" | "info"; text: string };
 
 export default function LoginForm({ next }: { next: string }) {
   const t = useT();
   const [mode, setMode] = useState<Mode>("signin");
-  const [error, setError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<Banner | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
-    setError(null);
+    setBanner(null);
     formData.set("next", next);
     if (typeof window !== "undefined") {
       formData.set("origin", window.location.origin);
@@ -22,16 +23,18 @@ export default function LoginForm({ next }: { next: string }) {
     startTransition(async () => {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
       const result = await action(formData);
-      if (result?.code) {
-        setError(t(`login.err_${result.code}`));
+      if (result?.code === "confirm_email") {
+        setBanner({ kind: "info", text: t("login.err_confirm_email") });
+      } else if (result?.code) {
+        setBanner({ kind: "error", text: t(`login.err_${result.code}`) });
       } else if (result?.raw) {
-        setError(result.raw);
+        setBanner({ kind: "error", text: result.raw });
       }
     });
   }
 
   async function handleGoogle() {
-    setError(null);
+    setBanner(null);
     const supabase = createClient();
     const origin = window.location.origin;
     const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
@@ -39,7 +42,7 @@ export default function LoginForm({ next }: { next: string }) {
       provider: "google",
       options: { redirectTo },
     });
-    if (error) setError(error.message);
+    if (error) setBanner({ kind: "error", text: error.message });
   }
 
   return (
@@ -117,7 +120,7 @@ export default function LoginForm({ next }: { next: string }) {
             active={mode === "signin"}
             onClick={() => {
               setMode("signin");
-              setError(null);
+              setBanner(null);
             }}
             label={t("login.tab_signin")}
           />
@@ -125,7 +128,7 @@ export default function LoginForm({ next }: { next: string }) {
             active={mode === "signup"}
             onClick={() => {
               setMode("signup");
-              setError(null);
+              setBanner(null);
             }}
             label={t("login.tab_signup")}
           />
@@ -193,22 +196,29 @@ export default function LoginForm({ next }: { next: string }) {
             hint={mode === "signup" ? t("login.pw_hint") : undefined}
           />
 
-          {error && (
+          {banner && (
             <div
-              role="alert"
+              role={banner.kind === "error" ? "alert" : "status"}
               style={{
                 marginTop: 4,
                 marginBottom: 14,
                 padding: "11px 13px",
                 borderRadius: 12,
-                background: "rgba(217,106,82,0.10)",
-                color: "var(--alert, #c25a44)",
+                background:
+                  banner.kind === "error"
+                    ? "rgba(217,106,82,0.10)"
+                    : "rgba(79,156,106,0.14)",
+                color:
+                  banner.kind === "error"
+                    ? "var(--alert, #c25a44)"
+                    : "var(--mint-deep)",
                 fontSize: 13,
+                fontWeight: banner.kind === "info" ? 500 : 400,
                 lineHeight: 1.45,
                 letterSpacing: "-0.003em",
               }}
             >
-              {error}
+              {banner.text}
             </div>
           )}
 
