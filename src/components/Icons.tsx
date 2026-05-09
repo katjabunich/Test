@@ -203,6 +203,13 @@ export const Icons = {
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </I>
   ),
+  /* Three vertical bars at varying heights — sphere "Statistics" tab */
+  BarChart: (p: Props) => (
+    <I {...p}>
+      <path d="M6 20V11M12 20V4M18 20v-6" />
+      <path d="M3 20h18" />
+    </I>
+  ),
 };
 
 export type IconKey = keyof typeof Icons;

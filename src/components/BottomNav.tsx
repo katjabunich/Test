@@ -4,18 +4,20 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icons } from "@/components/Icons";
 
-export type NavTab = "today" | "tasks" | "habits" | "settings";
+export type NavTab = "today" | "tasks" | "habits" | "stats" | "settings";
 
 const TABS: { id: NavTab; href: string; Icon: keyof typeof Icons }[] = [
   { id: "today",    href: "/",          Icon: "Sun" },
   { id: "tasks",    href: "/tasks",     Icon: "List" },
   { id: "habits",   href: "/habits",    Icon: "Loop" },
+  { id: "stats",    href: "/stats",     Icon: "BarChart" },
   { id: "settings", href: "/settings",  Icon: "Settings" },
 ];
 
 function activeTabFor(pathname: string): NavTab {
   if (pathname.startsWith("/tasks")) return "tasks";
   if (pathname.startsWith("/habits")) return "habits";
+  if (pathname.startsWith("/stats")) return "stats";
   if (pathname.startsWith("/settings")) return "settings";
   return "today";
 }
@@ -48,7 +50,7 @@ export default function BottomNav() {
         margin: "0 auto",
         background: "var(--paper)",
         borderTop: "1px solid var(--ink-10)",
-        padding: "14px 24px max(14px, calc(env(safe-area-inset-bottom) + 8px))",
+        padding: "14px 18px max(14px, calc(env(safe-area-inset-bottom) + 8px))",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",

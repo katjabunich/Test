@@ -145,6 +145,26 @@ export const DICT = {
     week_progress:{ ru: "на неделе",          en: "this week" },
   },
 
+  /* ──────────── Stats ──────────── */
+  stats: {
+    title:           { ru: "Статистика",          en: "Statistics" },
+    sub:             { ru: "Зеркало продуктивности", en: "Mirror of your output" },
+    tab_today:       { ru: "Сегодня",             en: "Today" },
+    tab_week:        { ru: "Неделя",              en: "Week" },
+    tab_month:       { ru: "Месяц",               en: "Month" },
+    completed_count: { ru: "задач выполнено",     en: "tasks completed" },
+    completed_one:   { ru: "задача выполнена",    en: "task completed" },
+    completed_few:   { ru: "задачи выполнены",    en: "tasks completed" },
+    section_done:    { ru: "Что сделано",         en: "What got done" },
+    section_breakdown:{ ru: "По сферам",          en: "By sphere" },
+    no_sphere:       { ru: "Без сферы",           en: "No sphere" },
+    yesterday:       { ru: "Вчера",               en: "Yesterday" },
+    more_count:      { ru: "+ ещё {n}",           en: "+{n} more" },
+    empty_pre:       { ru: "За этот период ничего не завершено. ", en: "Nothing wrapped up in this window. " },
+    empty_mark:      { ru: "Иногда нужен отдых",  en: "Rest counts too" },
+    empty_post:      { ru: ".",                   en: "." },
+  },
+
   /* ──────────── Settings ──────────── */
   settings: {
     title:       { ru: "Настройки",      en: "Settings" },

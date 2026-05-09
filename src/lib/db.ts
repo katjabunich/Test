@@ -103,6 +103,32 @@ export async function fetchHabits(): Promise<Habit[]> {
   return (data ?? []) as Habit[];
 }
 
+/** Completed tasks since `sinceIso` (a UTC ISO timestamp), most recent first.
+    Used by the /stats page; the client narrows the window further by local
+    timezone (today / week / month tabs). */
+export async function fetchCompletedTasks(
+  sinceIso: string,
+  limit = 500,
+): Promise<Task[]> {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("user_id", user.id)
+    .not("completed_at", "is", null)
+    .gte("completed_at", sinceIso)
+    .order("completed_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("fetchCompletedTasks:", error);
+    return [];
+  }
+  return (data ?? []) as Task[];
+}
+
+/* ──────────────── Habit logs ──────────────── */
+
 /** Logs for the last N days for all habits. RLS filters by habit ownership. */
 export async function fetchRecentHabitLogs(days = 30): Promise<HabitLog[]> {
   await requireUser();
