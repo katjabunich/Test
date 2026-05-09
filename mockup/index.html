@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Севилья · 12—15 июня 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://media-cdn.tripadvisor.com">
+<link rel="preconnect" href="https://dynamic-media-cdn.tripadvisor.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:        #f8f4ee;
+    --paper-warm:   #efe7d8;
+    --paper-soft:   #faf7f1;
+    --ink:          #1a1614;
+    --ink-soft:     #5a534b;
+    --ink-mute:     #8a8278;
+    --rule:         #e6dfd3;
+    --rule-soft:    #f0e9dc;
+    --accent:       #b85c3a;
+    --accent-soft:  #d8a890;
+    --moss:         #6b7c5a;
+    --sky:          #6e8aa3;
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body:    'Inter', system-ui, sans-serif;
+
+    --col-max:      720px;     /* основная колонка */
+    --gutter-x:     24px;
+  }
+
+  @media (min-width: 720px) {
+    :root { --gutter-x: 48px; }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 16px/1.55 var(--font-body);
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  img { display: block; max-width: 100%; height: auto; }
+  a { color: inherit; }
+
+  .container {
+    max-width: var(--col-max);
+    margin: 0 auto;
+    padding: 0 var(--gutter-x);
+  }
+
+  /* ─────────────── Eyebrow ─────────────── */
+  .eyebrow {
+    font: 600 11px/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────── Hero ─────────────── */
+  .hero {
+    padding-top: 64px;
+    padding-bottom: 48px;
+  }
+  @media (min-width: 720px) {
+    .hero { padding-top: 96px; padding-bottom: 72px; }
+  }
+
+  .hero__eyebrow { margin-bottom: 28px; }
+
+  .hero__title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(56px, 11vw, 88px);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    font-variation-settings: 'opsz' 144;
+  }
+
+  .hero__dates {
+    margin-top: 12px;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(20px, 4vw, 26px);
+    color: var(--ink-soft);
+    font-variation-settings: 'opsz' 24;
+  }
+
+  .hero__note {
+    margin-top: 36px;
+    max-width: 32em;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* ─────────────── Section divider ─────────────── */
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  .section-label {
+    padding: 64px 0 36px;
+  }
+  @media (min-width: 720px) {
+    .section-label { padding: 96px 0 48px; }
+  }
+
+  .section-label__num {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+    font-variation-settings: 'opsz' 14;
+  }
+  .section-label__title {
+    font: 600 11px/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  /* ─────────────── Top pick ─────────────── */
+  .pick {
+    padding-bottom: 64px;
+  }
+  @media (min-width: 720px) {
+    .pick { padding-bottom: 96px; }
+  }
+
+  .pick__photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: var(--paper-warm);
+  }
+
+  .pick__body {
+    padding-top: 28px;
+  }
+
+  .pick__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(28px, 5vw, 36px);
+    line-height: 1.15;
+    letter-spacing: -0.018em;
+    font-variation-settings: 'opsz' 48;
+  }
+
+  .pick__commentary {
+    margin-top: 16px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    font-variation-settings: 'opsz' 24;
+    max-width: 38em;
+  }
+
+  .pick__meta-row {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--paper-warm);
+    border-radius: 999px;
+    font: 500 13px/1 var(--font-body);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip__label { color: var(--ink-mute); font-weight: 500; }
+  .chip__num   { font-weight: 600; }
+
+  .meta-divider {
+    width: 1px; height: 14px;
+    background: var(--rule);
+    margin: 0 4px;
+  }
+
+  .meta {
+    font: 500 14px/1 var(--font-body);
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .meta strong { color: var(--ink); font-weight: 600; }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    padding: 12px 0;
+    font: 500 15px/1 var(--font-body);
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    transition: color .15s, border-color .15s;
+  }
+  .cta:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .cta__arrow {
+    font-family: var(--font-display);
+    font-style: italic;
+    transition: transform .25s ease;
+  }
+  .cta:hover .cta__arrow { transform: translateX(4px); }
+
+  /* ─────────────── Secondary picks ─────────────── */
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-bottom: 48px;
+  }
+  @media (min-width: 720px) {
+    .pair {
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      padding-bottom: 96px;
+    }
+  }
+
+  .card { display: flex; flex-direction: column; }
+
+  .card__photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: var(--paper-warm);
+  }
+  .card__body { padding-top: 20px; }
+  .card__num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-mute);
+    margin-bottom: 6px;
+  }
+  .card__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    font-variation-settings: 'opsz' 24;
+  }
+  .card__commentary {
+    margin-top: 10px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .card__meta {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .card__bottom {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  /* ─────────────── Shortlist (compact grid) ─────────────── */
+  .shortlist {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding-bottom: 80px;
+  }
+  @media (min-width: 720px) {
+    .shortlist { grid-template-columns: 1fr 1fr; gap: 48px 32px; padding-bottom: 120px; }
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (min-width: 720px) {
+    .row { grid-template-columns: 140px 1fr; gap: 18px; }
+  }
+
+  .row__photo {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: var(--paper-warm);
+  }
+  .row__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .row__commentary {
+    margin-top: 6px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .row__meta {
+    margin-top: 10px;
+    font: 500 13px/1 var(--font-body);
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .row__meta strong { color: var(--ink); font-weight: 600; }
+
+  /* ─────────────── Rejected accordion ─────────────── */
+  details.rejected {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0;
+  }
+  details.rejected[open] summary { margin-bottom: 24px; }
+  details.rejected summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font: 600 11px/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    transition: color .15s;
+  }
+  details.rejected summary::-webkit-details-marker { display: none; }
+  details.rejected summary:hover { color: var(--ink); }
+  .summary__chevron {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    transition: transform .2s;
+  }
+  details.rejected[open] .summary__chevron { transform: rotate(90deg); }
+
+  .rejected__list { padding-top: 8px; }
+  .rejected__item {
+    padding: 14px 0;
+    border-top: 1px dashed var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .rejected__name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 16px;
+  }
+  .rejected__why {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-mute);
+  }
+
+  /* ─────────────── Footer ─────────────── */
+  footer {
+    padding: 48px 0 64px;
+    text-align: center;
+    color: var(--ink-mute);
+    font-size: 13px;
+  }
+  footer p { font-family: var(--font-display); font-style: italic; }
+
+</style>
+</head>
+<body>
+
+<header class="container hero">
+  <p class="eyebrow hero__eyebrow">Поездка · 3 ночи</p>
+  <h1 class="hero__title">Севилья</h1>
+  <p class="hero__dates">12 — 15 июня 2026</p>
+  <p class="hero__note">Из 47&nbsp;проверенных отелей я отобрала 10 — те, что максимально подходят под «уютно, светло, есть территория снаружи». Top&nbsp;3 — ниже.</p>
+</header>
+
+<hr class="rule">
+
+<!-- ─────────────── TOP PICK ─────────────── -->
+<section class="container section-label">
+  <p class="section-label__num">Выбор № 1</p>
+  <p class="section-label__title">Top pick</p>
+</section>
+
+<article class="container pick">
+  <img
+    class="pick__photo"
+    src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/09/89/cb/bd/hotel-casa-1800-sevilla.jpg?w=1280&h=960&s=1"
+    alt="Hotel Casa 1800 Sevilla — внутренний патио"
+    loading="eager">
+
+  <div class="pick__body">
+    <h2 class="pick__name">Hotel Casa 1800 Sevilla</h2>
+    <p class="pick__commentary">«Boutique-отель в палаццо XVIII&nbsp;века с традиционным внутренним патио и rooftop-террасой. 33&nbsp;номера, каждый со своим характером. Светлые интерьеры, приглушённые тона, хорошая работа с историческим зданием — точно по&nbsp;запросу.»</p>
+
+    <div class="pick__meta-row">
+      <span class="chip"><span class="chip__label">уют</span> <span class="chip__num">9.2</span></span>
+      <span class="chip"><span class="chip__label">свет</span> <span class="chip__num">8.8</span></span>
+      <span class="chip"><span class="chip__label">outdoor</span> <span class="chip__num">8.0</span></span>
+      <span class="chip"><span class="chip__label">location</span> <span class="chip__num">9.4</span></span>
+      <span class="meta-divider"></span>
+      <span class="meta"><strong>$1&thinsp;274</strong> · 3 ночи</span>
+      <span class="meta-divider"></span>
+      <span class="meta"><strong>4.7</strong> по&nbsp;3&thinsp;724 отзывам</span>
+    </div>
+
+    <a class="cta" href="#" target="_blank" rel="noopener">
+      <span>Открыть на&nbsp;Booking</span>
+      <span class="cta__arrow">→</span>
+    </a>
+  </div>
+</article>
+
+<hr class="rule">
+
+<!-- ─────────────── PICKS 2 & 3 ─────────────── -->
+<section class="container section-label">
+  <p class="section-label__num">Выбор № 2 · 3</p>
+  <p class="section-label__title">Сильные альтернативы</p>
+</section>
+
+<div class="container pair">
+
+  <article class="card">
+    <img
+      class="card__photo"
+      src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/ff/3b/64/hotel-monte-carmelo-habitacion.jpg?w=900&h=675&s=1"
+      alt="Hotel Monte Carmelo">
+    <div class="card__body">
+      <p class="card__num">№ 2</p>
+      <h3 class="card__name">Hotel Monte Carmelo</h3>
+      <p class="card__commentary">«Не такой нарядный, но небольшой и душевный. Светлые номера в современном минимализме. Rooftop без бассейна.»</p>
+      <div class="card__meta">
+        <span class="chip"><span class="chip__label">уют</span> <span class="chip__num">8.6</span></span>
+        <span class="chip"><span class="chip__label">свет</span> <span class="chip__num">8.4</span></span>
+      </div>
+      <div class="card__bottom">
+        <span class="meta"><strong>$519</strong> · 3 ночи · 4.6</span>
+        <a class="cta" href="#"><span>Booking</span><span class="cta__arrow">→</span></a>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <img
+      class="card__photo"
+      src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0f/f0/ff/68/las-casas-de-la-juderia.jpg?w=900&h=675&s=1"
+      alt="Las Casas de la Judería">
+    <div class="card__body">
+      <p class="card__num">№ 3</p>
+      <h3 class="card__name">Las Casas de&nbsp;la&nbsp;Judería</h3>
+      <p class="card__commentary">«Лабиринт из&nbsp;соединённых старых домов с&nbsp;несколькими патио. Большой, но&nbsp;разделён на&nbsp;интимные зоны. Атмосферно.»</p>
+      <div class="card__meta">
+        <span class="chip"><span class="chip__label">уют</span> <span class="chip__num">7.5</span></span>
+        <span class="chip"><span class="chip__label">outdoor</span> <span class="chip__num">9.0</span></span>
+      </div>
+      <div class="card__bottom">
+        <span class="meta"><strong>$822</strong> · 3 ночи · 4.1</span>
+        <a class="cta" href="#"><span>Booking</span><span class="cta__arrow">→</span></a>
+      </div>
+    </div>
+  </article>
+
+</div>
+
+<hr class="rule">
+
+<!-- ─────────────── SHORTLIST ─────────────── -->
+<section class="container section-label">
+  <p class="section-label__num">Выбор № 4 — 10</p>
+  <p class="section-label__title">Шорт-лист</p>
+</section>
+
+<div class="container shortlist">
+
+  <article class="row">
+    <img class="row__photo" src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/23/69/48/3d/hotel-murillo.jpg?w=600&h=450&s=1" alt="">
+    <div>
+      <p class="row__name">Hotel Murillo</p>
+      <p class="row__commentary">«В Санта-Круз, традиционный декор. Чуть ярче по&nbsp;цвету, чем хотелось бы.»</p>
+      <p class="row__meta"><strong>$456</strong> · 4.1 · 4&thinsp;289 отзывов</p>
+    </div>
+  </article>
+
+  <article class="row">
+    <img class="row__photo" src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2c/29/57/e2/hotel-sevilla-macarena.jpg?w=600&h=450&s=1" alt="">
+    <div>
+      <p class="row__name">Exe Sevilla Macarena</p>
+      <p class="row__commentary">«Современный, есть бассейн. Чуть дальше от&nbsp;центра — пешком до&nbsp;Кафедрала ~25 мин.»</p>
+      <p class="row__meta"><strong>$460</strong> · 3.5 · 3&thinsp;205 отзывов</p>
+    </div>
+  </article>
+
+  <article class="row">
+    <img class="row__photo" src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/ff/3b/64/hotel-monte-carmelo-habitacion.jpg?w=600&h=450&s=1" alt="">
+    <div>
+      <p class="row__name">Eurostars Sevilla Boutique</p>
+      <p class="row__commentary">«Тёмные тона в номерах — против запроса. Но локация и завтрак отличные.»</p>
+      <p class="row__meta"><strong>$612</strong> · 4.4 · 1&thinsp;188 отзывов</p>
+    </div>
+  </article>
+
+  <article class="row">
+    <img class="row__photo" src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/09/89/cb/bd/hotel-casa-1800-sevilla.jpg?w=600&h=450&s=1" alt="">
+    <div>
+      <p class="row__name">Casual Sevilla de las Letras</p>
+      <p class="row__commentary">«Дизайнерская концепция, цветные акценты. Современный, но не „светлый“.»</p>
+      <p class="row__meta"><strong>$488</strong> · 4.3 · 2&thinsp;001 отзывов</p>
+    </div>
+  </article>
+
+</div>
+
+<!-- ─────────────── REJECTED ─────────────── -->
+<div class="container">
+  <details class="rejected">
+    <summary>
+      <span class="summary__chevron">▸</span>
+      <span>Отвергнутые · 12</span>
+    </summary>
+    <div class="rejected__list">
+      <div class="rejected__item">
+        <span class="rejected__name">Hotel Alfonso XIII</span>
+        <span class="rejected__why">слишком большой и помпезный</span>
+      </div>
+      <div class="rejected__item">
+        <span class="rejected__name">Eme Catedral Mercer</span>
+        <span class="rejected__why">тёмная цветовая гамма в&nbsp;номерах</span>
+      </div>
+      <div class="rejected__item">
+        <span class="rejected__name">NH Plaza de Armas</span>
+        <span class="rejected__why">сетевой, без характера</span>
+      </div>
+      <div class="rejected__item">
+        <span class="rejected__name">Vincci La Rabida</span>
+        <span class="rejected__why">нет outdoor-территории</span>
+      </div>
+      <div class="rejected__item">
+        <span class="rejected__name">Hotel Bécquer</span>
+        <span class="rejected__why">только 3.7 ★ — ниже порога</span>
+      </div>
+    </div>
+  </details>
+</div>
+
+<footer>
+  <p>Подобрано для&nbsp;Кати · 6&nbsp;ноября 2026, 14:32</p>
+</footer>
+
+</body>
+</html>
