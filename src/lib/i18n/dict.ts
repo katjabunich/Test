@@ -129,6 +129,7 @@ export const DICT = {
     empty_filter:{ ru: "В этой сфере пусто", en: "Nothing in this sphere yet" },
     swipe_done:  { ru: "Готово",         en: "Done" },
     swipe_defer: { ru: "Отложить",       en: "Defer" },
+    day_clear:   { ru: "Сбросить день",   en: "Clear day" },
   },
 
   /* ──────────── Habits ──────────── */

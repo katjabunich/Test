@@ -166,27 +166,6 @@ export default function TodayView({
     return n;
   }
 
-  /* Week strip: Mon-Sun of the current calendar week with a per-day count
-     of dated tasks. At-a-glance preview of the week's silhouette before
-     the hero card narrows the focus to a single next-task. */
-  const weekStripDays = useMemo(() => {
-    const allOpen = [...todayTasks, ...upcomingTasks];
-    const dow = fromIsoDate(todayIso).getDay();
-    const offset = dow === 0 ? 6 : dow - 1;
-    const monday = addDays(todayIso, -offset);
-    return Array.from({ length: 7 }).map((_, i) => {
-      const iso = addDays(monday, i);
-      const count = allOpen.filter((t) => t.due_date === iso).length;
-      return {
-        iso,
-        date: fromIsoDate(iso),
-        count,
-        isToday: iso === todayIso,
-        isPast: iso < todayIso,
-      };
-    });
-  }, [todayTasks, upcomingTasks, todayIso]);
-
   return (
     <>
       <div style={{ padding: "8px 0 0" }}>
@@ -307,9 +286,6 @@ export default function TodayView({
           </div>
         )}
 
-        {/* Week strip — Mon-Sun preview with task counts per day. */}
-        <WeekStrip days={weekStripDays} weekdays={weekdaysShort} />
-
         {/* Hero "next task" + the rest */}
         <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 10 }}>
           {heroTask ? (
@@ -396,21 +372,6 @@ export default function TodayView({
               }}
             />
           ))}
-
-          {upcomingTasks.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "16px 4px 0",
-              }}
-            >
-              <span style={sectionHeadingStyle}>
-                {t("today.h_week_short")} · <span className="tnum">{upcomingTasks.length}</span>
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -421,112 +382,6 @@ export default function TodayView({
         spheres={spheres}
       />
     </>
-  );
-}
-
-/** Mon-Sun preview strip showing dated open tasks per weekday. Pure
-    visualization for now — tap-to-jump can layer on later. */
-function WeekStrip({
-  days,
-  weekdays,
-}: {
-  days: { iso: string; date: Date; count: number; isToday: boolean; isPast: boolean }[];
-  weekdays: readonly string[];
-}) {
-  return (
-    <div style={{ padding: "0 18px 22px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
-        {days.map((d) => {
-          const dayLabel = weekdays[d.date.getDay()];
-          return (
-            <div
-              key={d.iso}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-                padding: "8px 0 10px",
-                borderRadius: 12,
-                background: d.isToday ? "var(--paper-warm)" : "transparent",
-                opacity: d.isPast && !d.isToday ? 0.5 : 1,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  color: d.isToday ? "var(--ink)" : "var(--ink-40)",
-                }}
-              >
-                {dayLabel}
-              </span>
-              <span
-                className="tnum"
-                style={{
-                  fontFamily: d.isToday ? "var(--font-emphasis)" : "inherit",
-                  fontSize: d.isToday ? 18 : 15,
-                  fontWeight: d.isToday ? 700 : 500,
-                  color: "var(--ink)",
-                  letterSpacing: "-0.01em",
-                  lineHeight: 1,
-                }}
-              >
-                {d.date.getDate()}
-              </span>
-              <div
-                aria-hidden
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  height: 6,
-                }}
-              >
-                {d.count === 0 ? (
-                  <span
-                    style={{
-                      width: 3,
-                      height: 3,
-                      borderRadius: 2,
-                      background: "var(--ink-10)",
-                    }}
-                  />
-                ) : (
-                  Array.from({ length: Math.min(d.count, 4) }).map((_, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        width: 4,
-                        height: 4,
-                        borderRadius: 2,
-                        background: d.isToday ? "var(--mint-deep)" : "var(--ink-40)",
-                      }}
-                    />
-                  ))
-                )}
-                {d.count > 4 && (
-                  <span
-                    className="tnum"
-                    style={{
-                      fontSize: 9,
-                      fontWeight: 600,
-                      color: d.isToday ? "var(--mint-deep)" : "var(--ink-40)",
-                      letterSpacing: "-0.005em",
-                    }}
-                  >
-                    +{d.count - 4}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 

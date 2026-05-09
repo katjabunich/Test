@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
-import { isPast, isToday, today, addDays } from "@/lib/date";
-import { useT } from "@/lib/i18n/client";
+import { isPast, isToday, today, addDays, fromIsoDate } from "@/lib/date";
+import { useT, useWeekdaysShort } from "@/lib/i18n/client";
 
 type Group = {
   key: "overdue" | "today" | "week" | "later" | "nodate";
@@ -59,7 +59,9 @@ export default function TasksView({
   const router = useRouter();
   const search = useSearchParams();
   const t = useT();
+  const weekdaysShort = useWeekdaysShort();
   const [filter, setFilter] = useState<string | null>(null);
+  const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
@@ -71,9 +73,36 @@ export default function TasksView({
     }
   }, [search, router]);
 
+  /* Sphere filter narrows by life-area; day filter narrows by due date. */
   const filtered = useMemo(() => {
-    if (!filter) return tasks;
-    return tasks.filter((t) => t.sphere_id === filter);
+    return tasks.filter((task) => {
+      if (filter && task.sphere_id !== filter) return false;
+      if (dayFilter && task.due_date !== dayFilter) return false;
+      return true;
+    });
+  }, [tasks, filter, dayFilter]);
+
+  /* Week strip: counts respect the active sphere filter so the strip
+     mirrors the visible list, not the whole archive. */
+  const weekStripDays = useMemo(() => {
+    const todayIso = today();
+    const dow = fromIsoDate(todayIso).getDay();
+    const offset = dow === 0 ? 6 : dow - 1;
+    const monday = addDays(todayIso, -offset);
+    const sphereScoped = filter
+      ? tasks.filter((t) => t.sphere_id === filter)
+      : tasks;
+    return Array.from({ length: 7 }).map((_, i) => {
+      const iso = addDays(monday, i);
+      const count = sphereScoped.filter((t) => t.due_date === iso).length;
+      return {
+        iso,
+        date: fromIsoDate(iso),
+        count,
+        isToday: iso === todayIso,
+        isPast: iso < todayIso,
+      };
+    });
   }, [tasks, filter]);
 
   const groups = useMemo(() => groupTasks(filtered), [filtered]);
@@ -163,6 +192,56 @@ export default function TasksView({
         ))}
         <div style={{ minWidth: 18 }} />
       </div>
+
+      {/* Week strip — tap a day to narrow the list to that date. */}
+      <WeekStrip
+        days={weekStripDays}
+        weekdays={weekdaysShort}
+        activeIso={dayFilter}
+        onPick={(iso) =>
+          setDayFilter((prev) => (prev === iso ? null : iso))
+        }
+      />
+
+      {dayFilter && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "0 22px 12px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12.5,
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {dayFilterLabel(dayFilter)}
+          </span>
+          <button
+            type="button"
+            onClick={() => setDayFilter(null)}
+            className="tap"
+            style={{
+              padding: "4px 10px",
+              borderRadius: 8,
+              border: "1px solid var(--ink-10)",
+              background: "transparent",
+              color: "var(--ink-60)",
+              fontSize: 11.5,
+              fontWeight: 600,
+              letterSpacing: "-0.005em",
+              cursor: "pointer",
+            }}
+          >
+            {t("tasks.day_clear")}
+          </button>
+        </div>
+      )}
 
       {/* Groups */}
       <div
@@ -269,6 +348,154 @@ export default function TasksView({
       />
     </>
   );
+}
+
+/** Mon-Sun preview strip with per-day counts. Tap on a day toggles a
+    list-level day-filter; tapping the active day again clears it. */
+function WeekStrip({
+  days,
+  weekdays,
+  activeIso,
+  onPick,
+}: {
+  days: { iso: string; date: Date; count: number; isToday: boolean; isPast: boolean }[];
+  weekdays: readonly string[];
+  activeIso: string | null;
+  onPick: (iso: string) => void;
+}) {
+  return (
+    <div style={{ padding: "0 18px 16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        {days.map((d) => {
+          const dayLabel = weekdays[d.date.getDay()];
+          const isActive = activeIso === d.iso;
+          return (
+            <button
+              key={d.iso}
+              type="button"
+              onClick={() => onPick(d.iso)}
+              className="tap"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 0 10px",
+                borderRadius: 12,
+                background: isActive
+                  ? "var(--ink)"
+                  : d.isToday
+                  ? "var(--paper-warm)"
+                  : "transparent",
+                border: isActive ? "1.5px solid var(--ink)" : "none",
+                color: isActive ? "var(--paper)" : "var(--ink)",
+                opacity: d.isPast && !d.isToday && !isActive ? 0.55 : 1,
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: isActive
+                    ? "var(--paper)"
+                    : d.isToday
+                    ? "var(--ink)"
+                    : "var(--ink-40)",
+                }}
+              >
+                {dayLabel}
+              </span>
+              <span
+                className="tnum"
+                style={{
+                  fontFamily: d.isToday || isActive ? "var(--font-emphasis)" : "inherit",
+                  fontSize: d.isToday || isActive ? 18 : 15,
+                  fontWeight: d.isToday || isActive ? 700 : 500,
+                  color: isActive ? "var(--paper)" : "var(--ink)",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1,
+                }}
+              >
+                {d.date.getDate()}
+              </span>
+              <div
+                aria-hidden
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                  height: 6,
+                }}
+              >
+                {d.count === 0 ? (
+                  <span
+                    style={{
+                      width: 3,
+                      height: 3,
+                      borderRadius: 2,
+                      background: isActive ? "rgba(245,237,224,0.4)" : "var(--ink-10)",
+                    }}
+                  />
+                ) : (
+                  Array.from({ length: Math.min(d.count, 4) }).map((_, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: 2,
+                        background: isActive
+                          ? "var(--paper)"
+                          : d.isToday
+                          ? "var(--mint-deep)"
+                          : "var(--ink-40)",
+                      }}
+                    />
+                  ))
+                )}
+                {d.count > 4 && (
+                  <span
+                    className="tnum"
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 600,
+                      color: isActive
+                        ? "var(--paper)"
+                        : d.isToday
+                        ? "var(--mint-deep)"
+                        : "var(--ink-40)",
+                      letterSpacing: "-0.005em",
+                    }}
+                  >
+                    +{d.count - 4}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const RU_MONTHS = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+
+/** Human-readable summary of which day the day-filter is pinning to. */
+function dayFilterLabel(iso: string): string {
+  const d = fromIsoDate(iso);
+  const todayIso = today();
+  if (iso === todayIso) return "Сегодня";
+  if (iso === addDays(todayIso, 1)) return "Завтра";
+  if (iso === addDays(todayIso, -1)) return "Вчера";
+  return `${d.getDate()} ${RU_MONTHS[d.getMonth()]}`;
 }
 
 /** Sphere chips wear their sphere colour as a soft tint (always on, even
