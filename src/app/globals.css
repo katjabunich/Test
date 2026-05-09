@@ -72,6 +72,16 @@ button, input, textarea, select {
   color: inherit;
 }
 
+/* Android Chrome and iOS Safari auto-zoom the viewport when a focused
+   input's font-size is below 16px. Inline styles still win — we keep
+   the visual sizes we want for date/time pickers and small chrome —
+   but anything that doesn't override gets a safe baseline. */
+input:not([type="date"]):not([type="time"]):not([type="datetime-local"]),
+textarea,
+select {
+  font-size: 16px;
+}
+
 /* Text utilities reflecting design tokens */
 .tnum {
   font-variant-numeric: tabular-nums;

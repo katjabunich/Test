@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { Habit } from "@/lib/data";
 import { toggleHabitLog } from "@/lib/actions";
-import { computeStreak } from "@/lib/habits";
+import { computeStreak, isScheduledOn } from "@/lib/habits";
 import { addDays, today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
@@ -41,6 +41,24 @@ export default function HabitCard({
 
   const todayIso = today();
   const doneToday = localLogged.has(todayIso);
+
+  // 21-day rolling heatmap: oldest on the left, today on the right. Each
+  // cell carries one of three states — done, missed-but-scheduled, or
+  // off-day — so the user can read both consistency and streak shape at
+  // a glance without burning vertical space on the card.
+  const cells = useMemo(() => {
+    const out: Array<{ date: string; done: boolean; scheduled: boolean }> = [];
+    for (let i = 20; i >= 0; i--) {
+      const date = addDays(todayIso, -i);
+      out.push({
+        date,
+        done: localLogged.has(date),
+        scheduled: isScheduledOn(habit, date),
+      });
+    }
+    return out;
+  }, [habit, localLogged, todayIso]);
+
   const weekDone = useMemo(() => {
     let n = 0;
     for (let i = 0; i < 7; i++) if (localLogged.has(addDays(todayIso, -i))) n++;
@@ -171,15 +189,30 @@ export default function HabitCard({
           {habit.name}
         </div>
         <div
+          aria-label={`${weekDone}/7 ${t("habits.week_progress")}`}
           style={{
-            marginTop: 4,
-            fontSize: 12,
-            fontWeight: 600,
-            color,
-            letterSpacing: "-0.005em",
+            marginTop: 6,
+            display: "flex",
+            gap: 2,
           }}
         >
-          <span className="tnum">{weekDone}</span>/7 {t("habits.week_progress")}
+          {cells.map((c) => (
+            <span
+              key={c.date}
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 1.5,
+                background: c.done
+                  ? color
+                  : c.scheduled
+                  ? "var(--ink-10)"
+                  : "transparent",
+                border: c.done ? "none" : "1px solid var(--ink-05)",
+                flexShrink: 0,
+              }}
+            />
+          ))}
         </div>
       </div>
 
