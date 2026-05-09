@@ -253,14 +253,20 @@ export function HabitIcon({
     return <Comp size={size} stroke={stroke} strokeWidth={strokeWidth ?? 2} />;
   }
   if (parsed.kind === "emoji") {
+    /* Emoji glyphs render with metrics that often overshoot their nominal
+       font-size box; line-height: 1 + 0.95 size made tall emoji clip top
+       and bottom inside tight ring containers. Pad the safe-zone instead. */
     return (
       <span
         style={{
-          fontSize: Math.round(size * 0.95),
-          lineHeight: 1,
+          fontSize: Math.round(size * 0.78),
+          lineHeight: 1.1,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
+          width: size,
+          height: size,
+          overflow: "visible",
         }}
       >
         {parsed.emoji}

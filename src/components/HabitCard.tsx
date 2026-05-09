@@ -8,7 +8,7 @@ import { addDays, today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
-import { useT } from "@/lib/i18n/client";
+import { useT, useDaysWord } from "@/lib/i18n/client";
 
 /** Habit list row per v4: paperWarm card with thin ring on the left,
     name + week progress in the middle, big streak number on the right. */
@@ -22,6 +22,7 @@ export default function HabitCard({
   onEdit: (habit: Habit) => void;
 }) {
   const t = useT();
+  const daysWord = useDaysWord();
   const color = habit.color || "var(--mint)";
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
@@ -42,13 +43,13 @@ export default function HabitCard({
   const todayIso = today();
   const doneToday = localLogged.has(todayIso);
 
-  // 21-day rolling heatmap: oldest on the left, today on the right. Each
-  // cell carries one of three states — done, missed-but-scheduled, or
-  // off-day — so the user can read both consistency and streak shape at
-  // a glance without burning vertical space on the card.
+  /* Two-week rolling heatmap (oldest on the left, today on the right). 21
+     days felt sparse for new users and hard to scan past the first stretch
+     of consistency; two weeks gives a dense, readable canvas that fills in
+     quickly enough to feel rewarding. */
   const cells = useMemo(() => {
     const out: Array<{ date: string; done: boolean; scheduled: boolean }> = [];
-    for (let i = 20; i >= 0; i--) {
+    for (let i = 13; i >= 0; i--) {
       const date = addDays(todayIso, -i);
       out.push({
         date,
@@ -239,7 +240,7 @@ export default function HabitCard({
             letterSpacing: "-0.005em",
           }}
         >
-          {t("habits.days")}
+          {daysWord(streak)} {t("habits.in_a_row")}
         </div>
       </div>
     </div>

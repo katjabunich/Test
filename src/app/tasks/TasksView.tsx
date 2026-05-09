@@ -83,24 +83,21 @@ export default function TasksView({
   }, [tasks, filter, dayFilter]);
 
   /* Week strip: counts respect the active sphere filter so the strip
-     mirrors the visible list, not the whole archive. */
+     mirrors the visible list, not the whole archive. Forward-looking —
+     today + 6 future days, no past dates (those live on /stats). */
   const weekStripDays = useMemo(() => {
     const todayIso = today();
-    const dow = fromIsoDate(todayIso).getDay();
-    const offset = dow === 0 ? 6 : dow - 1;
-    const monday = addDays(todayIso, -offset);
     const sphereScoped = filter
       ? tasks.filter((t) => t.sphere_id === filter)
       : tasks;
     return Array.from({ length: 7 }).map((_, i) => {
-      const iso = addDays(monday, i);
+      const iso = addDays(todayIso, i);
       const count = sphereScoped.filter((t) => t.due_date === iso).length;
       return {
         iso,
         date: fromIsoDate(iso),
         count,
-        isToday: iso === todayIso,
-        isPast: iso < todayIso,
+        isToday: i === 0,
       };
     });
   }, [tasks, filter]);
@@ -358,7 +355,7 @@ function WeekStrip({
   activeIso,
   onPick,
 }: {
-  days: { iso: string; date: Date; count: number; isToday: boolean; isPast: boolean }[];
+  days: { iso: string; date: Date; count: number; isToday: boolean }[];
   weekdays: readonly string[];
   activeIso: string | null;
   onPick: (iso: string) => void;
@@ -389,7 +386,6 @@ function WeekStrip({
                   : "transparent",
                 border: isActive ? "1.5px solid var(--ink)" : "none",
                 color: isActive ? "var(--paper)" : "var(--ink)",
-                opacity: d.isPast && !d.isToday && !isActive ? 0.55 : 1,
                 cursor: "pointer",
               }}
             >

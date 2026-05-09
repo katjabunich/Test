@@ -449,8 +449,8 @@ function HeroNextTask({
           aria-hidden
           style={{
             position: "absolute",
-            right: -16,
-            bottom: -16,
+            right: -22,
+            top: -22,
             opacity: 0.14,
             pointerEvents: "none",
           }}

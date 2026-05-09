@@ -57,6 +57,26 @@ export function useT() {
   return useMemo(() => tFor(lang), [lang]);
 }
 
+/** Russian-aware pluralizer for "день / дня / дней". Returns the correct
+    word form for the count; English collapses to "day" / "days". */
+export function useDaysWord(): (n: number) => string {
+  const lang = useLang();
+  const t = useT();
+  return useMemo(() => {
+    return (n: number) => {
+      if (lang === "ru") {
+        const mod10 = n % 10;
+        const mod100 = n % 100;
+        if (mod10 === 1 && mod100 !== 11) return t("habits.day_one");
+        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
+          return t("habits.day_few");
+        return t("habits.day_many");
+      }
+      return n === 1 ? t("habits.day_one") : t("habits.day_many");
+    };
+  }, [lang, t]);
+}
+
 export function useMonths() {
   const lang = useLang();
   return useMemo(() => monthsFor(lang), [lang]);

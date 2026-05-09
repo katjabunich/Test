@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Habit, HabitLog } from "@/lib/data";
 import HabitCard from "@/components/HabitCard";
 import HabitEditModal from "@/components/HabitEditModal";
-import { HabitIcon } from "@/components/Icons";
+import { HabitIcon, parseHabitIcon } from "@/components/Icons";
 import { computeStreak, groupLogsByHabit } from "@/lib/habits";
 import { reorderHabits } from "@/lib/actions";
-import { useT } from "@/lib/i18n/client";
+import { useT, useDaysWord } from "@/lib/i18n/client";
 import {
   DndContext,
   PointerSensor,
@@ -36,6 +36,7 @@ export default function HabitsView({
   const router = useRouter();
   const search = useSearchParams();
   const t = useT();
+  const daysWord = useDaysWord();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Habit | null>(null);
 
@@ -146,24 +147,47 @@ export default function HabitsView({
               overflow: "hidden",
             }}
           >
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                right: -28,
-                bottom: -28,
-                opacity: 0.25,
-                pointerEvents: "none",
-                color: "var(--paper)",
-              }}
-            >
-              <HabitIcon
-                value={top.habit.emoji}
-                size={170}
-                stroke="currentColor"
-                strokeWidth={1.3}
-              />
-            </div>
+            {parseHabitIcon(top.habit.emoji).kind === "icon" ? (
+              /* Line-art icons spill off the corner — partial silhouette
+                 reads as ambient decor. Emoji glyphs would look mangled
+                 when clipped, so they get a smaller inline placement. */
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  right: -28,
+                  bottom: -28,
+                  opacity: 0.25,
+                  pointerEvents: "none",
+                  color: "var(--paper)",
+                }}
+              >
+                <HabitIcon
+                  value={top.habit.emoji}
+                  size={170}
+                  stroke="currentColor"
+                  strokeWidth={1.3}
+                />
+              </div>
+            ) : (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  right: 22,
+                  top: 18,
+                  opacity: 0.4,
+                  pointerEvents: "none",
+                }}
+              >
+                <HabitIcon
+                  value={top.habit.emoji}
+                  size={64}
+                  stroke="currentColor"
+                  strokeWidth={1.3}
+                />
+              </div>
+            )}
             <div
               style={{
                 fontSize: 12,
@@ -221,7 +245,7 @@ export default function HabitsView({
                     letterSpacing: "-0.005em",
                   }}
                 >
-                  {t("habits.days")}
+                  {daysWord(top.streak)} {t("habits.in_a_row")}
                 </div>
                 <div
                   style={{

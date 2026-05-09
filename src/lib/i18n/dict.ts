@@ -137,7 +137,12 @@ export const DICT = {
     title:        { ru: "Привычки",         en: "Habits" },
     sub:          { ru: "День за днём",     en: "Day by day" },
     best_streak:  { ru: "Лучший страйк",    en: "Best streak" },
-    days:         { ru: "дней",             en: "days" },
+    /* day-form keys for Russian pluralization (1, 2-4, 5+); en stays
+       same for "day"/"days". Used via daysWord() helper. */
+    day_one:      { ru: "день",             en: "day" },
+    day_few:      { ru: "дня",              en: "days" },
+    day_many:     { ru: "дней",             en: "days" },
+    in_a_row:     { ru: "подряд",           en: "in a row" },
     add:          { ru: "+ Добавить привычку", en: "+ Add a habit" },
     empty_title:  { ru: "Создай первую привычку", en: "Add your first habit" },
     empty_body:   { ru: "Что хочешь делать день за днём?", en: "What do you want to do day after day?" },
