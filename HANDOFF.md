@@ -155,6 +155,48 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 ---
 
+## 📋 Открытые задачи на следующие сессии
+
+### Drag-to-reorder для сфер и привычек
+
+Катя попросила в одной из сессий, я отложила потому что мобильный drag-and-drop требует фокусированной работы.
+
+**Что нужно:**
+- Drag-to-reorder сфер на странице `/settings`
+- Drag-to-reorder привычек на странице `/habits`
+- Long-press → ghost-view → snap on release (iOS-native ощущение)
+
+**Подход:**
+- Установить `@dnd-kit/core` + `@dnd-kit/sortable` (~30KB compressed, mobile-first, поддерживает touch sensors)
+- Server actions на обновление positions: уже есть `updateSphere`/`updateHabit`, нужна новая `reorderSpheres(orderedIds: string[])` и `reorderHabits(orderedIds: string[])` — приходит весь упорядоченный массив, делаем `update spheres set position = i where id = ...` для каждого
+- Touch sensors: `useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })` чтобы случайный скролл не запускал drag
+- Visual feedback на dragged item: scale 1.02, soft shadow
+
+**Где трогать:**
+- `src/app/settings/SettingsView.tsx` — обернуть список сфер в `DndContext` + `SortableContext`, заменить статичный `<button>` на `useSortable()` row
+- `src/app/habits/HabitsView.tsx` — то же самое для списка `HabitCard`
+- `src/lib/actions.ts` — добавить `reorderSpheres` и `reorderHabits`
+
+**Не сломать:**
+- Существующий tap-to-edit (нужно настроить activation constraint так, чтобы quick-tap не triggered drag)
+- FAB `+` в BottomNav
+- Edit modals открываются по тапу строки
+
+**Тестировать:** на iPhone PWA + Android Chrome.
+
+### Quick-complete + snooze в push-уведомлении
+
+После drag-to-reorder. Идея:
+- В payload push-уведомления добавить `actions: [{ action: 'done', title: 'Готово' }, { action: 'snooze', title: 'Через час' }]`
+- В `sw.js` добавить обработчик `notificationclick` для `event.action === 'done'` → POST на `/api/tasks/{id}/complete`
+- Для `snooze` → POST на `/api/tasks/{id}/snooze` с +1 час к remind_at
+
+Премиум-импакт большой, мало кто делает в PWA.
+
+### Статистика выполненных
+
+Страница `/stats` с табами день/неделя/месяц. Подробнее в обсуждении ниже (если ещё актуально).
+
 ---
 
 ## Push-уведомления (работает)
