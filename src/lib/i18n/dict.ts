@@ -145,6 +145,12 @@ export const DICT = {
     week_progress:{ ru: "на неделе",          en: "this week" },
   },
 
+  /* ──────────── Time picker ──────────── */
+  time: {
+    title:          { ru: "Когда?",                en: "When?" },
+    current_custom: { ru: "Сейчас задано: {v}",    en: "Currently set: {v}" },
+  },
+
   /* ──────────── Stats ──────────── */
   stats: {
     title:           { ru: "Статистика",          en: "Statistics" },

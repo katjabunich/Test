@@ -220,7 +220,8 @@ export default function HabitCard({
         <div
           className="tnum"
           style={{
-            fontSize: 28,
+            fontFamily: "var(--font-emphasis)",
+            fontSize: 30,
             fontWeight: 700,
             letterSpacing: "-0.034em",
             lineHeight: 1,

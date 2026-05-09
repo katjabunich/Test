@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
 import PasswordChangeModal from "@/components/PasswordChangeModal";
+import TimePicker from "@/components/TimePicker";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 import { isPushSupported, isPushEnabled, enablePush, disablePush, sendTestPush } from "@/lib/push";
@@ -64,6 +65,7 @@ export default function SettingsView({
   const [pushMsg, setPushMsg] = useState<string | null>(null);
   const [digestLocal, setDigestLocal] = useState<string>(() => utcToLocalHHMM(digestAtUtc));
   const [digestBusy, setDigestBusy] = useState(false);
+  const [digestPickerOpen, setDigestPickerOpen] = useState(false);
 
   /* Drag-to-reorder state — keep an optimistic local order so the row
      snaps into place immediately while the server action persists. */
@@ -465,15 +467,13 @@ export default function SettingsView({
             >
               {t("settings.digest")}
             </span>
-            <input
-              type="time"
-              value={digestLocal}
-              disabled={!pushOn || digestBusy}
-              onChange={(e) => {
-                setDigestLocal(e.target.value);
-                void persistDigest(e.target.value);
+            <button
+              type="button"
+              onClick={() => {
+                if (pushOn && !digestBusy) setDigestPickerOpen(true);
               }}
-              className="tnum"
+              disabled={!pushOn || digestBusy}
+              className="tap tnum"
               style={{
                 fontFamily: "inherit",
                 fontSize: 13,
@@ -486,8 +486,11 @@ export default function SettingsView({
                 padding: 0,
                 letterSpacing: "-0.005em",
                 minWidth: 60,
+                cursor: pushOn && !digestBusy ? "pointer" : "default",
               }}
-            />
+            >
+              {digestLocal || "—"}
+            </button>
             {digestLocal && (
               <button
                 type="button"
@@ -559,6 +562,16 @@ export default function SettingsView({
         sphere={editing}
       />
       <PasswordChangeModal open={pwOpen} onClose={() => setPwOpen(false)} />
+      <TimePicker
+        open={digestPickerOpen}
+        value={digestLocal}
+        onClose={() => setDigestPickerOpen(false)}
+        onChange={(v) => {
+          setDigestLocal(v);
+          void persistDigest(v);
+        }}
+        title={t("settings.digest")}
+      />
     </>
   );
 }
