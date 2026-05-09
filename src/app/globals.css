@@ -121,6 +121,24 @@ select {
 }
 .page-in { animation: page-in 320ms var(--ease-out); }
 
+/* Sphere beads on /stats — fade up with a staggered delay set inline */
+@keyframes bead-in {
+  from { opacity: 0; transform: translateY(3px) scale(0.6); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);   }
+}
+.bead-in {
+  animation: bead-in 320ms var(--ease-out) both;
+}
+
+/* Day card on /stats — soft fade-up when first rendered */
+@keyframes day-card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.day-card-in {
+  animation: day-card-in 360ms var(--ease-out) both;
+}
+
 /* Skeleton shimmer */
 @keyframes skel {
   from { background-position: 200% 0; }

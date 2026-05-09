@@ -148,21 +148,42 @@ export const DICT = {
   /* ──────────── Stats ──────────── */
   stats: {
     title:           { ru: "Статистика",          en: "Statistics" },
-    sub:             { ru: "Зеркало продуктивности", en: "Mirror of your output" },
     tab_today:       { ru: "Сегодня",             en: "Today" },
     tab_week:        { ru: "Неделя",              en: "Week" },
     tab_month:       { ru: "Месяц",               en: "Month" },
-    completed_count: { ru: "задач выполнено",     en: "tasks completed" },
-    completed_one:   { ru: "задача выполнена",    en: "task completed" },
-    completed_few:   { ru: "задачи выполнены",    en: "tasks completed" },
-    section_done:    { ru: "Что сделано",         en: "What got done" },
-    section_breakdown:{ ru: "По сферам",          en: "By sphere" },
+
+    /* Hero subtitle — different per tab */
+    completed_today: { ru: "завершено сегодня",   en: "completed today" },
+    completed_week:  { ru: "завершено за неделю", en: "completed this week" },
+    completed_month: { ru: "завершено за месяц",  en: "completed this month" },
+
+    /* Comparison line — direction + reference period */
+    cmp_more_today:  { ru: "на {n} больше, чем вчера",          en: "{n} more than yesterday" },
+    cmp_less_today:  { ru: "на {n} меньше, чем вчера",          en: "{n} fewer than yesterday" },
+    cmp_same_today:  { ru: "как вчера",                          en: "same as yesterday" },
+    cmp_more_week:   { ru: "на {n} больше, чем неделей раньше", en: "{n} more than last week" },
+    cmp_less_week:   { ru: "на {n} меньше, чем неделей раньше", en: "{n} fewer than last week" },
+    cmp_same_week:   { ru: "как неделей раньше",                 en: "same as last week" },
+    cmp_more_month:  { ru: "на {n} больше, чем месяцем раньше", en: "{n} more than last month" },
+    cmp_less_month:  { ru: "на {n} меньше, чем месяцем раньше", en: "{n} fewer than last month" },
+    cmp_same_month:  { ru: "как месяцем раньше",                 en: "same as last month" },
+
     no_sphere:       { ru: "Без сферы",           en: "No sphere" },
-    yesterday:       { ru: "Вчера",               en: "Yesterday" },
-    more_count:      { ru: "+ ещё {n}",           en: "+{n} more" },
-    empty_pre:       { ru: "За этот период ничего не завершено. ", en: "Nothing wrapped up in this window. " },
-    empty_mark:      { ru: "Иногда нужен отдых",  en: "Rest counts too" },
-    empty_post:      { ru: ".",                   en: "." },
+
+    /* Empty-state copy per tab */
+    empty_today:     { ru: "Сегодня пока ничего завершено. Не страшно — иногда нужен отдых.", en: "Nothing wrapped up today yet. That's fine — rest counts too." },
+    empty_week:      { ru: "На этой неделе тихо. Скоро будет о чём вспомнить.",                en: "Quiet week so far. Soon there will be something to look back on." },
+    empty_month:     { ru: "Месяц только начинается. Самое интересное впереди.",               en: "The month is just starting. The interesting part is ahead." },
+
+    /* Editorial italic line for empty days inside day cards (5 variants,
+       picked deterministically from the date hash) */
+    day_empty1:      { ru: "Тишина. Хороший день для отдыха.",         en: "Quiet day. A good one for rest." },
+    day_empty2:      { ru: "День без задач. Тоже бывает.",             en: "A day with no tasks. It happens." },
+    day_empty3:      { ru: "Пусто. Иногда так нужно.",                 en: "Empty. Sometimes that's the point." },
+    day_empty4:      { ru: "Без галочек. Надеюсь, прожила хорошо.",    en: "No check marks. Hope it was a good one anyway." },
+    day_empty5:      { ru: "Тихий день. Тоже часть жизни.",            en: "A still day. That counts too." },
+
+    show_more:       { ru: "Показать ещё",        en: "Show more" },
   },
 
   /* ──────────── Settings ──────────── */

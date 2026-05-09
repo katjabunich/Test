@@ -3,10 +3,10 @@ import StatsView from "./StatsView";
 
 export const dynamic = "force-dynamic";
 
-/* Server window covers slightly more than a calendar month so the client
-   can safely partition into today / week / month tabs in local TZ without
-   missing rows that completed near the boundary. */
-const WINDOW_DAYS = 35;
+/* Server window covers two months — a 30-day "month" tab plus the previous
+   30 days needed for the comparison delta in the hero, with a few days of
+   slack for local-timezone boundaries. */
+const WINDOW_DAYS = 62;
 
 export default async function StatsPage() {
   const sinceIso = new Date(

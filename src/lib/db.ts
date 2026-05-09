@@ -105,7 +105,9 @@ export async function fetchHabits(): Promise<Habit[]> {
 
 /** Completed tasks since `sinceIso` (a UTC ISO timestamp), most recent first.
     Used by the /stats page; the client narrows the window further by local
-    timezone (today / week / month tabs). */
+    timezone (today / week / month tabs). The window is sized large enough
+    by the caller to also cover the previous-period delta (e.g. 62 days for
+    a "month vs. previous month" comparison). */
 export async function fetchCompletedTasks(
   sinceIso: string,
   limit = 500,
