@@ -44,6 +44,7 @@ export default function TaskEditModal({
   const [recurrenceOpen, setRecurrenceOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [remindAtLocal, setRemindAtLocal] = useState<string>("");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -69,6 +70,7 @@ export default function TaskEditModal({
       setRemindAtLocal("");
     }
     setRecurrenceOpen(false);
+    setSaveError(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }, [open, task, defaultSphereId]);
 
@@ -77,6 +79,7 @@ export default function TaskEditModal({
   function submit() {
     const trimmed = title.trim();
     if (!trimmed) return;
+    setSaveError(null);
     startTransition(async () => {
       try {
         const payload = {
@@ -92,7 +95,12 @@ export default function TaskEditModal({
         else await createTask(payload);
         onClose();
       } catch (e) {
+        // Surface failures in-modal so the user knows the tap registered.
+        // Silent close after a server error is what made the Save button
+        // look broken on Android Chrome — easy to miss without UI.
+        const m = e instanceof Error ? e.message : String(e);
         console.error(e);
+        setSaveError(m || t("task.save_failed"));
       }
     });
   }
@@ -400,12 +408,31 @@ export default function TaskEditModal({
           />
         )}
 
+        {saveError && (
+          <div
+            role="alert"
+            style={{
+              marginTop: 14,
+              padding: "10px 12px",
+              borderRadius: 12,
+              background: "rgba(217,106,82,0.10)",
+              color: "var(--alert)",
+              fontSize: 13,
+              fontWeight: 500,
+              lineHeight: 1.45,
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {saveError}
+          </div>
+        )}
+
         {/* Actions */}
         <div
           style={{
             display: "flex",
             gap: 10,
-            marginTop: 18,
+            marginTop: saveError ? 12 : 18,
             alignItems: "stretch",
           }}
         >

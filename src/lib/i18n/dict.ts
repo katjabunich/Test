@@ -231,6 +231,7 @@ export const DICT = {
     repeat_biweekly:{ ru: "Раз в 2 недели",  en: "Every 2 weeks" },
     repeat_monthly:{ ru: "Каждый месяц",     en: "Monthly" },
     delete_confirm: { ru: "Удалить задачу?", en: "Delete this task?" },
+    save_failed:    { ru: "Не удалось сохранить. Попробуй ещё раз.", en: "Couldn't save. Try again." },
   },
 
   /* ──────────── Date helpers ──────────── */
