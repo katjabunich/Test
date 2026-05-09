@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import type { Recurrence, Sphere, Task } from "@/lib/data";
 import { createTask, deleteTask, updateTask } from "@/lib/actions";
 import { Icons, SphereIcon } from "@/components/Icons";
+import DatePicker from "@/components/DatePicker";
 import { fromIsoDate, today as todayIso } from "@/lib/date";
 import { feedbackModalOpen } from "@/lib/feedback";
 import { useT, useLang } from "@/lib/i18n/client";
@@ -43,6 +44,7 @@ export default function TaskEditModal({
   const [recurrence, setRecurrence] = useState<Recurrence>(null);
   const [recurrenceOpen, setRecurrenceOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [remindAtLocal, setRemindAtLocal] = useState<string>("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -251,36 +253,47 @@ export default function TaskEditModal({
         </div>
 
         {/* Rows */}
-        <Row Icon={Icons.Calendar} label={t("task.date_label")}>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+        <Row
+          Icon={Icons.Calendar}
+          label={t("task.date_label")}
+          onClick={() => setDatePickerOpen(true)}
+        >
+          <span
             className="tnum"
             style={{
-              fontFamily: "inherit",
               fontSize: 13,
               fontWeight: 600,
-              color: dueDate === todayIso() ? "var(--mint-deep)" : "var(--ink-80)",
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              textAlign: "right",
-              padding: 0,
+              color: !dueDate
+                ? "var(--ink-40)"
+                : dueDate === todayIso()
+                ? "var(--mint-deep)"
+                : "var(--ink-80)",
               letterSpacing: "-0.005em",
             }}
-          />
-          {!dueDate && (
-            <span
+          >
+            {dueDate ? dateLabel : t("task.date_none")}
+          </span>
+          {dueDate && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDueDate("");
+              }}
+              aria-label={t("task.date_none")}
+              className="tap"
               style={{
-                fontSize: 12,
-                fontWeight: 500,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
                 color: "var(--ink-40)",
-                letterSpacing: "-0.005em",
+                fontSize: 16,
+                lineHeight: 1,
+                padding: "0 0 0 4px",
               }}
             >
-              {dateLabel}
-            </span>
+              ×
+            </button>
           )}
         </Row>
 
@@ -486,6 +499,13 @@ export default function TaskEditModal({
           </button>
         </div>
       </div>
+
+      <DatePicker
+        open={datePickerOpen}
+        value={dueDate || null}
+        onClose={() => setDatePickerOpen(false)}
+        onChange={(v) => setDueDate(v ?? "")}
+      />
     </div>
   );
 }

@@ -151,6 +151,18 @@ export const DICT = {
     current_custom: { ru: "Сейчас задано: {v}",    en: "Currently set: {v}" },
   },
 
+  /* ──────────── Date picker ──────────── */
+  datepick: {
+    title:    { ru: "Срок задачи",      en: "Pick a date" },
+    today:    { ru: "Сегодня",          en: "Today" },
+    tomorrow: { ru: "Завтра",           en: "Tomorrow" },
+    weekend:  { ru: "В выходные",       en: "Weekend" },
+    none:     { ru: "Без даты",         en: "No date" },
+    prev:     { ru: "Предыдущий месяц", en: "Previous month" },
+    next:     { ru: "Следующий месяц",  en: "Next month" },
+    jump_today: { ru: "К сегодня",      en: "To today" },
+  },
+
   /* ──────────── Stats ──────────── */
   stats: {
     title:           { ru: "Статистика",          en: "Statistics" },
