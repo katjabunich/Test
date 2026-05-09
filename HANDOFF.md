@@ -157,32 +157,23 @@ UI-toggles в `/settings` — два рядка между «Установит�
 
 ## 📋 Открытые задачи на следующие сессии
 
-### Drag-to-reorder для сфер и привычек
+### ✅ Drag-to-reorder сфер и привычек — сделано
 
-Катя попросила в одной из сессий, я отложила потому что мобильный drag-and-drop требует фокусированной работы.
+`@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` поставлены, sortable lists в `/settings` (сферы) и `/habits` (привычки) работают long-press → drag → snap.
 
-**Что нужно:**
-- Drag-to-reorder сфер на странице `/settings`
-- Drag-to-reorder привычек на странице `/habits`
-- Long-press → ghost-view → snap on release (iOS-native ощущение)
+- **Touch активация**: `TouchSensor` с `activationConstraint: { delay: 250, tolerance: 6 }` — quick tap проходит насквозь к onClick (модалки/ring-toggle), 250ms hold запускает drag.
+- **Pointer (desktop)**: `PointerSensor` с `distance: 8` — клик не активирует drag, только перемещение мыши.
+- **Visual lift**: dragging row получает paper-warm бекграунд (для сфер), 12px box-shadow с lifted depth, position relative + zIndex 2, hairline divider убирается. У habit cards — рамка 16px и более глубокий shadow, поскольку HabitCard уже paper-warm.
+- **Optimistic UI**: локальный `order: string[]` хранит видимый порядок, `arrayMove(order, old, new)` snap'ает мгновенно, server action `reorderSpheres/reorderHabits` пишет позиции параллельно (`Promise.all` of `update position = i where id = X and user_id = me`). На ошибке откатываемся к серверному порядку.
+- **Server actions** в `src/lib/actions.ts`: `reorderSpheres(orderedIds)` и `reorderHabits(orderedIds)` — оба ревалидируют пути.
 
-**Подход:**
-- Установить `@dnd-kit/core` + `@dnd-kit/sortable` (~30KB compressed, mobile-first, поддерживает touch sensors)
-- Server actions на обновление positions: уже есть `updateSphere`/`updateHabit`, нужна новая `reorderSpheres(orderedIds: string[])` и `reorderHabits(orderedIds: string[])` — приходит весь упорядоченный массив, делаем `update spheres set position = i where id = ...` для каждого
-- Touch sensors: `useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })` чтобы случайный скролл не запускал drag
-- Visual feedback на dragged item: scale 1.02, soft shadow
+**Файлы:** `src/lib/actions.ts` (две новые функции), `src/app/settings/SettingsView.tsx` (DndContext + `SortableSphereRow` подкомпонент), `src/app/habits/HabitsView.tsx` (DndContext + `SortableHabitCard` обёртка над `HabitCard`), `package.json`.
 
-**Где трогать:**
-- `src/app/settings/SettingsView.tsx` — обернуть список сфер в `DndContext` + `SortableContext`, заменить статичный `<button>` на `useSortable()` row
-- `src/app/habits/HabitsView.tsx` — то же самое для списка `HabitCard`
-- `src/lib/actions.ts` — добавить `reorderSpheres` и `reorderHabits`
-
-**Не сломать:**
-- Существующий tap-to-edit (нужно настроить activation constraint так, чтобы quick-tap не triggered drag)
-- FAB `+` в BottomNav
-- Edit modals открываются по тапу строки
-
-**Тестировать:** на iPhone PWA + Android Chrome.
+**Что не сломано:**
+- Тап на сферу → модалка редактирования (короткий тап до 250ms)
+- Тап на ring привычки → toggle today (stopPropagation на ring + activation constraint держит drag в стороне)
+- Тап на тело habit-карточки → модалка редактирования
+- FAB `+` в BottomNav — DndContext не выходит за пределы списка
 
 ### Quick-complete + snooze в push-уведомлении
 

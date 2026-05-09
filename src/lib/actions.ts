@@ -180,6 +180,27 @@ export async function deleteSphere(id: string) {
   revalidatePath("/");
 }
 
+/** Persist a new sphere ordering by writing each id's array index to its
+    `position` column. Bound by the user_id filter so RLS plus the explicit
+    check both refuse cross-tenant writes. */
+export async function reorderSpheres(orderedIds: string[]) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const results = await Promise.all(
+    orderedIds.map((id, i) =>
+      supabase
+        .from("spheres")
+        .update({ position: i })
+        .eq("id", id)
+        .eq("user_id", user.id),
+    ),
+  );
+  for (const r of results) if (r.error) throw new Error(r.error.message);
+  revalidatePath("/settings");
+  revalidatePath("/tasks");
+  revalidatePath("/");
+}
+
 /* ──────────────── Habits ──────────────── */
 
 export type CreateHabitInput = {
@@ -230,6 +251,24 @@ export async function deleteHabit(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("habits").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  revalidatePath("/habits");
+  revalidatePath("/");
+}
+
+/** Persist a new habit ordering — same shape as reorderSpheres. */
+export async function reorderHabits(orderedIds: string[]) {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const results = await Promise.all(
+    orderedIds.map((id, i) =>
+      supabase
+        .from("habits")
+        .update({ position: i })
+        .eq("id", id)
+        .eq("user_id", user.id),
+    ),
+  );
+  for (const r of results) if (r.error) throw new Error(r.error.message);
   revalidatePath("/habits");
   revalidatePath("/");
 }

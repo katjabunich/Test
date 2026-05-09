@@ -1,13 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Habit, HabitLog } from "@/lib/data";
 import HabitCard from "@/components/HabitCard";
 import HabitEditModal from "@/components/HabitEditModal";
 import { HabitIcon } from "@/components/Icons";
 import { computeStreak, groupLogsByHabit } from "@/lib/habits";
+import { reorderHabits } from "@/lib/actions";
 import { useT } from "@/lib/i18n/client";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function HabitsView({
   habits,
@@ -30,15 +47,56 @@ export default function HabitsView({
     }
   }, [search, router]);
 
+  /* Drag-to-reorder — optimistic local order persisted via reorderHabits. */
+  const [order, setOrder] = useState<string[]>(() => habits.map((h) => h.id));
+  useEffect(() => {
+    setOrder(habits.map((h) => h.id));
+  }, [habits]);
+  const [, startReorder] = useTransition();
+
+  const orderedHabits = useMemo(() => {
+    const byId = new Map(habits.map((h) => [h.id, h]));
+    const out: Habit[] = [];
+    for (const id of order) {
+      const h = byId.get(id);
+      if (h) out.push(h);
+    }
+    for (const h of habits) if (!order.includes(h.id)) out.push(h);
+    return out;
+  }, [order, habits]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = order.indexOf(String(active.id));
+    const newIndex = order.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(order, oldIndex, newIndex);
+    setOrder(next);
+    startReorder(async () => {
+      try {
+        await reorderHabits(next);
+      } catch (e) {
+        console.error("reorderHabits:", e);
+        setOrder(habits.map((h) => h.id));
+      }
+    });
+  }
+
   const logsByHabit = useMemo(() => groupLogsByHabit(logs), [logs]);
 
   const withStreak = useMemo(
     () =>
-      habits.map((h) => ({
+      orderedHabits.map((h) => ({
         habit: h,
         streak: computeStreak(h, logsByHabit.get(h.id) ?? new Set()),
       })),
-    [habits, logsByHabit],
+    [orderedHabits, logsByHabit],
   );
 
   const top = useMemo(
@@ -245,17 +303,30 @@ export default function HabitsView({
             >
               {t("habits.title")}
             </div>
-            {habits.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                logged={logsByHabit.get(habit.id) ?? new Set()}
-                onEdit={(h) => {
-                  setEditing(h);
-                  setModalOpen(true);
-                }}
-              />
-            ))}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={orderedHabits.map((h) => h.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {orderedHabits.map((habit) => (
+                    <SortableHabitCard
+                      key={habit.id}
+                      habit={habit}
+                      logged={logsByHabit.get(habit.id) ?? new Set()}
+                      onEdit={(h) => {
+                        setEditing(h);
+                        setModalOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
             <button
               type="button"
               onClick={() => {
@@ -290,6 +361,47 @@ export default function HabitsView({
         habit={editing}
       />
     </>
+  );
+}
+
+/** HabitCard wrapped for @dnd-kit/sortable. The drag transform applies to
+    the wrapper; HabitCard itself is unchanged so its inner ring-tap and
+    onEdit still work. A 250ms long-press starts the drag on touch — quick
+    taps fall through to the card's onClick. */
+function SortableHabitCard({
+  habit,
+  logged,
+  onEdit,
+}: {
+  habit: Habit;
+  logged: Set<string>;
+  onEdit: (h: Habit) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: habit.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    position: "relative",
+    zIndex: isDragging ? 2 : "auto",
+    boxShadow: isDragging
+      ? "0 14px 28px rgba(45,38,32,0.20), 0 2px 6px rgba(45,38,32,0.10)"
+      : "none",
+    borderRadius: 16,
+    touchAction: "manipulation",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <HabitCard habit={habit} logged={logged} onEdit={onEdit} />
+    </div>
   );
 }
 

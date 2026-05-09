@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
 import PasswordChangeModal from "@/components/PasswordChangeModal";
@@ -8,8 +8,25 @@ import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 import { isPushSupported, isPushEnabled, enablePush, disablePush, sendTestPush } from "@/lib/push";
 import { setDigestTime } from "@/lib/profile";
+import { reorderSpheres } from "@/lib/actions";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 function utcToLocalHHMM(utc: string | null): string {
   if (!utc) return "";
@@ -47,6 +64,52 @@ export default function SettingsView({
   const [pushMsg, setPushMsg] = useState<string | null>(null);
   const [digestLocal, setDigestLocal] = useState<string>(() => utcToLocalHHMM(digestAtUtc));
   const [digestBusy, setDigestBusy] = useState(false);
+
+  /* Drag-to-reorder state — keep an optimistic local order so the row
+     snaps into place immediately while the server action persists. */
+  const [order, setOrder] = useState<string[]>(() => spheres.map((s) => s.id));
+  useEffect(() => {
+    setOrder(spheres.map((s) => s.id));
+  }, [spheres]);
+  const [, startReorder] = useTransition();
+
+  const orderedSpheres = useMemo(() => {
+    const byId = new Map(spheres.map((s) => [s.id, s]));
+    const out: Sphere[] = [];
+    for (const id of order) {
+      const s = byId.get(id);
+      if (s) out.push(s);
+    }
+    /* Defensive: any sphere not in `order` (e.g. a fresh server fetch
+       added a row mid-session) goes to the tail in its server order. */
+    for (const s of spheres) if (!order.includes(s.id)) out.push(s);
+    return out;
+  }, [order, spheres]);
+
+  /* Pointer sensor uses distance threshold so quick-tap never starts a
+     drag on desktop. Touch sensor uses a 250ms long-press to feel native. */
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = order.indexOf(String(active.id));
+    const newIndex = order.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(order, oldIndex, newIndex);
+    setOrder(next);
+    startReorder(async () => {
+      try {
+        await reorderSpheres(next);
+      } catch (e) {
+        console.error("reorderSpheres:", e);
+        setOrder(spheres.map((s) => s.id));
+      }
+    });
+  }
 
   useEffect(() => {
     setSound(isSoundEnabled());
@@ -144,91 +207,57 @@ export default function SettingsView({
           {t("settings.h_spheres")}
         </div>
 
-        <div
-          style={{
-            background: "var(--paper-warm)",
-            borderRadius: 18,
-            border: "1px solid var(--ink-05)",
-            overflow: "hidden",
-            marginBottom: 10,
-          }}
-        >
-          {spheres.length === 0 ? (
-            <div
-              style={{
-                padding: "28px 14px 32px",
-                textAlign: "center",
-                color: "var(--ink-60)",
-                fontSize: 14,
-                lineHeight: 1.5,
-              }}
+        {orderedSpheres.length === 0 ? (
+          <div
+            style={{
+              background: "var(--paper-warm)",
+              borderRadius: 18,
+              border: "1px solid var(--ink-05)",
+              overflow: "hidden",
+              marginBottom: 10,
+              padding: "28px 14px 32px",
+              textAlign: "center",
+              color: "var(--ink-60)",
+              fontSize: 14,
+              lineHeight: 1.5,
+            }}
+          >
+            <SpheresEmpty />
+            {t("settings.no_spheres")}
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={orderedSpheres.map((s) => s.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <SpheresEmpty />
-              {t("settings.no_spheres")}
-            </div>
-          ) : (
-            spheres.map((s, i) => (
-              <button
-                type="button"
-                key={s.id}
-                onClick={() => {
-                  setEditing(s);
-                  setModalOpen(true);
-                }}
-                className="tap"
+              <div
                 style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 14px",
-                  borderBottom:
-                    i === spheres.length - 1
-                      ? "none"
-                      : "1px solid var(--ink-05)",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
+                  background: "var(--paper-warm)",
+                  borderRadius: 18,
+                  border: "1px solid var(--ink-05)",
+                  marginBottom: 10,
                 }}
               >
-                <span
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    background: s.color,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <SphereIcon
-                    name={s.name}
-                    size={18}
-                    stroke="var(--ink)"
-                    strokeWidth={2}
-                  />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: "var(--ink)",
-                      letterSpacing: "-0.01em",
+                {orderedSpheres.map((s, i) => (
+                  <SortableSphereRow
+                    key={s.id}
+                    sphere={s}
+                    isLast={i === orderedSpheres.length - 1}
+                    onTap={() => {
+                      setEditing(s);
+                      setModalOpen(true);
                     }}
-                  >
-                    {s.name}
-                  </span>
-                </span>
-                <Icons.Chevron size={16} stroke="var(--ink-40)" />
-              </button>
-            ))
-          )}
-        </div>
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
 
         <button
           type="button"
@@ -531,6 +560,97 @@ export default function SettingsView({
       />
       <PasswordChangeModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </>
+  );
+}
+
+/** Single sphere row wired into @dnd-kit/sortable. The list-shape (rounded
+    container with hairline dividers) is preserved by toggling the row's
+    own bottom-border, and the row carries its own paper-warm background
+    while it's being dragged so it visibly lifts above its siblings. */
+function SortableSphereRow({
+  sphere,
+  isLast,
+  onTap,
+}: {
+  sphere: Sphere;
+  isLast: boolean;
+  onTap: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: sphere.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    padding: "12px 14px",
+    borderBottom: isDragging || isLast ? "none" : "1px solid var(--ink-05)",
+    background: isDragging ? "var(--paper-warm)" : "transparent",
+    border: "none",
+    cursor: isDragging ? "grabbing" : "pointer",
+    textAlign: "left",
+    touchAction: "manipulation",
+    boxShadow: isDragging
+      ? "0 12px 24px rgba(45,38,32,0.18), 0 2px 6px rgba(45,38,32,0.10)"
+      : "none",
+    borderRadius: isDragging ? 14 : 0,
+    zIndex: isDragging ? 2 : "auto",
+    position: "relative",
+  };
+
+  return (
+    <button
+      type="button"
+      ref={setNodeRef}
+      onClick={onTap}
+      className={isDragging ? undefined : "tap"}
+      style={style}
+      {...attributes}
+      {...listeners}
+    >
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 10,
+          background: sphere.color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <SphereIcon
+          name={sphere.name}
+          size={18}
+          stroke="var(--ink)"
+          strokeWidth={2}
+        />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span
+          style={{
+            display: "block",
+            fontSize: 15,
+            fontWeight: 500,
+            color: "var(--ink)",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {sphere.name}
+        </span>
+      </span>
+      <Icons.Chevron size={16} stroke="var(--ink-40)" />
+    </button>
   );
 }
 
