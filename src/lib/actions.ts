@@ -125,18 +125,36 @@ export async function uncompleteTask(id: string) {
   revalidatePath("/tasks");
 }
 
-/** Push a task's due date by N days from today (default 1 — "tomorrow").
-    Also clears do_today so it leaves the Today screen. */
+/** Push a task's due date by N days. Anchored to the task's CURRENT
+    due_date so a future task moves to "current+N", an undated task lands
+    on today+N, and an overdue task quietly recedes by N days too — the
+    semantics ride alongside whatever day the user already had in mind.
+    Also clears do_today so it leaves the Today screen, and resets the
+    reminder mark so the new date fires fresh. */
 export async function deferTask(id: string, days = 1) {
   await requireUser();
   const supabase = await createClient();
-  const target = new Date();
-  target.setHours(0, 0, 0, 0);
-  target.setDate(target.getDate() + days);
-  const y = target.getFullYear();
-  const m = String(target.getMonth() + 1).padStart(2, "0");
-  const d = String(target.getDate()).padStart(2, "0");
+
+  const { data: task, error: readErr } = await supabase
+    .from("tasks")
+    .select("due_date")
+    .eq("id", id)
+    .single();
+  if (readErr) throw new Error(readErr.message);
+
+  const base = task?.due_date
+    ? new Date(`${task.due_date}T00:00:00`)
+    : (() => {
+        const t = new Date();
+        t.setHours(0, 0, 0, 0);
+        return t;
+      })();
+  base.setDate(base.getDate() + days);
+  const y = base.getFullYear();
+  const m = String(base.getMonth() + 1).padStart(2, "0");
+  const d = String(base.getDate()).padStart(2, "0");
   const iso = `${y}-${m}-${d}`;
+
   const { error } = await supabase
     .from("tasks")
     .update({ due_date: iso, do_today: false, reminded_at: null })

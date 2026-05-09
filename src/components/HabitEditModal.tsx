@@ -267,7 +267,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               const v = e.target.value.slice(0, 4);
               if (v) setIconValue(v);
             }}
-            placeholder="🎹"
+            placeholder="✨"
             style={{
               width: 70,
               padding: "8px 0",

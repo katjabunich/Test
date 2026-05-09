@@ -563,22 +563,17 @@ function HeroNextTask({
     });
   }
 
-  /* When the user taps "Сделать" the card collapses: scale, fade and
-     fold its height down to zero so the next task slides up into its
-     place after the server revalidates. The outer wrapper does the
-     collapse; the inner card carries the colour + content. */
+  /* When the user taps "Сделать" the card collapses with a real spring:
+     puffs up briefly, then implodes while the surrounding gap contracts
+     so the next task slides up cleanly. The outer wrapper carries the
+     keyframe animation; the inner card carries colour + content. */
   return (
     <div
+      className={optimisticDone ? "hero-collapse" : undefined}
       style={{
-        maxHeight: optimisticDone ? 0 : 600,
-        opacity: optimisticDone ? 0 : 1,
-        transform: optimisticDone ? "scale(0.96)" : "scale(1)",
-        transformOrigin: "top center",
-        marginBottom: optimisticDone ? -10 : 0,
+        maxHeight: 600,
         overflow: "hidden",
-        transition:
-          "max-height 380ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 280ms var(--ease-out), transform 380ms var(--ease-out), margin-bottom 380ms var(--ease-out)",
-        pointerEvents: optimisticDone ? "none" : "auto",
+        transformOrigin: "top center",
       }}
     >
     <div

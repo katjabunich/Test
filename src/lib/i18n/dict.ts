@@ -128,7 +128,7 @@ export const DICT = {
     empty_hint:  { ru: "Тапни +, чтобы добавить первую.", en: "Tap + to add the first one." },
     empty_filter:{ ru: "В этой сфере пусто", en: "Nothing in this sphere yet" },
     swipe_done:  { ru: "Готово",         en: "Done" },
-    swipe_defer: { ru: "Завтра",         en: "Tomorrow" },
+    swipe_defer: { ru: "Отложить",       en: "Defer" },
   },
 
   /* ──────────── Habits ──────────── */

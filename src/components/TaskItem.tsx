@@ -224,15 +224,13 @@ export default function TaskItem({
 
   return (
     <div
+      className={collapsing ? "task-collapse" : undefined}
       style={{
         position: "relative",
         borderRadius: 16,
         overflow: "hidden",
-        maxHeight: collapsing ? 0 : 140,
-        marginBottom: collapsing ? -7 : 0,
-        opacity: collapsing ? 0 : 1,
-        transition:
-          "max-height 320ms cubic-bezier(0.34, 1.4, 0.64, 1), margin-bottom 320ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 240ms var(--ease-out)",
+        maxHeight: 140,
+        transformOrigin: "top center",
       }}
     >
       {/* Action background — visible underneath the row when swiping. */}
