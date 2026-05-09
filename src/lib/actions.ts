@@ -125,6 +125,27 @@ export async function uncompleteTask(id: string) {
   revalidatePath("/tasks");
 }
 
+/** Push a task's due date by N days from today (default 1 — "tomorrow").
+    Also clears do_today so it leaves the Today screen. */
+export async function deferTask(id: string, days = 1) {
+  await requireUser();
+  const supabase = await createClient();
+  const target = new Date();
+  target.setHours(0, 0, 0, 0);
+  target.setDate(target.getDate() + days);
+  const y = target.getFullYear();
+  const m = String(target.getMonth() + 1).padStart(2, "0");
+  const d = String(target.getDate()).padStart(2, "0");
+  const iso = `${y}-${m}-${d}`;
+  const { error } = await supabase
+    .from("tasks")
+    .update({ due_date: iso, do_today: false, reminded_at: null })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/tasks");
+}
+
 export async function deleteTask(id: string) {
   await requireUser();
   const supabase = await createClient();

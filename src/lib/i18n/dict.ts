@@ -127,6 +127,8 @@ export const DICT = {
     empty:       { ru: "Пока нет задач", en: "No tasks yet" },
     empty_hint:  { ru: "Тапни +, чтобы добавить первую.", en: "Tap + to add the first one." },
     empty_filter:{ ru: "В этой сфере пусто", en: "Nothing in this sphere yet" },
+    swipe_done:  { ru: "Готово",         en: "Done" },
+    swipe_defer: { ru: "Завтра",         en: "Tomorrow" },
   },
 
   /* ──────────── Habits ──────────── */
