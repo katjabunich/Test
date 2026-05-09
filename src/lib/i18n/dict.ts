@@ -164,6 +164,8 @@ export const DICT = {
     notify:      { ru: "Уведомления",    en: "Notifications" },
     language:    { ru: "Язык",           en: "Language" },
 
+    digest:           { ru: "Утренний дайджест",   en: "Morning digest" },
+    digest_clear:     { ru: "Выключить дайджест",   en: "Clear digest" },
     push_test:        { ru: "Прислать тестовое",   en: "Send a test notification" },
     push_test_sent:   { ru: "Отправлено. Должно прийти через секунду.", en: "Sent. Should arrive in a second." },
     push_test_failed: { ru: "Не удалось отправить. Проверь, разрешены ли уведомления.", en: "Couldn't send. Check that notifications are allowed." },

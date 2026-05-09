@@ -7,15 +7,31 @@ import PasswordChangeModal from "@/components/PasswordChangeModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { isSoundEnabled, isHapticEnabled, setSoundEnabled, setHapticEnabled } from "@/lib/feedback";
 import { isPushSupported, isPushEnabled, enablePush, disablePush, sendTestPush } from "@/lib/push";
+import { setDigestTime } from "@/lib/profile";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
+
+function utcToLocalHHMM(utc: string | null): string {
+  if (!utc) return "";
+  const m = /^(\d{2}):(\d{2})/.exec(utc);
+  if (!m) return "";
+  const h = Number(m[1]);
+  const mm = Number(m[2]);
+  const off = new Date().getTimezoneOffset();
+  const total = ((h * 60 + mm - off) % 1440 + 1440) % 1440;
+  const hh = String(Math.floor(total / 60)).padStart(2, "0");
+  const m2 = String(total % 60).padStart(2, "0");
+  return `${hh}:${m2}`;
+}
 
 export default function SettingsView({
   spheres,
   userEmail,
+  digestAtUtc,
 }: {
   spheres: Sphere[];
   userEmail: string | null;
+  digestAtUtc: string | null;
 }) {
   const t = useT();
   const lang = useLang();
@@ -29,6 +45,8 @@ export default function SettingsView({
   const [pushOn, setPushOn] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushMsg, setPushMsg] = useState<string | null>(null);
+  const [digestLocal, setDigestLocal] = useState<string>(() => utcToLocalHHMM(digestAtUtc));
+  const [digestBusy, setDigestBusy] = useState(false);
 
   useEffect(() => {
     setSound(isSoundEnabled());
@@ -56,6 +74,17 @@ export default function SettingsView({
       }
     }
     setPushBusy(false);
+  }
+
+  async function persistDigest(value: string) {
+    setDigestBusy(true);
+    try {
+      await setDigestTime(value || null, new Date().getTimezoneOffset());
+    } catch (e) {
+      console.error("setDigestTime:", e);
+    } finally {
+      setDigestBusy(false);
+    }
   }
 
   async function sendTest() {
@@ -384,8 +413,76 @@ export default function SettingsView({
             checked={pushOn}
             disabled={!pushSupported || pushBusy}
             onChange={() => void togglePush()}
-            last={!pushOn}
           />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "14px",
+              borderBottom: pushOn ? "1px solid var(--ink-05)" : "none",
+              opacity: pushOn ? 1 : 0.55,
+            }}
+          >
+            <Icons.Sun size={18} stroke="var(--ink-60)" strokeWidth={1.8} />
+            <span
+              style={{
+                flex: 1,
+                fontSize: 14.5,
+                fontWeight: 500,
+                color: "var(--ink)",
+                letterSpacing: "-0.005em",
+              }}
+            >
+              {t("settings.digest")}
+            </span>
+            <input
+              type="time"
+              value={digestLocal}
+              disabled={!pushOn || digestBusy}
+              onChange={(e) => {
+                setDigestLocal(e.target.value);
+                void persistDigest(e.target.value);
+              }}
+              className="tnum"
+              style={{
+                fontFamily: "inherit",
+                fontSize: 13,
+                fontWeight: 600,
+                color: digestLocal ? "var(--ink-80)" : "var(--ink-40)",
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                textAlign: "right",
+                padding: 0,
+                letterSpacing: "-0.005em",
+                minWidth: 60,
+              }}
+            />
+            {digestLocal && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDigestLocal("");
+                  void persistDigest("");
+                }}
+                disabled={digestBusy}
+                aria-label={t("settings.digest_clear")}
+                className="tap"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--ink-40)",
+                  fontSize: 16,
+                  lineHeight: 1,
+                  padding: "0 0 0 2px",
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
           {pushOn && (
             <button
               type="button"

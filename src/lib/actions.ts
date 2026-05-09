@@ -82,6 +82,19 @@ export async function completeTask(id: string) {
     const anchor = task.due_date ?? task.recurrence_anchor ?? today();
     const next = nextOccurrence(anchor, task.recurrence);
     if (next) {
+      // Carry the reminder forward: shift it by the same delta as the
+      // due date so the user keeps the same time of day on the new
+      // instance. Skips silently when the previous instance had no
+      // due_date to anchor against.
+      let nextRemindAt: string | null = null;
+      if (task.remind_at && task.due_date) {
+        const oldDueMs = new Date(`${task.due_date}T00:00:00Z`).getTime();
+        const newDueMs = new Date(`${next}T00:00:00Z`).getTime();
+        const deltaMs = newDueMs - oldDueMs;
+        if (Number.isFinite(deltaMs)) {
+          nextRemindAt = new Date(new Date(task.remind_at).getTime() + deltaMs).toISOString();
+        }
+      }
       await supabase.from("tasks").insert({
         user_id: user.id,
         title: task.title,
@@ -91,6 +104,7 @@ export async function completeTask(id: string) {
         note: task.note,
         recurrence: task.recurrence,
         recurrence_anchor: next,
+        remind_at: nextRemindAt,
       });
     }
   }

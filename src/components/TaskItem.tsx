@@ -203,6 +203,17 @@ export default function TaskItem({
                 <span style={{ fontSize: 11, color: "var(--ink-40)" }}>↻</span>
               </>
             )}
+            {task.remind_at && !task.reminded_at && (
+              <>
+                <span style={{ color: "var(--ink-20)", fontSize: 12 }}>·</span>
+                <span
+                  aria-label="Напоминание включено"
+                  style={{ fontSize: 11, color: "var(--ink-40)" }}
+                >
+                  🔔
+                </span>
+              </>
+            )}
           </div>
         )}
       </div>
