@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
@@ -167,31 +168,62 @@ export default function SettingsView({
 
   return (
     <>
-      <div style={{ padding: "8px 22px 18px" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.04,
-            color: "var(--ink)",
-            margin: 0,
-          }}
-        >
-          {t("settings.title")}
-        </h1>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginTop: 8,
-            letterSpacing: "-0.005em",
-          }}
-        >
-          {t("settings.sub")}
+      <div
+        style={{
+          padding: "8px 22px 18px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 16,
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1
+            style={{
+              fontFamily: "var(--font-emphasis)",
+              fontSize: 40,
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.04,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            {t("settings.title")}
+          </h1>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              marginTop: 8,
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {t("settings.sub")}
+          </div>
         </div>
+        <Link
+          href="/"
+          aria-label="Закрыть настройки"
+          className="tap"
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            background: "var(--paper-warm)",
+            border: "1px solid var(--ink-05)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--ink-60)",
+            flexShrink: 0,
+            marginTop: 6,
+            textDecoration: "none",
+          }}
+        >
+          <Icons.Close size={18} stroke="currentColor" strokeWidth={2} />
+        </Link>
       </div>
 
       <div style={{ padding: "0 18px" }}>

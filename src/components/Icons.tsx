@@ -66,6 +66,7 @@ export const Icons = {
   Check: (p: Props) => <I {...p} strokeWidth={2.4} d="M5 12l5 5L20 7" />,
   Chevron: (p: Props) => <I {...p} d="M9 6l6 6-6 6" />,
   ChevronDown: (p: Props) => <I {...p} d="M6 9l6 6 6-6" />,
+  Close: (p: Props) => <I {...p} d="M6 6l12 12M18 6L6 18" />,
   /* Coffee cup with steam — sphere "Работа" */
   Briefcase: (p: Props) => (
     <I {...p}>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import SettingsTrigger from "@/components/SettingsTrigger";
 import RegisterSW from "@/components/RegisterSW";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
@@ -57,6 +58,7 @@ export default async function RootLayout({
             <PageTransition>{children}</PageTransition>
           </main>
           {authed && <BottomNav />}
+          {authed && <SettingsTrigger />}
           {!authed && <Onboarding />}
           <RegisterSW />
         </LanguageProvider>
