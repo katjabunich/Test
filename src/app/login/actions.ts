@@ -24,16 +24,35 @@ function safeNext(next: string | null): string {
   return "/";
 }
 
+/** Match common Supabase Auth error strings to our locale-agnostic codes.
+    "Email not confirmed" needs its own bucket — surfacing it as "invalid"
+    lies to the user (they think the password is wrong when actually they
+    just need to confirm). */
 function classify(message: string): AuthErrCode | null {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "invalid";
-  if (m.includes("already registered") || m.includes("user already")) return "exists";
-  if (m.includes("rate limit")) return "rate";
+  if (m.includes("email not confirmed") || m.includes("email_not_confirmed"))
+    return "confirm_email";
+  if (m.includes("invalid login") || m.includes("invalid_credentials"))
+    return "invalid";
+  if (m.includes("already registered") || m.includes("user already") || m.includes("user_already_exists"))
+    return "exists";
+  if (m.includes("rate limit") || m.includes("over_request_rate") || m.includes("too many"))
+    return "rate";
+  if (m.includes("password should be") || m.includes("weak_password"))
+    return "pw_short";
   return null;
 }
 
+/** Email normalisation. Trim and lowercase so case- or whitespace-only
+    differences between signup and signin don't surface as "wrong password"
+    on a freshly-created account. Supabase already lowercases on read, but
+    doing it client-side keeps the round-trip predictable. */
+function normalizeEmail(raw: string): string {
+  return raw.trim().toLowerCase();
+}
+
 export async function signInWithPassword(formData: FormData): Promise<AuthResult> {
-  const email = String(formData.get("email") ?? "").trim();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
   const password = String(formData.get("password") ?? "");
   const next = safeNext(String(formData.get("next") ?? "/"));
 
@@ -46,7 +65,7 @@ export async function signInWithPassword(formData: FormData): Promise<AuthResult
 }
 
 export async function signUpWithPassword(formData: FormData): Promise<AuthResult> {
-  const email = String(formData.get("email") ?? "").trim();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
   const password = String(formData.get("password") ?? "");
   const invite = String(formData.get("invite") ?? "");
   const origin = String(formData.get("origin") ?? "").trim();
@@ -80,10 +99,11 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
   if (!data.session) {
     const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
     if (signInErr) {
-      // Fall back to the original "check your inbox" flow if auto-sign-in
-      // failed for any reason (e.g. project actually requires confirmation
-      // in some unforeseen path).
-      return { code: "confirm_email" };
+      // Surface the real reason instead of always telling the user to
+      // check their inbox — sometimes the trigger ran and the issue is
+      // elsewhere (e.g. weak password rejected post-hoc, rate limit).
+      const code = classify(signInErr.message) ?? "confirm_email";
+      return { code, raw: signInErr.message };
     }
   }
   redirect("/");

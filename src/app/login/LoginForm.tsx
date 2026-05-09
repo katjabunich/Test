@@ -5,7 +5,7 @@ import { signInWithPassword, signUpWithPassword } from "./actions";
 import { useT, useLang } from "@/lib/i18n/client";
 
 type Mode = "signin" | "signup";
-type Banner = { kind: "error" | "info"; text: string };
+type Banner = { kind: "error" | "info"; text: string; raw?: string };
 
 export default function LoginForm({ next }: { next: string }) {
   const t = useT();
@@ -25,9 +25,9 @@ export default function LoginForm({ next }: { next: string }) {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
       const result = await action(formData);
       if (result?.code === "confirm_email") {
-        setBanner({ kind: "info", text: t("login.err_confirm_email") });
+        setBanner({ kind: "info", text: t("login.err_confirm_email"), raw: result.raw });
       } else if (result?.code) {
-        setBanner({ kind: "error", text: t(`login.err_${result.code}`) });
+        setBanner({ kind: "error", text: t(`login.err_${result.code}`), raw: result.raw });
       } else if (result?.raw) {
         setBanner({ kind: "error", text: result.raw });
       }
@@ -176,6 +176,19 @@ export default function LoginForm({ next }: { next: string }) {
               }}
             >
               {banner.text}
+              {banner.raw && banner.raw !== banner.text && (
+                <div
+                  style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    opacity: 0.65,
+                    fontWeight: 400,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {banner.raw}
+                </div>
+              )}
             </div>
           )}
 
