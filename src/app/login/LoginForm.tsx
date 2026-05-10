@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { signInWithPassword, signUpWithPassword } from "./actions";
+import { signInWithPassword, signUpWithPassword, requestPasswordReset } from "./actions";
 import { useT, useLang } from "@/lib/i18n/client";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "reset";
 type Banner = { kind: "error" | "info"; text: string; raw?: string };
 
 export default function LoginForm({ next }: { next: string }) {
@@ -20,6 +20,28 @@ export default function LoginForm({ next }: { next: string }) {
     formData.set("lang", lang);
     if (typeof window !== "undefined") {
       formData.set("origin", window.location.origin);
+    }
+    if (mode === "reset") {
+      const email = String(formData.get("email") ?? "").trim();
+      startTransition(async () => {
+        const result = await requestPasswordReset(formData);
+        if (result.ok) {
+          setBanner({
+            kind: "info",
+            text:
+              t("login.reset_sent_pre") +
+              email +
+              t("login.reset_sent_post"),
+          });
+        } else {
+          setBanner({
+            kind: "error",
+            text: t("common.err_unknown"),
+            raw: result.raw,
+          });
+        }
+      });
+      return;
     }
     startTransition(async () => {
       const action = mode === "signin" ? signInWithPassword : signUpWithPassword;
@@ -68,7 +90,11 @@ export default function LoginForm({ next }: { next: string }) {
             textWrap: "balance" as React.CSSProperties["textWrap"],
           }}
         >
-          {mode === "signin" ? t("login.signin_title") : t("login.signup_title")}
+          {mode === "signin"
+            ? t("login.signin_title")
+            : mode === "signup"
+            ? t("login.signup_title")
+            : t("login.reset_title")}
         </h1>
         <p
           style={{
@@ -85,43 +111,47 @@ export default function LoginForm({ next }: { next: string }) {
               <span className="mark-butter">{t("login.signin_sub_mark")}</span>
               {t("login.signin_sub_post")}
             </>
-          ) : (
+          ) : mode === "signup" ? (
             <>
               {t("login.signup_sub_pre")}
               <span className="mark-butter">{t("login.signup_sub_mark")}</span>
               {t("login.signup_sub_post")}
             </>
+          ) : (
+            t("login.reset_sub")
           )}
         </p>
 
-        <div
-          role="tablist"
-          style={{
-            display: "flex",
-            background: "var(--paper-deep)",
-            borderRadius: 999,
-            padding: 4,
-            marginBottom: 22,
-            gap: 4,
-          }}
-        >
-          <ModeTab
-            active={mode === "signin"}
-            onClick={() => {
-              setMode("signin");
-              setBanner(null);
+        {mode !== "reset" && (
+          <div
+            role="tablist"
+            style={{
+              display: "flex",
+              background: "var(--paper-deep)",
+              borderRadius: 999,
+              padding: 4,
+              marginBottom: 22,
+              gap: 4,
             }}
-            label={t("login.tab_signin")}
-          />
-          <ModeTab
-            active={mode === "signup"}
-            onClick={() => {
-              setMode("signup");
-              setBanner(null);
-            }}
-            label={t("login.tab_signup")}
-          />
-        </div>
+          >
+            <ModeTab
+              active={mode === "signin"}
+              onClick={() => {
+                setMode("signin");
+                setBanner(null);
+              }}
+              label={t("login.tab_signin")}
+            />
+            <ModeTab
+              active={mode === "signup"}
+              onClick={() => {
+                setMode("signup");
+                setBanner(null);
+              }}
+              label={t("login.tab_signup")}
+            />
+          </div>
+        )}
 
         <form action={handleSubmit}>
           <Field
@@ -132,15 +162,44 @@ export default function LoginForm({ next }: { next: string }) {
             required
             disabled={pending}
           />
-          <Field
-            label={t("login.password")}
-            name="password"
-            type="password"
-            autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            required
-            disabled={pending}
-            hint={mode === "signup" ? t("login.pw_hint") : undefined}
-          />
+          {mode !== "reset" && (
+            <Field
+              label={t("login.password")}
+              name="password"
+              type="password"
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              required
+              disabled={pending}
+              hint={mode === "signup" ? t("login.pw_hint") : undefined}
+            />
+          )}
+          {mode === "signin" && (
+            <div style={{ marginTop: -6, marginBottom: 14, textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("reset");
+                  setBanner(null);
+                }}
+                className="tap"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: "2px 4px",
+                  fontSize: 12.5,
+                  fontWeight: 500,
+                  color: "var(--ink-60)",
+                  letterSpacing: "-0.005em",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  textDecorationStyle: "dotted",
+                  textUnderlineOffset: 4,
+                }}
+              >
+                {t("login.forgot")}
+              </button>
+            </div>
+          )}
           {mode === "signup" && (
             <Field
               label={t("login.invite")}
@@ -217,8 +276,34 @@ export default function LoginForm({ next }: { next: string }) {
               ? t("common.waiting")
               : mode === "signin"
                 ? t("login.cta_signin")
-                : t("login.cta_signup")}
+                : mode === "signup"
+                  ? t("login.cta_signup")
+                  : t("login.reset_send")}
           </button>
+          {mode === "reset" && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signin");
+                setBanner(null);
+              }}
+              className="tap"
+              style={{
+                marginTop: 14,
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                padding: "8px 0",
+                fontSize: 13.5,
+                fontWeight: 500,
+                color: "var(--ink-60)",
+                letterSpacing: "-0.005em",
+                cursor: "pointer",
+              }}
+            >
+              {t("login.reset_back")}
+            </button>
+          )}
         </form>
       </div>
 

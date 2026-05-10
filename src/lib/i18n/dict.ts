@@ -90,6 +90,18 @@ export const DICT = {
     err_confirm_email: { ru: "Подтверди email — мы отправили письмо со ссылкой. После подтверждения вернись и войди.", en: "Check your inbox — we sent a confirmation link. Come back to sign in once it's confirmed." },
     err_bad_invite:{ ru: "Неверный код приглашения.",     en: "Invalid invite code." },
     err_invite_no_env:{ ru: "Переменная INVITE_CODES не задана в окружении Vercel (Production). Добавь её и сделай Redeploy.", en: "INVITE_CODES env var is not set on Vercel (Production). Add it and redeploy." },
+
+    forgot:        { ru: "Забыл пароль?",                  en: "Forgot password?" },
+    reset_title:   { ru: "Сброс пароля",                   en: "Reset password" },
+    reset_sub:     { ru: "Введи email — отправим ссылку для нового пароля.", en: "Enter your email — we'll send a link to set a new password." },
+    reset_send:    { ru: "Прислать ссылку",                en: "Send the link" },
+    reset_back:    { ru: "← Вернуться ко входу",           en: "← Back to sign in" },
+    reset_sent_pre:{ ru: "Письмо отправлено на ",          en: "Email sent to " },
+    reset_sent_post:{ ru: ". Открой ссылку из письма, чтобы задать новый пароль.", en: ". Open the link from the email to set a new password." },
+    reset_pw_title:{ ru: "Новый пароль",                   en: "New password" },
+    reset_pw_sub:  { ru: "Задай новый пароль для входа.",  en: "Set a new password for signing in." },
+    reset_pw_save: { ru: "Сохранить и войти",              en: "Save and sign in" },
+
     footer:        { ru: "v2 · вход и облачная синхронизация", en: "v2 · auth and cloud sync" },
   },
 

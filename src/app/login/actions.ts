@@ -108,3 +108,30 @@ export async function signUpWithPassword(formData: FormData): Promise<AuthResult
   }
   redirect("/");
 }
+
+export type PasswordResetResult = { ok: boolean; raw?: string };
+
+/** Send a password-reset email. Always reports success on the client even
+    if the email isn't registered, to avoid leaking which addresses exist
+    in the database — standard practice for forgot-password flows. The
+    `raw` field surfaces unexpected server errors (rate limit, SMTP issue)
+    only when something genuinely went wrong on the Supabase side. */
+export async function requestPasswordReset(formData: FormData): Promise<PasswordResetResult> {
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const origin = String(formData.get("origin") ?? "").trim();
+  if (!email) return { ok: false, raw: "Email required" };
+
+  const supabase = await createClient();
+  const redirectTo = origin ? `${origin}/auth/callback?next=/reset-password` : undefined;
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    email,
+    redirectTo ? { redirectTo } : {},
+  );
+  if (error) {
+    // Rate-limit and similar errors should still surface to the user; we
+    // only hide the "user not found" case (Supabase returns the same
+    // generic OK either way, so nothing to suppress).
+    return { ok: false, raw: error.message };
+  }
+  return { ok: true };
+}
