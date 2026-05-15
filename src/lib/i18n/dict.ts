@@ -279,6 +279,8 @@ export const DICT = {
     title_new:    { ru: "Новая сфера",       en: "New sphere" },
     title_edit:   { ru: "Сфера",             en: "Sphere" },
     name_ph:      { ru: "Название",          en: "Name" },
+    icon_label:   { ru: "Иконка",            en: "Icon" },
+    icon_custom:  { ru: "или свой:",         en: "or custom:" },
     color_label:  { ru: "Цвет",              en: "Colour" },
     delete_confirm: { ru: "Удалить сферу? Задачи в ней останутся, но без сферы.", en: "Delete sphere? Tasks in it will stay but lose the sphere." },
   },

@@ -266,6 +266,7 @@ export default function TaskEditModal({
               active={sphereId === s.id}
               label={s.name}
               color={s.color}
+              emoji={s.emoji}
               onClick={() => setSphereId(s.id)}
             />
           ))}
@@ -575,11 +576,13 @@ function SphereChipButton({
   active,
   label,
   color,
+  emoji,
   onClick,
 }: {
   active: boolean;
   label: string;
   color?: string;
+  emoji?: string | null;
   onClick: () => void;
 }) {
   return (
@@ -605,6 +608,7 @@ function SphereChipButton({
       {color && (
         <SphereIcon
           name={label}
+          emoji={emoji}
           size={11}
           stroke="var(--ink)"
           strokeWidth={2.2}

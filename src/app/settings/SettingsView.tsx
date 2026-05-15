@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Sphere } from "@/lib/data";
 import SphereEditModal from "@/components/SphereEditModal";
@@ -55,6 +56,19 @@ export default function SettingsView({
   const t = useT();
   const lang = useLang();
   const { setLang } = useSetLang();
+  const search = useSearchParams();
+  /* Honour `?from=<encoded-path>` so the close button drops the user
+     back on the page that opened Settings. Validate to a local path
+     so a crafted query can't redirect off-site. */
+  const rawFrom = search.get("from");
+  const closeHref = (() => {
+    if (!rawFrom) return "/";
+    try {
+      const decoded = decodeURIComponent(rawFrom);
+      if (decoded.startsWith("/") && !decoded.startsWith("//")) return decoded;
+    } catch { /* fall through */ }
+    return "/";
+  })();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Sphere | null>(null);
   const [pwOpen, setPwOpen] = useState(false);
@@ -204,7 +218,7 @@ export default function SettingsView({
           </div>
         </div>
         <Link
-          href="/"
+          href={closeHref}
           aria-label="Закрыть настройки"
           className="tap"
           style={{
@@ -676,6 +690,7 @@ function SortableSphereRow({
       >
         <SphereIcon
           name={sphere.name}
+          emoji={sphere.emoji}
           size={18}
           stroke="var(--ink)"
           strokeWidth={2}

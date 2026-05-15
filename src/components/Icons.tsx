@@ -301,15 +301,37 @@ export function iconForSphereName(name: string): IconKey {
 
 export function SphereIcon({
   name,
+  emoji,
   size = 18,
   stroke,
   strokeWidth,
 }: {
   name: string;
+  /** If the sphere has a user-set emoji, render it instead of the
+      name-mapped line-art icon. Renders nothing-special (a Dot) when
+      neither the emoji nor a known name mapping is available. */
+  emoji?: string | null;
   size?: number;
   stroke?: string;
   strokeWidth?: number;
 }) {
+  if (emoji && emoji.trim()) {
+    return (
+      <span
+        style={{
+          fontSize: Math.round(size * 0.92),
+          lineHeight: 1.1,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: size,
+          height: size,
+        }}
+      >
+        {emoji}
+      </span>
+    );
+  }
   const Comp = Icons[iconForSphereName(name)];
   return <Comp size={size} stroke={stroke} strokeWidth={strokeWidth} />;
 }

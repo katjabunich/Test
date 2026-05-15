@@ -18,6 +18,17 @@ const COLORS = [
   "#d96a52", // alert (use carefully)
 ];
 
+/* Curated emoji shortlist for life-area spheres. Picked to cover the
+   common buckets (home / work / learning / relationships / hobbies /
+   wellness) without forcing a generic keyboard. The custom-emoji input
+   below the grid still lets a user paste anything they want. */
+const SPHERE_EMOJI_PRESETS = [
+  "🏠", "💼", "📚", "🎨",
+  "🏃", "🍳", "💰", "❤️",
+  "✈️", "🌱", "🎵", "🎬",
+  "🐾", "🧘", "👶", "🎁",
+];
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -155,22 +166,24 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
           {isEdit ? t("sphere.title_edit") : t("sphere.title_new")}
         </div>
 
+        {/* Preview tile (uses current colour) + name input on same row. */}
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-          <input
-            value={emoji}
-            onChange={(e) => setEmoji(e.target.value.slice(0, 4))}
-            placeholder="✨"
+          <div
             style={{
               width: 56,
-              padding: "12px 0",
-              fontSize: 22,
-              border: "1px solid var(--ink-10)",
-              borderRadius: 12,
-              background: "var(--paper-warm)",
-              outline: "none",
-              textAlign: "center",
+              height: 56,
+              borderRadius: 14,
+              background: color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              fontSize: 28,
+              lineHeight: 1.1,
             }}
-          />
+          >
+            {emoji || "·"}
+          </div>
           <input
             ref={inputRef}
             value={name}
@@ -194,6 +207,119 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               }
             }}
           />
+        </div>
+
+        {/* Emoji picker grid — preset shortlist + a small custom-input
+            for anything else. Replaces the previous single text field,
+            which (a) opened the keyboard immediately and (b) let users
+            type plain text that wouldn't render anywhere. */}
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "var(--ink-60)",
+            marginBottom: 10,
+            letterSpacing: "-0.005em",
+          }}
+        >
+          {t("sphere.icon_label")}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(8, 1fr)",
+            gap: 6,
+            marginBottom: 10,
+          }}
+        >
+          {SPHERE_EMOJI_PRESETS.map((e) => {
+            const active = emoji === e;
+            return (
+              <button
+                key={e}
+                type="button"
+                onClick={() => setEmoji(e)}
+                aria-label={e}
+                className="tap"
+                style={{
+                  height: 40,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 10,
+                  border: `1px solid ${active ? "var(--ink)" : "var(--ink-10)"}`,
+                  background: active ? "var(--ink)" : "var(--paper-warm)",
+                  fontSize: 20,
+                  lineHeight: 1.1,
+                  cursor: "pointer",
+                }}
+              >
+                {e}
+              </button>
+            );
+          })}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 18,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "var(--ink-60)",
+              flexShrink: 0,
+              letterSpacing: "-0.005em",
+            }}
+          >
+            {t("sphere.icon_custom")}
+          </span>
+          <input
+            value={
+              emoji && SPHERE_EMOJI_PRESETS.includes(emoji) ? "" : emoji
+            }
+            onChange={(e) => {
+              /* Strip Latin/Cyrillic letters and digits so the field can
+                 only hold emoji/punctuation glyphs, matching the user's
+                 expectation that this is an emoji-only picker. */
+              const v = e.target.value.replace(/[\p{L}\p{N}]/gu, "").slice(0, 4);
+              setEmoji(v);
+            }}
+            placeholder="✨"
+            style={{
+              width: 70,
+              padding: "8px 0",
+              fontSize: 18,
+              border: "1px solid var(--ink-10)",
+              borderRadius: 10,
+              background: "var(--paper-warm)",
+              outline: "none",
+              textAlign: "center",
+            }}
+          />
+          {emoji && (
+            <button
+              type="button"
+              onClick={() => setEmoji("")}
+              aria-label={t("common.cancel")}
+              className="tap"
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--ink-40)",
+                fontSize: 18,
+                lineHeight: 1,
+                padding: 4,
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
 
         <div

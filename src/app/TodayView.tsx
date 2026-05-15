@@ -457,6 +457,7 @@ function HeroNextTask({
         >
           <SphereIcon
             name={sphere.name}
+            emoji={sphere.emoji}
             size={120}
             stroke="var(--ink)"
             strokeWidth={1.3}
@@ -490,6 +491,7 @@ function HeroNextTask({
           >
             <SphereIcon
               name={sphereName}
+              emoji={sphere?.emoji}
               size={11}
               stroke="var(--ink)"
               strokeWidth={2.2}
