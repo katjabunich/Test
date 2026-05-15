@@ -146,16 +146,32 @@ export default function DatePicker({
           boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
         }}
       >
-        <div
-          aria-hidden
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("common.cancel")}
+          className="tap"
           style={{
-            width: 40,
-            height: 4.5,
-            background: "var(--ink-20)",
-            borderRadius: 3,
-            margin: "0 auto 16px",
+            display: "block",
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            padding: "6px 0 14px",
+            cursor: "pointer",
           }}
-        />
+        >
+          <span
+            aria-hidden
+            style={{
+              display: "block",
+              width: 40,
+              height: 4.5,
+              background: "var(--ink-20)",
+              borderRadius: 3,
+              margin: "0 auto",
+            }}
+          />
+        </button>
         <div
           style={{
             fontSize: 13,

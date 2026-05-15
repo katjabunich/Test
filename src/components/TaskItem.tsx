@@ -37,10 +37,12 @@ function dueLabel(
   if (diff <= 7) {
     return { text: weekdays[d.getDay()], tone: "muted" };
   }
-  if (lang === "en") {
-    return { text: `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`, tone: "muted" };
-  }
-  return { text: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`, tone: "muted" };
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return {
+    text: lang === "en" ? `${dd}/${mm}` : `${dd}.${mm}`,
+    tone: "muted",
+  };
 }
 
 /** Task row per v4: paper-warm card, mint-bordered checkbox left, sphere

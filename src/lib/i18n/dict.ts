@@ -123,7 +123,7 @@ export const DICT = {
     overdue_count:{ ru: "просрочено",       en: "overdue" },
     empty_fresh: { ru: "Чисто. Добавь первое дело — кнопкой плюса внизу.", en: "Clean slate. Tap the + button below to add your first task." },
     empty_done_pre:{ ru: "Свободно на сегодня. На неделе ещё ",  en: "All clear today. " },
-    empty_done_post:{ ru: " — посмотри.",                        en: " more this week — take a look." },
+    empty_done_post:{ ru: " — найдёшь во вкладке «Задачи».",     en: " more this week — see the Tasks tab." },
   },
 
   /* ──────────── Tasks ──────────── */
@@ -163,6 +163,15 @@ export const DICT = {
     sched_weekdays:{ ru: "По будням",         en: "Weekdays" },
     sched_n_per_week:{ ru: "{n} раз в неделю", en: "{n} times a week" },
     week_progress:{ ru: "на неделе",          en: "this week" },
+  },
+
+  /* ──────────── Bottom nav labels ──────────── */
+  nav: {
+    today:    { ru: "Сегодня",   en: "Today" },
+    tasks:    { ru: "Задачи",    en: "Tasks" },
+    habits:   { ru: "Привычки",  en: "Habits" },
+    stats:    { ru: "Статистика", en: "Stats" },
+    settings: { ru: "Настройки", en: "Settings" },
   },
 
   /* ──────────── Time picker ──────────── */

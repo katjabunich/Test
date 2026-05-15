@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icons } from "@/components/Icons";
+import { useT } from "@/lib/i18n/client";
 
 export type NavTab = "today" | "tasks" | "habits" | "stats";
 
 /* Settings lives in the top-right gear (SettingsTrigger), not here —
    bottom nav stays focused on the four daily-use surfaces. */
-const TABS: { id: NavTab; href: string; Icon: keyof typeof Icons }[] = [
-  { id: "today",    href: "/",          Icon: "Sun" },
-  { id: "tasks",    href: "/tasks",     Icon: "List" },
-  { id: "habits",   href: "/habits",    Icon: "Loop" },
-  { id: "stats",    href: "/stats",     Icon: "BarChart" },
+const TABS: { id: NavTab; href: string; Icon: keyof typeof Icons; labelKey: string }[] = [
+  { id: "today",    href: "/",          Icon: "Sun",      labelKey: "nav.today" },
+  { id: "tasks",    href: "/tasks",     Icon: "List",     labelKey: "nav.tasks" },
+  { id: "habits",   href: "/habits",    Icon: "Loop",     labelKey: "nav.habits" },
+  { id: "stats",    href: "/stats",     Icon: "BarChart", labelKey: "nav.stats" },
 ];
 
 function activeTabFor(pathname: string): NavTab {
@@ -28,6 +29,7 @@ function activeTabFor(pathname: string): NavTab {
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useT();
   const active = activeTabFor(pathname);
 
   // Tabs split around the central FAB (index 2).
@@ -50,11 +52,17 @@ export default function BottomNav() {
         margin: "0 auto",
         background: "var(--paper)",
         borderTop: "1px solid var(--ink-10)",
-        padding: "14px 24px max(14px, calc(env(safe-area-inset-bottom) + 8px))",
+        padding: "10px 24px max(10px, calc(env(safe-area-inset-bottom) + 6px))",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         zIndex: 50,
+        /* Force a compositor layer so iOS PWA standalone mode doesn't
+           re-paint the bar position on every scroll/keyboard event —
+           the "jiggle" Katja reported lives in that recompute path. */
+        transform: "translate3d(0, 0, 0)",
+        willChange: "transform",
+        backfaceVisibility: "hidden",
       }}
     >
       {[...left, null, ...right].map((tab, i) => {
@@ -93,30 +101,32 @@ export default function BottomNav() {
             aria-label={tab.id}
             className="tap"
             style={{
-              width: 36,
-              height: 40,
+              minWidth: 48,
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 4,
+              gap: 3,
               color: isActive ? "var(--ink)" : "var(--ink-40)",
+              textDecoration: "none",
             }}
           >
             <IconComp
-              size={24}
+              size={22}
               stroke="currentColor"
               strokeWidth={isActive ? 2.2 : 1.7}
             />
             <span
-              aria-hidden
               style={{
-                width: 3,
-                height: 3,
-                borderRadius: 2,
-                background: isActive ? "var(--ink)" : "transparent",
+                fontSize: 10,
+                fontWeight: isActive ? 700 : 500,
+                letterSpacing: "0.01em",
+                lineHeight: 1,
+                color: "currentColor",
               }}
-            />
+            >
+              {t(tab.labelKey)}
+            </span>
           </Link>
         );
       })}

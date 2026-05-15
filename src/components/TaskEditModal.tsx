@@ -124,10 +124,12 @@ export default function TaskEditModal({
     if (!dueDate) return "—";
     if (dueDate === todayIso()) return t("common.today");
     const d = fromIsoDate(dueDate);
-    if (lang === "en") {
-      return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-    }
-    return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+    /* Day-month order in both locales — Russian uses DD.MM and the app's
+       English flavour follows the European DD/MM convention to keep the
+       two displays parallel. */
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return lang === "en" ? `${dd}/${mm}` : `${dd}.${mm}`;
   })();
 
   return (
@@ -159,15 +161,32 @@ export default function TaskEditModal({
           boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
         }}
       >
-        <div
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("common.cancel")}
+          className="tap"
           style={{
-            width: 40,
-            height: 4.5,
-            background: "var(--ink-20)",
-            borderRadius: 3,
-            margin: "0 auto 16px",
+            display: "block",
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            padding: "6px 0 14px",
+            cursor: "pointer",
           }}
-        />
+        >
+          <span
+            aria-hidden
+            style={{
+              display: "block",
+              width: 40,
+              height: 4.5,
+              background: "var(--ink-20)",
+              borderRadius: 3,
+              margin: "0 auto",
+            }}
+          />
+        </button>
         <div
           style={{
             fontSize: 13,
