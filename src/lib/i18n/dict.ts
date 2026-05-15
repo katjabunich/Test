@@ -142,6 +142,9 @@ export const DICT = {
     swipe_done:  { ru: "Готово",         en: "Done" },
     swipe_defer: { ru: "Отложить",       en: "Defer" },
     day_clear:   { ru: "Сбросить день",   en: "Clear day" },
+    completed_snack: { ru: "Готово ✓",   en: "Done ✓" },
+    deferred_snack:  { ru: "Отложено",   en: "Deferred" },
+    undo:        { ru: "Отменить",        en: "Undo" },
   },
 
   /* ──────────── Habits ──────────── */

@@ -342,6 +342,7 @@ export default function TasksView({
         task={editing}
         spheres={spheres}
         defaultSphereId={filter}
+        defaultDueDate={editing ? null : dayFilter}
       />
     </>
   );

@@ -22,6 +22,11 @@ type Props = {
   task?: Task | null;
   spheres: Sphere[];
   defaultSphereId?: string | null;
+  /** Pre-populate the due-date field when creating a new task.
+      Used when the user already pinned a day via the /tasks week-strip
+      filter — the new-task modal should inherit that date instead of
+      asking the user to re-pick it. */
+  defaultDueDate?: string | null;
 };
 
 export default function TaskEditModal({
@@ -30,6 +35,7 @@ export default function TaskEditModal({
   task,
   spheres,
   defaultSphereId,
+  defaultDueDate,
 }: Props) {
   const t = useT();
   const lang = useLang();
@@ -64,7 +70,7 @@ export default function TaskEditModal({
     } else {
       setTitle("");
       setSphereId(defaultSphereId ?? null);
-      setDueDate("");
+      setDueDate(defaultDueDate ?? "");
       setDoToday(false);
       setNote("");
       setRecurrence(null);
@@ -74,7 +80,7 @@ export default function TaskEditModal({
     setRecurrenceOpen(false);
     setSaveError(null);
     setTimeout(() => inputRef.current?.focus(), 50);
-  }, [open, task, defaultSphereId]);
+  }, [open, task, defaultSphereId, defaultDueDate]);
 
   if (!open) return null;
 

@@ -3,6 +3,7 @@ import { Lora, Manrope } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import SettingsTrigger from "@/components/SettingsTrigger";
+import Snackbar from "@/components/Snackbar";
 import RegisterSW from "@/components/RegisterSW";
 import Onboarding from "@/components/Onboarding";
 import PageTransition from "@/components/PageTransition";
@@ -59,6 +60,7 @@ export default async function RootLayout({
           </main>
           {authed && <BottomNav />}
           {authed && <SettingsTrigger />}
+          {authed && <Snackbar />}
           {!authed && <Onboarding />}
           <RegisterSW />
         </LanguageProvider>

@@ -184,7 +184,7 @@ export default function SettingsView({
     <>
       <div
         style={{
-          padding: "8px 22px 18px",
+          padding: "8px 22px 12px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
@@ -325,7 +325,7 @@ export default function SettingsView({
             fontWeight: 600,
             color: "var(--ink-60)",
             cursor: "pointer",
-            marginBottom: 24,
+            marginBottom: 16,
             letterSpacing: "-0.005em",
           }}
         >
@@ -352,7 +352,7 @@ export default function SettingsView({
             borderRadius: 18,
             border: "1px solid var(--ink-05)",
             overflow: "hidden",
-            marginBottom: 24,
+            marginBottom: 16,
           }}
         >
           <div
@@ -360,7 +360,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "14px",
+              padding: "11px 14px",
               borderBottom: "1px solid var(--ink-05)",
             }}
           >
@@ -389,7 +389,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "14px",
+              padding: "11px 14px",
               background: "transparent",
               border: "none",
               borderBottom: "1px solid var(--ink-05)",
@@ -420,7 +420,7 @@ export default function SettingsView({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "14px",
+                padding: "11px 14px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -496,7 +496,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "14px",
+              padding: "11px 14px",
               borderBottom: pushOn ? "1px solid var(--ink-05)" : "none",
               opacity: pushOn ? 1 : 0.55,
             }}
@@ -736,7 +736,7 @@ function SettingsRow({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "14px",
+        padding: "11px 14px",
         borderBottom: last ? "none" : "1px solid var(--ink-05)",
         opacity: disabled ? 0.55 : 1,
       }}
@@ -792,7 +792,7 @@ function SettingsToggleRow({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "14px",
+        padding: "11px 14px",
         borderBottom: last ? "none" : "1px solid var(--ink-05)",
         background: "transparent",
         border: "none",

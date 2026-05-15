@@ -7,6 +7,7 @@ import HabitRing from "@/components/HabitRing";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
+import { snack } from "@/components/Snackbar";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
@@ -409,6 +410,7 @@ function HeroNextTask({
   function handleComplete() {
     setOptimisticDone(true);
     feedbackTaskComplete();
+    snack(`${t("tasks.completed_snack")} · ${task.title}`, { taskId: task.id });
     startTransition(async () => {
       try {
         await completeTask(task.id);

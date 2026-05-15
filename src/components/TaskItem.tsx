@@ -8,6 +8,7 @@ import { feedbackTaskComplete } from "@/lib/feedback";
 import { useT, useLang, useWeekdaysShort } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 import { Icons } from "@/components/Icons";
+import { snack } from "@/components/Snackbar";
 
 /* Swipe behaviour constants. */
 const COMMIT_THRESHOLD = 80; // px past which release commits the action
@@ -80,6 +81,12 @@ export default function TaskItem({
     e?.stopPropagation();
     setOptimisticDone(true);
     feedbackTaskComplete();
+    /* Show the undo snackbar regardless of recurrence — even for a
+       recurring task, "uncomplete" of the just-completed instance is
+       a sensible single-step revert (it leaves the newly-spawned
+       next-occurrence in place; user can delete that manually if
+       they really meant nothing). */
+    snack(`${t("tasks.completed_snack")} · ${task.title}`, { taskId: task.id });
     startTransition(async () => {
       try {
         await completeTask(task.id);
@@ -92,6 +99,9 @@ export default function TaskItem({
   function handleDefer() {
     setOptimisticDeferred(true);
     feedbackTaskComplete();
+    /* No undo on defer — reverting the date push needs the previous
+       due_date, which we don't keep. User can edit the task to revert. */
+    snack(`${t("tasks.deferred_snack")} · ${task.title}`);
     startTransition(async () => {
       try {
         await deferTask(task.id, 1);

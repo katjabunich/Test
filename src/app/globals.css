@@ -52,11 +52,15 @@ html, body {
   font-family: var(--font-display);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Disable iOS rubber-band scroll on both axes — content sized to
+     fit the viewport (e.g. empty Today) shouldn't bounce when pulled.
+     `body` had only y; `html` was missing entirely, which let WebKit
+     bounce the page anyway on standalone PWA. */
+  overscroll-behavior: none;
 }
 
 body {
   min-height: 100dvh;
-  overscroll-behavior-y: none;
 }
 
 main {
@@ -137,6 +141,12 @@ select {
 }
 .day-card-in {
   animation: day-card-in 360ms var(--ease-out) both;
+}
+
+/* Snackbar slide-up from above the bottom nav */
+@keyframes snack-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
 /* Hero next-task on Today — fresh mount fades up so the next task feels
