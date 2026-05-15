@@ -140,6 +140,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             border: "none",
             padding: "6px 0 14px",
             cursor: "pointer",
+            touchAction: "manipulation",
           }}
         >
           <span

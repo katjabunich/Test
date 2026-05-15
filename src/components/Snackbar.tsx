@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { uncompleteTask } from "@/lib/actions";
 import { useT } from "@/lib/i18n/client";
 
@@ -29,6 +30,7 @@ const SHOW_MS = 5000;
 
 export default function Snackbar() {
   const t = useT();
+  const router = useRouter();
   const [snack, setSnack] = useState<Snack | null>(null);
   const [isUndoing, startUndo] = useTransition();
 
@@ -56,6 +58,12 @@ export default function Snackbar() {
     startUndo(async () => {
       try {
         await uncompleteTask(id);
+        /* Snackbar lives in the root layout, not inside the page tree,
+           so Next.js doesn't reliably auto-refresh the current page's
+           RSC payload after the action's revalidatePath runs. Force a
+           refresh here so the un-completed task reappears in the list
+           without the user having to navigate. */
+        router.refresh();
       } catch {
         /* server failed — snack still dismisses; user can retry via task list */
       }

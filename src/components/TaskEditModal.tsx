@@ -179,6 +179,7 @@ export default function TaskEditModal({
             border: "none",
             padding: "6px 0 14px",
             cursor: "pointer",
+            touchAction: "manipulation",
           }}
         >
           <span
