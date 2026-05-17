@@ -174,7 +174,7 @@ async function fetchOne(recipe) {
     return { ok: false, recipe, reason: 'no_url', source: origImage };
   }
 
-  // Check prior manifest first — if cached for the same source, use the resolved URL.
+  // STRICT cache hit: prior had same source, reuse its resolved URL.
   // This avoids hitting the Unsplash API rate limit on every build.
   const prior = priorManifest[recipe.id];
   let resolvedFromCache = false;
@@ -188,25 +188,55 @@ async function fetchOne(recipe) {
     if (!resolvedFromCache) {
       if (url.startsWith('wiki:')) {
         wikiArticle = url.slice(5);
-        const resolved = await resolveWikiArticleImage(wikiArticle);
+        let resolved = await resolveWikiArticleImage(wikiArticle);
+        // Fallback: if Wikipedia article has no infobox image, try Unsplash search
+        // using the recipe's English name (derived from id) so we never end up empty.
         if (!resolved) {
-          return { ok: false, recipe, reason: `wiki_no_image: ${wikiArticle}`, source: origImage };
+          const fallbackQuery = recipe.id.replace(/-/g, ' ') + ' food plate';
+          resolved = await searchUnsplashImage(fallbackQuery);
+          if (resolved) {
+            console.log(`  ↳ wiki had no image, fell back to Unsplash for ${recipe.id}`);
+          }
         }
-        url = resolved;
+        if (!resolved) {
+          // LAST RESORT: lenient prior cache (any URL we previously had for this id)
+          if (prior?.ok && prior.resolvedUrl) {
+            url = prior.resolvedUrl;
+            console.log(`  ↳ fallback to prior cache for ${recipe.id}`);
+          } else {
+            return { ok: false, recipe, reason: `wiki_no_image_and_no_unsplash: ${wikiArticle}`, source: origImage };
+          }
+        } else {
+          url = resolved;
+        }
       } else if (url.startsWith('commons:')) {
         const query = url.slice(8);
-        const resolved = await searchCommonsImage(query);
+        let resolved = await searchCommonsImage(query);
         if (!resolved) {
-          return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
+          // Lenient prior fallback
+          if (prior?.ok && prior.resolvedUrl) {
+            url = prior.resolvedUrl;
+            console.log(`  ↳ fallback to prior cache for ${recipe.id}`);
+          } else {
+            return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
+          }
+        } else {
+          url = resolved;
         }
-        url = resolved;
       } else if (url.startsWith('unsplash:')) {
         const query = url.slice(9);
-        const resolved = await searchUnsplashImage(query);
+        let resolved = await searchUnsplashImage(query);
         if (!resolved) {
-          return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
+          // Rate-limited or no result. Lenient prior fallback (any URL we previously had).
+          if (prior?.ok && prior.resolvedUrl) {
+            url = prior.resolvedUrl;
+            console.log(`  ↳ unsplash rate-limited/no-result, using prior cache for ${recipe.id}`);
+          } else {
+            return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
+          }
+        } else {
+          url = resolved;
         }
-        url = resolved;
       }
     }
 
