@@ -106,8 +106,14 @@ async function searchUnsplashImage(query) {
       const data = await res.json();
       // /random returns a photo object; /search returns { results: [...] }
       const photo = Array.isArray(data) ? data[0] : (data.results?.[0] || data);
-      const photoUrl = photo?.urls?.regular || photo?.urls?.small;
-      if (photoUrl) return photoUrl;
+      let photoUrl = photo?.urls?.raw || photo?.urls?.regular || photo?.urls?.small;
+      if (photoUrl) {
+        // Force a perfect 1:1 800x800 crop via Unsplash CDN parameters.
+        // Strip any existing query params and add ours.
+        const base = photoUrl.split('?')[0];
+        photoUrl = `${base}?w=800&h=800&fit=crop&crop=entropy&q=85&auto=format`;
+        return photoUrl;
+      }
       if (unsplashDebugLogged < 4) {
         console.log(`  [unsplash debug] no urls.regular for "${query}", response keys: ${Object.keys(data || {}).join(',')}`);
         unsplashDebugLogged++;
