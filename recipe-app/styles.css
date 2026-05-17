@@ -353,6 +353,24 @@ img { display: block; max-width: 100%; }
   font-weight: 500;
 }
 
+.home-audit-link {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 14px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: background 0.16s var(--ease-out);
+}
+
+.home-audit-link:hover {
+  background: var(--accent);
+  color: white;
+}
+
 /* ---------- Spotlight: photo with offset overlay card + persimmon glow ---------- */
 
 .home-spotlight {

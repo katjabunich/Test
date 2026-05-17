@@ -306,7 +306,7 @@ function escapeHtml(s) {
 // Build version — bumped on every deploy to bust browser image cache.
 // Images are content-addressable by recipe id but the file CONTENT changes
 // when we swap photo sources, so we need a version param to force re-fetch.
-const IMG_V = '10';
+const IMG_V = '11';
 
 // Resolve image source — every recipe uses the locally-bundled photo from build.
 function imgSrc(recipe) {
@@ -487,6 +487,7 @@ function viewHome() {
       <section class="home-greet">
         <h1 class="home-greet-title">${getTimeGreeting()}<br>что <em>хочется</em>?</h1>
         <p class="home-greet-sub">Выбери что-то одно — приготовим за полчаса.</p>
+        <a class="home-audit-link" href="#/audit">📷 Проверить все фото</a>
       </section>
 
       <section class="home-spotlight" data-surprise-id="${surpriseRecipe.id}">
