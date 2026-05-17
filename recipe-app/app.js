@@ -841,6 +841,27 @@ function viewMenu() {
 function viewFavorites() {
   const list = state.favorites.map(id => RECIPE_BY_ID[id]).filter(Boolean);
   const cards = list.map(r => cardHtml(r)).join('');
+  const skippedList = state.skipped.map(id => RECIPE_BY_ID[id]).filter(Boolean);
+
+  const skippedSection = skippedList.length === 0 ? '' : `
+    <section class="skipped-section">
+      <details>
+        <summary>
+          <span>Скрытые блюда (${skippedList.length})</span>
+          <span class="caret">▾</span>
+        </summary>
+        <div class="skipped-grid">
+          ${skippedList.map(r => `
+            <div class="skipped-row" data-unskip-id="${r.id}">
+              <div class="skipped-photo"><img src="${imgSrc(r)}" alt="${escapeHtml(r.name)}" onerror="this.style.display='none'" /></div>
+              <div class="skipped-name">${escapeHtml(r.name)}</div>
+              <button class="skipped-restore" data-unskip-id="${r.id}" type="button">Вернуть</button>
+            </div>
+          `).join('')}
+        </div>
+      </details>
+    </section>
+  `;
 
   render(`
     <div class="shell-wide">
@@ -853,12 +874,22 @@ function viewFavorites() {
         : `<div class="empty">
             <div class="empty-icon">♡</div>
             <div class="empty-title">Пока пусто</div>
-            <div class="empty-desc">Тапни ♡ на блюде, чтобы сохранить его сюда.</div>
+            <div class="empty-desc">Тапни ♡ на блюде, чтобы сохранить его сюда.<br><br>Чтобы скрыть блюдо навсегда — тапни × в углу карточки.</div>
             <a class="btn btn-primary" href="#/">Найти что-то вкусное →</a>
           </div>`
       }
+      ${skippedSection}
     </div>
   `);
+
+  root.querySelectorAll('[data-unskip-id]').forEach(el => {
+    if (!el.classList.contains('skipped-restore')) return;
+    el.addEventListener('click', () => {
+      const id = el.dataset.unskipId;
+      unskipRecipe(id);
+      viewFavorites();
+    });
+  });
 }
 
 function viewShopping() {
