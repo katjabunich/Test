@@ -334,58 +334,59 @@ function showToast(msg) {
 // ============================================================
 
 function viewHome() {
+  const surpriseRecipe = randomRecipe();
+
   const feelingsHtml = Object.entries(FEELINGS).map(([k, f]) => `
-    <button class="chip" data-feel="${k}">
-      <span>${f.emoji}</span> ${f.label}
+    <button class="feel-tile" data-feel="${k}">
+      <span class="feel-emoji">${f.emoji}</span>
+      <span class="feel-label">${f.label}</span>
     </button>
   `).join('');
 
   render(`
-    <div class="shell">
-      <section class="home-hero">
-        <div class="eyebrow home-eyebrow eyebrow-accent">Меню · No.1</div>
-        <h1 class="h-display home-title">Что хочется?<br><span class="italic" style="font-style:italic;color:var(--ink-mid);">сегодня вечером</span></h1>
-        <p class="lead home-sub">Три двери. Узкий выбор. Никакой бесконечной ленты.</p>
+    <div class="home">
+      <section class="home-greet">
+        <div class="home-greet-eyebrow">${getTimeGreeting()}</div>
+        <h1 class="home-greet-title">Что приготовим?</h1>
       </section>
 
-      <section class="doors">
-        <form class="door" id="door-search" data-door="search">
-          <div class="door-glyph">🔍</div>
-          <div class="door-body">
-            <div class="door-title">Знаю, что хочу</div>
-            <div class="door-desc">Введи блюдо, ингредиент или ощущение. Покажу похожее.</div>
-            <div class="door-search-form">
-              <input class="door-search-input" id="search-input" placeholder="лимон · хрустящее · турция · паста..." autocomplete="off" />
-              <button type="submit" class="door-search-btn">Найти →</button>
-            </div>
-          </div>
-        </form>
-
-        <div class="door" data-door="feel">
-          <div class="door-glyph">🌡️</div>
-          <div class="door-body">
-            <div class="door-title">По ощущениям</div>
-            <div class="door-desc">Что чувствуешь во рту прямо сейчас?</div>
-            <div class="feelings">${feelingsHtml}</div>
-          </div>
+      <section class="home-spotlight" data-surprise-id="${surpriseRecipe.id}">
+        <div class="spotlight-photo">
+          <img src="${imgSrc(surpriseRecipe)}" alt="${escapeHtml(surpriseRecipe.name)}" loading="eager" decoding="async" onerror="window.__handleImgFail(this)" />
+          <div class="spotlight-gradient"></div>
         </div>
+        <div class="spotlight-content">
+          <div class="spotlight-eyebrow">Удиви меня</div>
+          <div class="spotlight-title">${escapeHtml(surpriseRecipe.name)}</div>
+          <button class="spotlight-cta" data-go="surprise">Открыть рецепт →</button>
+          <button class="spotlight-reshuffle" data-go="reshuffle" aria-label="Другое блюдо">↻</button>
+        </div>
+      </section>
 
-        <button class="door door-surprise" data-door="surprise">
-          <div class="door-glyph">🎲</div>
-          <div class="door-body">
-            <div class="door-title">Удиви меня</div>
-            <div class="door-desc">Открою случайное блюдо целиком. Решено за тебя.</div>
-          </div>
-          <div class="door-arrow">→</div>
-        </button>
+      <section class="home-section">
+        <h2 class="home-section-title">Найти по вкусу</h2>
+        <form class="home-search" id="home-search-form">
+          <span class="home-search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"/>
+              <line x1="21" y1="21" x2="16.5" y2="16.5"/>
+            </svg>
+          </span>
+          <input class="home-search-input" id="home-search-input" placeholder="лимон, хрустящее, паста, турция..." autocomplete="off" />
+        </form>
+      </section>
+
+      <section class="home-section">
+        <h2 class="home-section-title">Или по ощущениям</h2>
+        <div class="feel-grid">${feelingsHtml}</div>
       </section>
     </div>
   `);
 
-  const form = document.getElementById('door-search');
+  const form = document.getElementById('home-search-form');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const q = document.getElementById('search-input').value.trim();
+    const q = document.getElementById('home-search-input').value.trim();
     if (q) location.hash = '#/search?q=' + encodeURIComponent(q);
   });
 
@@ -395,10 +396,28 @@ function viewHome() {
     });
   });
 
-  root.querySelector('[data-door="surprise"]').addEventListener('click', () => {
-    const r = randomRecipe();
-    location.hash = '#/recipe/' + r.id;
-  });
+  const spotlight = root.querySelector('.home-spotlight');
+  if (spotlight) {
+    const cta = spotlight.querySelector('[data-go="surprise"]');
+    const reshuffle = spotlight.querySelector('[data-go="reshuffle"]');
+    const open = () => { location.hash = '#/recipe/' + spotlight.dataset.surpriseId; };
+    cta?.addEventListener('click', open);
+    spotlight.querySelector('.spotlight-photo')?.addEventListener('click', open);
+    reshuffle?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      reshuffle.classList.add('spinning');
+      setTimeout(() => viewHome(), 220);
+    });
+  }
+}
+
+function getTimeGreeting() {
+  const h = new Date().getHours();
+  if (h < 5) return 'Поздний вечер';
+  if (h < 11) return 'Доброе утро';
+  if (h < 16) return 'Добрый день';
+  if (h < 22) return 'Добрый вечер';
+  return 'Ночь';
 }
 
 function viewSearch(query) {
