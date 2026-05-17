@@ -722,6 +722,83 @@ img { display: block; max-width: 100%; }
   color: white;
 }
 
+/* ---------- Audit grid for photo verification ---------- */
+
+.audit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  padding-bottom: 64px;
+}
+
+.audit-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transition: transform 0.14s var(--ease-out), border-color 0.14s var(--ease-out);
+}
+
+.audit-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.audit-photo {
+  aspect-ratio: 1;
+  background: var(--surface-2);
+  position: relative;
+}
+
+.audit-photo.audit-broken {
+  background: var(--accent-soft) !important;
+}
+
+.audit-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.audit-text {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.audit-name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.audit-meta {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: 'SF Mono', Menlo, monospace;
+  margin-top: 2px;
+}
+
+.audit-src {
+  font-size: 11px;
+  color: var(--ink-mid);
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+.audit-file {
+  font-size: 10px;
+  color: var(--ink-soft);
+  font-family: 'SF Mono', Menlo, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ---------- Similar to favorites carousel ---------- */
 
 .home-similar-favs {

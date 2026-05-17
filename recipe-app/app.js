@@ -303,9 +303,14 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Build version — bumped on every deploy to bust browser image cache.
+// Images are content-addressable by recipe id but the file CONTENT changes
+// when we swap photo sources, so we need a version param to force re-fetch.
+const IMG_V = '10';
+
 // Resolve image source — every recipe uses the locally-bundled photo from build.
 function imgSrc(recipe) {
-  return `./images/${recipe.id}.jpg`;
+  return `./images/${recipe.id}.jpg?v=${IMG_V}`;
 }
 
 // Image element. If a file ever goes missing at runtime, hide the parent .card
@@ -1041,8 +1046,49 @@ function router() {
   if (path.startsWith('#/menu')) return viewMenu();
   if (path.startsWith('#/favorites')) return viewFavorites();
   if (path.startsWith('#/shopping')) return viewShopping();
+  if (path.startsWith('#/audit')) return viewAudit();
 
   return viewHome();
+}
+
+// Audit page: every recipe with its photo + source article, in compact grid.
+// Lets Katja eyeball ALL photos at once and flag wrong ones by id.
+async function viewAudit() {
+  render(`<div class="shell-wide"><header class="results-header"><div class="eyebrow eyebrow-accent">Аудит фото</div><h1 class="results-title">Проверь все фото</h1><p style="color:var(--ink-mid);margin-top:10px;font-size:14px;">Если фото не соответствует названию — скажи мне его id (под названием серым). Заменю Wikipedia-статью точечно.</p></header><div class="audit-loading" style="padding:48px;text-align:center;color:var(--ink-soft);">Загружаю manifest…</div></div>`);
+
+  let manifest = {};
+  try {
+    const res = await fetch('./images-manifest.json?v=' + IMG_V);
+    if (res.ok) manifest = await res.json();
+  } catch {}
+
+  const rows = activeRecipes()
+    .map(r => {
+      const m = manifest[r.id] || {};
+      const ok = m.ok !== false;
+      const source = m.source || r.image || '—';
+      const file = m.fileName || (ok ? '(?)' : `✗ ${m.reason || 'нет'}`);
+      return `
+        <a class="audit-card" href="#/recipe/${r.id}">
+          <div class="audit-photo">
+            <img src="${imgSrc(r)}" alt="${escapeHtml(r.name)}" loading="lazy" onerror="this.style.background='var(--accent-soft)';this.style.display='none';this.parentElement.classList.add('audit-broken')" />
+          </div>
+          <div class="audit-text">
+            <div class="audit-name">${escapeHtml(r.name)}</div>
+            <div class="audit-meta">${escapeHtml(r.id)}</div>
+            <div class="audit-src">${escapeHtml(source.replace('wiki:', '📖 '))}</div>
+            <div class="audit-file" title="${escapeHtml(file)}">${escapeHtml(file)}</div>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+  const root = document.getElementById('view-root');
+  root.querySelector('.audit-loading')?.remove();
+  const grid = document.createElement('div');
+  grid.className = 'audit-grid';
+  grid.innerHTML = rows;
+  root.querySelector('.shell-wide').appendChild(grid);
 }
 
 window.addEventListener('hashchange', router);

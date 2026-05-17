@@ -45,6 +45,14 @@ async function resolveWikiArticleImage(title) {
   return data.originalimage?.source || data.thumbnail?.source || null;
 }
 
+// Extract the filename portion from an upload.wikimedia.org URL.
+// e.g. .../commons/thumb/a/b/Risotto_alla_milanese.jpg/640px-X.jpg → "Risotto_alla_milanese.jpg"
+function fileNameFromUrl(url) {
+  if (!url) return null;
+  const m = url.match(/\/commons\/(?:thumb\/)?[a-f0-9]\/[a-f0-9]{2}\/([^/?]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 async function fetchImage(url, attempt = 1) {
   const res = await fetch(url, {
     headers: {
@@ -63,55 +71,68 @@ async function fetchImage(url, attempt = 1) {
 
 async function fetchOne(recipe) {
   const dest = join(imagesDir, `${recipe.id}.jpg`);
+  const origImage = recipe.image;
 
   // Cache: skip if already exists and >10KB
   if (existsSync(dest) && statSync(dest).size > 10_000) {
     cachedCount++;
-    return { ok: true, recipe, cached: true };
+    return { ok: true, recipe, cached: true, source: origImage, resolvedUrl: null, fileName: null };
   }
 
   let url = recipe.image;
+  let wikiArticle = null;
   if (!url || typeof url !== 'string') {
-    return { ok: false, recipe, reason: 'no_url' };
+    return { ok: false, recipe, reason: 'no_url', source: origImage };
   }
 
   try {
     // Wiki-article reference? Resolve to direct image URL first.
     if (url.startsWith('wiki:')) {
-      const title = url.slice(5);
-      const resolved = await resolveWikiArticleImage(title);
+      wikiArticle = url.slice(5);
+      const resolved = await resolveWikiArticleImage(wikiArticle);
       if (!resolved) {
-        return { ok: false, recipe, reason: `wiki_no_image: ${title}` };
+        return { ok: false, recipe, reason: `wiki_no_image: ${wikiArticle}`, source: origImage };
       }
       url = resolved;
     }
 
     if (!url.startsWith('http')) {
-      return { ok: false, recipe, reason: 'no_url' };
+      return { ok: false, recipe, reason: 'no_url', source: origImage };
     }
 
     const res = await fetchImage(url);
 
     if (!res.ok) {
-      return { ok: false, recipe, reason: `HTTP ${res.status}`, attemptedUrl: url };
+      return { ok: false, recipe, reason: `HTTP ${res.status}`, attemptedUrl: url, source: origImage };
     }
 
     const ctype = res.headers.get('content-type') || '';
     if (!ctype.startsWith('image/')) {
-      return { ok: false, recipe, reason: `not_image: ${ctype}`, attemptedUrl: url };
+      return { ok: false, recipe, reason: `not_image: ${ctype}`, attemptedUrl: url, source: origImage };
     }
 
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length < 10_000) {
-      return { ok: false, recipe, reason: `too_small: ${buf.length}B`, attemptedUrl: url };
+      return { ok: false, recipe, reason: `too_small: ${buf.length}B`, attemptedUrl: url, source: origImage };
     }
 
     writeFileSync(dest, buf);
-    return { ok: true, recipe };
+    return {
+      ok: true,
+      recipe,
+      source: origImage,
+      resolvedUrl: url,
+      fileName: fileNameFromUrl(url),
+      size: buf.length,
+    };
   } catch (err) {
-    return { ok: false, recipe, reason: err.name || err.message };
+    return { ok: false, recipe, reason: err.name || err.message, source: origImage };
   }
 }
+
+// Manifest of all per-recipe resolutions, written to recipe-app/images-manifest.json
+// so we can verify visually via the /audit page in the app.
+const manifest = {};
 
 // Process in parallel batches (concurrency=3) with delay between batches to avoid rate limits
 const batchSize = 3;
@@ -120,11 +141,23 @@ for (let i = 0; i < recipes.length; i += batchSize) {
   const results = await Promise.all(batch.map(fetchOne));
   for (const r of results) {
     if (r.ok) {
+      manifest[r.recipe.id] = {
+        ok: true,
+        source: r.source,
+        fileName: r.fileName,
+        size: r.size || null,
+        cached: !!r.cached,
+      };
       if (!r.cached) {
         okCount++;
-        process.stdout.write(`✓ ${r.recipe.id}\n`);
+        process.stdout.write(`✓ ${r.recipe.id} → ${r.fileName || '(cached)'}\n`);
       }
     } else {
+      manifest[r.recipe.id] = {
+        ok: false,
+        source: r.source,
+        reason: r.reason,
+      };
       failCount++;
       failures.push({ id: r.recipe.id, name: r.recipe.name, reason: r.reason, url: r.attemptedUrl || r.recipe.image });
       process.stdout.write(`✗ ${r.recipe.id}: ${r.reason}\n`);
@@ -132,6 +165,27 @@ for (let i = 0; i < recipes.length; i += batchSize) {
   }
   await sleep(250);
 }
+
+// Detect duplicate filenames — when two recipes resolve to the same Wikipedia file
+const byFile = {};
+for (const [id, m] of Object.entries(manifest)) {
+  if (m.ok && m.fileName) {
+    if (!byFile[m.fileName]) byFile[m.fileName] = [];
+    byFile[m.fileName].push(id);
+  }
+}
+const dupFiles = Object.entries(byFile).filter(([_, ids]) => ids.length > 1);
+if (dupFiles.length) {
+  console.log('\n⚠ DUPLICATE WIKIMEDIA FILES (different recipes share same photo):');
+  for (const [file, ids] of dupFiles) {
+    console.log(`  ${file}:`);
+    ids.forEach(id => console.log(`    - ${id}`));
+  }
+}
+
+// Write the manifest so the audit page can render it
+writeFileSync(join(repoRoot, 'recipe-app/images-manifest.json'), JSON.stringify(manifest, null, 2));
+console.log(`\nManifest written: recipe-app/images-manifest.json (${Object.keys(manifest).length} entries)`);
 
 console.log(`\n────────────────────────`);
 console.log(`Cached: ${cachedCount}`);
