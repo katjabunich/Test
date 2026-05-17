@@ -306,7 +306,7 @@ function escapeHtml(s) {
 // Build version — bumped on every deploy to bust browser image cache.
 // Images are content-addressable by recipe id but the file CONTENT changes
 // when we swap photo sources, so we need a version param to force re-fetch.
-const IMG_V = '14';
+const IMG_V = '15';
 
 // Resolve image source — every recipe uses the locally-bundled photo from build.
 function imgSrc(recipe) {
