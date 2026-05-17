@@ -492,7 +492,7 @@ function viewHome() {
         <div class="spotlight-content">
           <div class="spotlight-eyebrow">Сегодня</div>
           <div class="spotlight-title">${escapeHtml(surpriseRecipe.name)}</div>
-          <button class="spotlight-cta" data-go="surprise">Готовить →</button>
+          <button class="spotlight-cta" data-go="surprise">Открыть рецепт →</button>
         </div>
       </section>
 
@@ -912,13 +912,16 @@ function viewShopping() {
     return;
   }
 
-  // Merge duplicates by name+unit
+  // Merge duplicates by name+unit. Track which recipes each item came from.
   const merged = {};
   items.forEach((i, originalIdx) => {
     const key = i.name + '||' + i.unit;
-    if (!merged[key]) merged[key] = { ...i, indices: [], totalAmount: 0 };
+    if (!merged[key]) merged[key] = { ...i, indices: [], totalAmount: 0, sources: [] };
     merged[key].indices.push(originalIdx);
     merged[key].totalAmount += Number(i.amount) || 0;
+    if (i.sourceRecipeName && !merged[key].sources.includes(i.sourceRecipeName)) {
+      merged[key].sources.push(i.sourceRecipeName);
+    }
     merged[key].checked = merged[key].checked && i.checked;
   });
 
@@ -933,13 +936,22 @@ function viewShopping() {
   const sections = CATEGORIES.map(cat => {
     const list = grouped[cat.id];
     if (!list || !list.length) return '';
-    const lis = list.map(m => `
+    const lis = list.map(m => {
+      const fromMany = m.sources.length > 1;
+      const sourcesHtml = m.sources.length
+        ? `<div class="shop-sources">${fromMany ? '· ' : ''}${m.sources.map(s => escapeHtml(s)).join(' · ')}</div>`
+        : '';
+      return `
       <div class="shop-item ${m.checked ? 'checked' : ''}" data-indices="${m.indices.join(',')}">
         <div class="shop-check"></div>
-        <div class="shop-name">${escapeHtml(m.name)}</div>
+        <div class="shop-body">
+          <div class="shop-name">${escapeHtml(m.name)}</div>
+          ${sourcesHtml}
+        </div>
         <div class="shop-amt">${m.totalAmount} ${m.unit}</div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     return `
       <section class="shop-section">
         <header class="shop-section-head">
