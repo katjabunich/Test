@@ -8,11 +8,13 @@ import { SYNONYMS, FEELINGS } from './synonyms.js';
 const LS_FAV = 'recipes.favorites';
 const LS_SHOP = 'recipes.shopping';
 const LS_SEEN = 'recipes.lastSeen';
+const LS_SKIP = 'recipes.skipped';
 
 const state = {
   favorites: loadJSON(LS_FAV, []),
   shopping: loadJSON(LS_SHOP, []),
   lastSeen: loadJSON(LS_SEEN, []),
+  skipped: loadJSON(LS_SKIP, []),
 };
 
 function loadJSON(key, fallback) {
@@ -31,6 +33,25 @@ function toggleFav(id) {
   else state.favorites = [id, ...state.favorites];
   saveJSON(LS_FAV, state.favorites);
   updateBadge();
+}
+
+function isSkipped(id) { return state.skipped.includes(id); }
+
+function skipRecipe(id) {
+  if (!isSkipped(id)) {
+    state.skipped = [id, ...state.skipped];
+    saveJSON(LS_SKIP, state.skipped);
+  }
+}
+
+function unskipRecipe(id) {
+  state.skipped = state.skipped.filter(x => x !== id);
+  saveJSON(LS_SKIP, state.skipped);
+}
+
+// Active recipe pool — excludes skipped
+function activeRecipes() {
+  return RECIPES.filter(r => !isSkipped(r.id));
 }
 
 function addRecipeToShopping(id) {
@@ -124,7 +145,7 @@ function search(query) {
   const perWordTags = words.map(w => expandQueryTags(w));
   const allWordTags = new Set([...fullTags, ...perWordTags.flat()]);
 
-  const scored = RECIPES.map(r => {
+  const scored = activeRecipes().map(r => {
     let score = 0;
     const nameL = r.name.toLowerCase();
     const descL = (r.description || '').toLowerCase();
@@ -173,7 +194,7 @@ function searchByFeeling(feelingKey) {
   const f = FEELINGS[feelingKey];
   if (!f) return [];
   const matchTags = new Set(f.match.any || []);
-  const scored = RECIPES.map(r => {
+  const scored = activeRecipes().map(r => {
     let score = 0;
     const rTags = tagsOf(r);
     for (const t of matchTags) {
@@ -189,7 +210,7 @@ function searchByFeeling(feelingKey) {
 
 function similarTo(recipe, limit = 4) {
   const baseTags = tagsOf(recipe);
-  const scored = RECIPES
+  const scored = activeRecipes()
     .filter(r => r.id !== recipe.id)
     .map(r => {
       const rTags = tagsOf(r);
@@ -204,20 +225,43 @@ function similarTo(recipe, limit = 4) {
 }
 
 function randomRecipe() {
+  const active = activeRecipes();
   const recent = new Set(state.lastSeen);
-  const candidates = RECIPES.filter(r => !recent.has(r.id));
-  const pool = candidates.length ? candidates : RECIPES;
+  const candidates = active.filter(r => !recent.has(r.id));
+  const pool = candidates.length ? candidates : active;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function random3() {
-  const pool = [...RECIPES];
+  const pool = [...activeRecipes()];
   const out = [];
   for (let i = 0; i < 3 && pool.length; i++) {
     const idx = Math.floor(Math.random() * pool.length);
     out.push(pool.splice(idx, 1)[0]);
   }
   return out;
+}
+
+// Find recipes similar to user's favorites (top N)
+function similarToFavorites(limit = 6) {
+  const favSet = new Set(state.favorites);
+  if (favSet.size === 0) return [];
+  const favRecipes = state.favorites.map(id => RECIPE_BY_ID[id]).filter(Boolean);
+  const candidates = activeRecipes().filter(r => !favSet.has(r.id));
+  const scored = candidates.map(r => {
+    let score = 0;
+    const rTags = tagsOf(r);
+    for (const fav of favRecipes) {
+      const favTags = tagsOf(fav);
+      for (const t of favTags) if (rTags.has(t)) score += 1;
+      if (r.cuisine === fav.cuisine) score += 2;
+      if (r.protein === fav.protein) score += 1;
+    }
+    return { r, score };
+  })
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return scored.slice(0, limit).map(x => x.r);
 }
 
 // ============================================================
@@ -297,9 +341,10 @@ function spiceDots(n) {
 function cardHtml(r) {
   const fav = isFav(r.id) ? 'is-fav' : '';
   return `
-    <a class="card" href="#/recipe/${r.id}">
+    <a class="card" href="#/recipe/${r.id}" data-card-id="${r.id}">
       <div class="card-photo">
         ${imgEl(r)}
+        <button class="card-skip" data-skip-id="${r.id}" aria-label="Скрыть это блюдо" title="Скрыть навсегда">×</button>
         <button class="card-fav ${fav}" data-fav-id="${r.id}" aria-label="Избранное">${isFav(r.id) ? '♥' : '♡'}</button>
       </div>
       <div class="card-meta">
@@ -336,6 +381,42 @@ function bindCommonHandlers() {
       setTimeout(() => btn.classList.remove('just-fav'), 480);
     });
   });
+
+  root.querySelectorAll('[data-skip-id]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.skipId;
+      const recipe = RECIPE_BY_ID[id];
+      skipRecipe(id);
+      const card = btn.closest('[data-card-id]');
+      if (card) {
+        card.style.transition = 'opacity 0.2s, transform 0.2s';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.92)';
+        setTimeout(() => { card.style.display = 'none'; }, 220);
+      }
+      showUndoToast(`Скрыла «${recipe?.name || id}»`, () => {
+        unskipRecipe(id);
+        if (card) {
+          card.style.display = '';
+          card.style.opacity = '';
+          card.style.transform = '';
+        }
+      });
+    });
+  });
+}
+
+function showUndoToast(msg, undoFn) {
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${escapeHtml(msg)}</span><button class="toast-undo" type="button">Вернуть</button>`;
+  t.classList.add('show');
+  const undoBtn = t.querySelector('.toast-undo');
+  const cleanup = () => t.classList.remove('show');
+  undoBtn?.addEventListener('click', () => { undoFn(); cleanup(); });
+  clearTimeout(showUndoToast._timer);
+  showUndoToast._timer = setTimeout(cleanup, 5000);
 }
 
 function updateNavActive() {
@@ -370,6 +451,7 @@ function showToast(msg) {
 
 function viewHome() {
   const surpriseRecipe = randomRecipe();
+  const favSimilar = similarToFavorites(8);
 
   const feelingsHtml = Object.entries(FEELINGS).map(([k, f]) => `
     <button class="feel-tile" data-feel="${k}">
@@ -377,6 +459,23 @@ function viewHome() {
       <span class="feel-label">${f.label}</span>
     </button>
   `).join('');
+
+  const similarFavsHtml = favSimilar.length === 0 ? '' : `
+    <section class="home-section home-similar-favs">
+      <h2 class="home-section-title">Похожее на <em>любимое</em></h2>
+      <div class="similar-favs-scroll">
+        ${favSimilar.map(r => `
+          <a class="card mini-card" href="#/recipe/${r.id}" data-card-id="${r.id}">
+            <div class="card-photo">${imgEl(r)}</div>
+            <div class="card-meta">
+              <div class="card-title">${escapeHtml(r.name)}</div>
+              <div class="eyebrow">${CUISINE_LABELS[r.cuisine] || ''} · ${r.time} мин</div>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+    </section>
+  `;
 
   render(`
     <div class="home">
@@ -396,6 +495,8 @@ function viewHome() {
           <button class="spotlight-cta" data-go="surprise">Готовить →</button>
         </div>
       </section>
+
+      ${similarFavsHtml}
 
       <section class="home-section">
         <h2 class="home-section-title">Знаю <em>что хочу</em></h2>
@@ -550,7 +651,7 @@ function viewRecipe(id) {
             </div>
             <div class="meta-item">
               <div class="meta-label">Порций</div>
-              <div class="meta-val">4</div>
+              <div class="meta-val">2</div>
             </div>
           </div>
 
@@ -669,7 +770,7 @@ function viewMenu() {
   const proteinF = params.get('protein') || '';
   const timeF = params.get('time') || '';
 
-  let filtered = RECIPES.slice();
+  let filtered = activeRecipes();
   if (cuisineF) filtered = filtered.filter(r => r.cuisine === cuisineF);
   if (proteinF) filtered = filtered.filter(r => r.protein === proteinF);
   if (timeF) filtered = filtered.filter(r => r.time <= parseInt(timeF));

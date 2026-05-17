@@ -637,6 +637,47 @@ img { display: block; max-width: 100%; }
 .feel-tile[data-feel="hearty"] { --tile-color: var(--rust); --tile-bg: var(--rust-soft); }
 .feel-tile[data-feel="light"] { --tile-color: var(--teal); --tile-bg: var(--teal-soft); }
 
+/* ---------- Similar to favorites carousel ---------- */
+
+.home-similar-favs {
+  margin: 0 0 32px;
+  position: relative;
+}
+
+.similar-favs-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 0 12px;
+  margin: 0 calc(var(--sp-5) * -1);
+  padding-left: var(--sp-5);
+  padding-right: var(--sp-5);
+  scrollbar-width: none;
+}
+.similar-favs-scroll::-webkit-scrollbar { display: none; }
+
+.mini-card {
+  flex: 0 0 168px;
+  scroll-snap-align: start;
+}
+
+.mini-card .card-photo {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+}
+
+.mini-card .card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.mini-card .eyebrow {
+  margin-top: 2px;
+  font-size: 10px;
+}
+
 /* ---------- Search hint chips (shown on empty search results) ---------- */
 
 .hint-chips {
@@ -768,6 +809,46 @@ img { display: block; max-width: 100%; }
 
 .card:hover .card-photo img {
   transform: scale(1.04);
+}
+
+.card-skip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.0);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 400;
+  color: white;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.18s var(--ease-out), background 0.16s var(--ease-out), transform 0.16s var(--ease-out);
+  line-height: 1;
+}
+
+.card:hover .card-skip,
+.card-photo:hover .card-skip {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.card-skip:hover {
+  background: rgba(232, 93, 47, 0.92) !important;
+  transform: scale(1.1);
+}
+
+@media (hover: none) {
+  .card-skip {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.32);
+  }
 }
 
 .card-fav {
@@ -1465,24 +1546,38 @@ img { display: block; max-width: 100%; }
 /* Toast */
 .toast {
   position: fixed;
-  bottom: var(--sp-5);
+  bottom: calc(80px + env(safe-area-inset-bottom, 0));
   left: 50%;
   transform: translateX(-50%) translateY(80px);
   background: var(--ink);
   color: var(--paper);
-  padding: 14px 22px;
+  padding: 12px 8px 12px 20px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
   z-index: 100;
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 12px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s var(--ease-out), transform 0.32s var(--ease-spring);
+  max-width: calc(100vw - 32px);
 }
+
+.toast-undo {
+  background: var(--accent);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s var(--ease-out);
+}
+
+.toast-undo:hover { background: var(--accent-deep); }
 
 .toast.show {
   opacity: 1;
