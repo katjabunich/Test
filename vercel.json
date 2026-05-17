@@ -1,0 +1,8 @@
+{
+  "buildCommand": "echo 'Static deploy: recipe-app/'",
+  "outputDirectory": "recipe-app",
+  "installCommand": "echo 'skip'",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false
+}

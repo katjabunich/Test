@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf8" />
+<title>Меню — что приготовить</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://images.unsplash.com" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="./styles.css" />
+
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="%23e63d1e"/></svg>' />
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar shell">
+    <a href="#/" class="brand"><span class="brand-mark"></span>Меню</a>
+    <nav class="topnav">
+      <a href="#/menu" data-nav="menu">Все блюда</a>
+      <a href="#/favorites" data-nav="favorites">Избранное</a>
+      <a href="#/shopping" data-nav="shopping">Список <span id="shop-badge" class="topnav-badge" hidden>0</span></a>
+    </nav>
+  </header>
+
+  <main id="view-root" class="view"></main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module" src="./recipes.js"></script>
+<script type="module" src="./synonyms.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
