@@ -25,6 +25,42 @@ console.log(`\nfetch-images: ${recipes.length} recipes\n`);
 let okCount = 0, failCount = 0, cachedCount = 0;
 const failures = [];
 
+const COMMON_HEADERS = {
+  'User-Agent': 'recipe-app-build/1.0 (https://github.com/katjabunich/Test; build)',
+  'Accept-Language': 'en-US,en;q=0.9',
+};
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Resolve `wiki:Article_Title` → real image URL via Wikipedia REST summary API.
+// Returns null if article has no image / doesn't exist.
+async function resolveWikiArticleImage(title) {
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+  const res = await fetch(url, {
+    headers: { ...COMMON_HEADERS, Accept: 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.originalimage?.source || data.thumbnail?.source || null;
+}
+
+async function fetchImage(url, attempt = 1) {
+  const res = await fetch(url, {
+    headers: {
+      ...COMMON_HEADERS,
+      Accept: 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8',
+    },
+    signal: AbortSignal.timeout(20_000),
+    redirect: 'follow',
+  });
+  if (res.status === 429 && attempt <= 3) {
+    await sleep(1500 * attempt);
+    return fetchImage(url, attempt + 1);
+  }
+  return res;
+}
+
 async function fetchOne(recipe) {
   const dest = join(imagesDir, `${recipe.id}.jpg`);
 
@@ -34,35 +70,40 @@ async function fetchOne(recipe) {
     return { ok: true, recipe, cached: true };
   }
 
-  const url = recipe.image;
-  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+  let url = recipe.image;
+  if (!url || typeof url !== 'string') {
     return { ok: false, recipe, reason: 'no_url' };
   }
 
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; recipe-app-build/1.0)',
-        'Accept': 'image/avif,image/webp,image/png,image/jpeg,image/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://recipe-app.local/',
-      },
-      signal: AbortSignal.timeout(20_000),
-      redirect: 'follow',
-    });
+    // Wiki-article reference? Resolve to direct image URL first.
+    if (url.startsWith('wiki:')) {
+      const title = url.slice(5);
+      const resolved = await resolveWikiArticleImage(title);
+      if (!resolved) {
+        return { ok: false, recipe, reason: `wiki_no_image: ${title}` };
+      }
+      url = resolved;
+    }
+
+    if (!url.startsWith('http')) {
+      return { ok: false, recipe, reason: 'no_url' };
+    }
+
+    const res = await fetchImage(url);
 
     if (!res.ok) {
-      return { ok: false, recipe, reason: `HTTP ${res.status}` };
+      return { ok: false, recipe, reason: `HTTP ${res.status}`, attemptedUrl: url };
     }
 
     const ctype = res.headers.get('content-type') || '';
     if (!ctype.startsWith('image/')) {
-      return { ok: false, recipe, reason: `not_image: ${ctype}` };
+      return { ok: false, recipe, reason: `not_image: ${ctype}`, attemptedUrl: url };
     }
 
     const buf = Buffer.from(await res.arrayBuffer());
     if (buf.length < 10_000) {
-      return { ok: false, recipe, reason: `too_small: ${buf.length}B` };
+      return { ok: false, recipe, reason: `too_small: ${buf.length}B`, attemptedUrl: url };
     }
 
     writeFileSync(dest, buf);
@@ -72,8 +113,8 @@ async function fetchOne(recipe) {
   }
 }
 
-// Process in parallel batches (concurrency=8)
-const batchSize = 8;
+// Process in parallel batches (concurrency=3) with delay between batches to avoid rate limits
+const batchSize = 3;
 for (let i = 0; i < recipes.length; i += batchSize) {
   const batch = recipes.slice(i, i + batchSize);
   const results = await Promise.all(batch.map(fetchOne));
@@ -85,10 +126,11 @@ for (let i = 0; i < recipes.length; i += batchSize) {
       }
     } else {
       failCount++;
-      failures.push({ id: r.recipe.id, name: r.recipe.name, reason: r.reason, url: r.recipe.image });
+      failures.push({ id: r.recipe.id, name: r.recipe.name, reason: r.reason, url: r.attemptedUrl || r.recipe.image });
       process.stdout.write(`✗ ${r.recipe.id}: ${r.reason}\n`);
     }
   }
+  await sleep(250);
 }
 
 console.log(`\n────────────────────────`);
