@@ -346,8 +346,8 @@ function viewHome() {
   render(`
     <div class="home">
       <section class="home-greet">
-        <div class="home-greet-eyebrow">${getTimeGreeting()}</div>
-        <h1 class="home-greet-title">Что приготовим?</h1>
+        <h1 class="home-greet-title">${getTimeGreeting()}.</h1>
+        <p class="home-greet-sub">Что приготовим сегодня?</p>
       </section>
 
       <section class="home-spotlight" data-surprise-id="${surpriseRecipe.id}">
