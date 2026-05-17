@@ -58,51 +58,85 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const UNSPLASH_FALLBACK_KEY = 'EzHVfQPa7UaEhWyp_OXjEztr4_QGRxnSQc6kRBhjt90';
 
 let unsplashDebugLogged = 0;
-async function searchUnsplashImage(query) {
+// Log key prefix once at startup so we know it loaded
+let _unsplashStartupLogged = false;
+function _unsplashStartupLog() {
+  if (_unsplashStartupLogged) return;
+  _unsplashStartupLogged = true;
   const key = process.env.UNSPLASH_ACCESS_KEY || UNSPLASH_FALLBACK_KEY;
-  if (!key) {
-    if (unsplashDebugLogged < 1) {
-      console.log('  [unsplash debug] NO KEY at all (env or fallback)');
-      unsplashDebugLogged++;
+  if (key) console.log(`  [unsplash] key loaded: ${key.slice(0, 4)}...${key.slice(-4)} (len ${key.length})`);
+  else console.log('  [unsplash] NO KEY in env or fallback');
+}
+
+async function searchUnsplashImage(query) {
+  _unsplashStartupLog();
+  const key = process.env.UNSPLASH_ACCESS_KEY || UNSPLASH_FALLBACK_KEY;
+  if (!key) return null;
+
+  // Try /photos/random first — demo apps always have access here.
+  // Fallback to /search/photos if random fails.
+  const endpoints = [
+    `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&content_filter=high&orientation=squarish`,
+    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&content_filter=high&orientation=squarish`,
+  ];
+
+  for (let i = 0; i < endpoints.length; i++) {
+    const url = endpoints[i];
+    try {
+      const res = await fetch(url, {
+        headers: {
+          ...COMMON_HEADERS,
+          Authorization: `Client-ID ${key}`,
+          Accept: 'application/json',
+          'Accept-Version': 'v1',
+        },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) {
+        if (unsplashDebugLogged < 4) {
+          const body = await res.text().catch(() => '');
+          const endpoint = i === 0 ? 'random' : 'search';
+          console.log(`  [unsplash debug ${endpoint}] HTTP ${res.status} for "${query}"`);
+          console.log(`    body: ${body.slice(0, 300)}`);
+          console.log(`    rate-remaining: ${res.headers.get('x-ratelimit-remaining')}, rate-limit: ${res.headers.get('x-ratelimit-limit')}`);
+          unsplashDebugLogged++;
+        }
+        continue; // try next endpoint
+      }
+      const data = await res.json();
+      // /random returns a photo object; /search returns { results: [...] }
+      const photo = Array.isArray(data) ? data[0] : (data.results?.[0] || data);
+      const photoUrl = photo?.urls?.regular || photo?.urls?.small;
+      if (photoUrl) return photoUrl;
+      if (unsplashDebugLogged < 4) {
+        console.log(`  [unsplash debug] no urls.regular for "${query}", response keys: ${Object.keys(data || {}).join(',')}`);
+        unsplashDebugLogged++;
+      }
+    } catch (err) {
+      if (unsplashDebugLogged < 4) {
+        console.log(`  [unsplash debug] EXCEPTION for "${query}": ${err.message}`);
+        unsplashDebugLogged++;
+      }
     }
-    return null;
   }
-  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&content_filter=high&orientation=squarish`;
+  return null;
+}
+
+// TheMealDB fallback — 300 curated recipes with photos, no API key needed.
+async function searchMealDB(query) {
+  // Use just the first word or two for better matching
+  const cleanQuery = query.split(/\s+/).slice(0, 3).join(' ');
+  const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(cleanQuery)}`;
   try {
     const res = await fetch(url, {
-      headers: {
-        ...COMMON_HEADERS,
-        Authorization: `Client-ID ${key}`,
-        Accept: 'application/json',
-        'Accept-Version': 'v1',
-      },
+      headers: { ...COMMON_HEADERS, Accept: 'application/json' },
       signal: AbortSignal.timeout(15_000),
     });
-    if (!res.ok) {
-      // Log first 3 failures with full diagnostics
-      if (unsplashDebugLogged < 3) {
-        const body = await res.text().catch(() => '');
-        console.log(`  [unsplash debug] HTTP ${res.status} for "${query}" — body: ${body.slice(0, 200)}`);
-        console.log(`  [unsplash debug] rate-remaining: ${res.headers.get('x-ratelimit-remaining')}, rate-limit: ${res.headers.get('x-ratelimit-limit')}`);
-        unsplashDebugLogged++;
-      }
-      return null;
-    }
+    if (!res.ok) return null;
     const data = await res.json();
-    const first = data.results?.[0];
-    if (!first) {
-      if (unsplashDebugLogged < 3) {
-        console.log(`  [unsplash debug] 0 results for "${query}"`);
-        unsplashDebugLogged++;
-      }
-      return null;
-    }
-    return first.urls?.regular || first.urls?.small || null;
-  } catch (err) {
-    if (unsplashDebugLogged < 3) {
-      console.log(`  [unsplash debug] EXCEPTION for "${query}": ${err.message}`);
-      unsplashDebugLogged++;
-    }
+    const meal = data.meals?.[0];
+    return meal?.strMealThumb || null;
+  } catch {
     return null;
   }
 }
@@ -221,22 +255,26 @@ async function fetchOne(recipe) {
       if (url.startsWith('wiki:')) {
         wikiArticle = url.slice(5);
         let resolved = await resolveWikiArticleImage(wikiArticle);
-        // Fallback: if Wikipedia article has no infobox image, try Unsplash search
-        // using the recipe's English name (derived from id) so we never end up empty.
+        // Fallback chain when Wikipedia article has no infobox image:
+        //   1. Unsplash (might work, might rate-limit)
+        //   2. TheMealDB (no API key, 300 recipes covered)
+        //   3. Prior manifest cache
         if (!resolved) {
-          const fallbackQuery = recipe.id.replace(/-/g, ' ') + ' food plate';
+          const fallbackQuery = recipe.id.replace(/-/g, ' ') + ' food';
           resolved = await searchUnsplashImage(fallbackQuery);
-          if (resolved) {
-            console.log(`  ↳ wiki had no image, fell back to Unsplash for ${recipe.id}`);
-          }
+          if (resolved) console.log(`  ↳ wiki empty, Unsplash matched ${recipe.id}`);
         }
         if (!resolved) {
-          // LAST RESORT: lenient prior cache (any URL we previously had for this id)
+          const mealdbQuery = recipe.id.replace(/-/g, ' ');
+          resolved = await searchMealDB(mealdbQuery);
+          if (resolved) console.log(`  ↳ wiki+unsplash empty, MealDB matched ${recipe.id}`);
+        }
+        if (!resolved) {
           if (prior?.ok && prior.resolvedUrl) {
             url = prior.resolvedUrl;
-            console.log(`  ↳ fallback to prior cache for ${recipe.id}`);
+            console.log(`  ↳ all chains failed, prior cache ${recipe.id}`);
           } else {
-            return { ok: false, recipe, reason: `wiki_no_image_and_no_unsplash: ${wikiArticle}`, source: origImage };
+            return { ok: false, recipe, reason: `all_sources_failed: ${wikiArticle}`, source: origImage };
           }
         } else {
           url = resolved;
@@ -259,12 +297,17 @@ async function fetchOne(recipe) {
         const query = url.slice(9);
         let resolved = await searchUnsplashImage(query);
         if (!resolved) {
-          // Rate-limited or no result. Lenient prior fallback (any URL we previously had).
+          // Fallback 1: TheMealDB by query keywords (no API key needed, 300 curated recipes)
+          resolved = await searchMealDB(query);
+          if (resolved) console.log(`  ↳ unsplash failed, MealDB matched for ${recipe.id}`);
+        }
+        if (!resolved) {
+          // Fallback 2: prior cache
           if (prior?.ok && prior.resolvedUrl) {
             url = prior.resolvedUrl;
-            console.log(`  ↳ unsplash rate-limited/no-result, using prior cache for ${recipe.id}`);
+            console.log(`  ↳ unsplash + MealDB failed, using prior cache for ${recipe.id}`);
           } else {
-            return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
+            return { ok: false, recipe, reason: `unsplash_no_result: ${query}`, source: origImage };
           }
         } else {
           url = resolved;
