@@ -45,6 +45,52 @@ async function resolveWikiArticleImage(title) {
   return data.originalimage?.source || data.thumbnail?.source || null;
 }
 
+// Search Wikimedia Commons for food photos matching a keyword.
+// Returns the URL of the best JPG (highest resolution, not a logo/diagram).
+async function searchCommonsImage(query) {
+  // Step 1: search files matching the query
+  const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=20&format=json&origin=*`;
+  const sRes = await fetch(searchUrl, { headers: COMMON_HEADERS, signal: AbortSignal.timeout(15_000) });
+  if (!sRes.ok) return null;
+  const sData = await sRes.json();
+  const candidates = (sData.query?.search || [])
+    .map(r => r.title) // "File:Bolognese.jpg"
+    .filter(t => /\.jpe?g$/i.test(t))           // jpgs only
+    .filter(t => !/(logo|icon|diagram|map|stamp|chart|seal|coat[_ ]of[_ ]arms)/i.test(t));
+
+  if (!candidates.length) return null;
+
+  // Step 2: get image info (size, dimensions) for top candidates
+  const titles = candidates.slice(0, 10).join('|');
+  const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=url|size&format=json&origin=*`;
+  const iRes = await fetch(infoUrl, { headers: COMMON_HEADERS, signal: AbortSignal.timeout(15_000) });
+  if (!iRes.ok) return null;
+  const iData = await iRes.json();
+  const pages = Object.values(iData.query?.pages || {});
+
+  // Pick the highest-resolution image with width > 800
+  let best = null;
+  for (const p of pages) {
+    const info = p.imageinfo?.[0];
+    if (!info) continue;
+    if (info.width < 800) continue;
+    if (info.size < 50_000) continue; // < 50KB likely junk
+    if (!best || info.width > best.width) best = info;
+  }
+  if (!best) {
+    // No high-res candidate. Take whatever's first and reasonably big.
+    for (const p of pages) {
+      const info = p.imageinfo?.[0];
+      if (info && info.size > 20_000) { best = info; break; }
+    }
+  }
+  if (!best) return null;
+
+  // Return a 900px-wide thumbnail URL (Wikimedia auto-generates)
+  // best.url is the original. We'll request a thumb to save bandwidth.
+  return best.url;
+}
+
 // Extract the filename portion from an upload.wikimedia.org URL.
 // e.g. .../commons/thumb/a/b/Risotto_alla_milanese.jpg/640px-X.jpg → "Risotto_alla_milanese.jpg"
 function fileNameFromUrl(url) {
@@ -92,6 +138,14 @@ async function fetchOne(recipe) {
       const resolved = await resolveWikiArticleImage(wikiArticle);
       if (!resolved) {
         return { ok: false, recipe, reason: `wiki_no_image: ${wikiArticle}`, source: origImage };
+      }
+      url = resolved;
+    } else if (url.startsWith('commons:')) {
+      // Commons search for keyword — returns Wikimedia Commons file URL
+      const query = url.slice(8);
+      const resolved = await searchCommonsImage(query);
+      if (!resolved) {
+        return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
       }
       url = resolved;
     }
