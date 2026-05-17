@@ -117,26 +117,57 @@ function expandQueryTags(q) {
 function search(query) {
   const lower = query.toLowerCase().trim();
   if (!lower) return [];
-  const tags = expandQueryTags(lower);
+
+  // Split into separate words. Each word can match independently — broader recall.
+  const words = lower.split(/\s+/).filter(w => w.length >= 2);
+  const fullTags = expandQueryTags(lower);
+  const perWordTags = words.map(w => expandQueryTags(w));
+  const allWordTags = new Set([...fullTags, ...perWordTags.flat()]);
 
   const scored = RECIPES.map(r => {
     let score = 0;
     const nameL = r.name.toLowerCase();
-    if (nameL.includes(lower)) score += 50;
+    const descL = (r.description || '').toLowerCase();
     const rTags = tagsOf(r);
-    for (const t of tags) {
-      if (rTags.has(t)) score += 10;
+
+    // Full query as substring in name = strongest signal
+    if (nameL.includes(lower)) score += 80;
+    // Each word as substring in name
+    for (const w of words) {
+      if (nameL.includes(w)) score += 30;
+      if (descL.includes(w)) score += 8;
     }
+    // Tag matches from synonyms
+    for (const t of allWordTags) {
+      if (rTags.has(t)) score += 12;
+    }
+    // Ingredient name matches
     for (const ing of r.ingredients) {
-      if (ing.name.toLowerCase().includes(lower)) score += 6;
+      const ingL = ing.name.toLowerCase();
+      if (ingL.includes(lower)) score += 10;
+      for (const w of words) {
+        if (w.length >= 3 && ingL.includes(w)) score += 5;
+      }
+    }
+    // Cuisine name direct hit
+    if (CUISINE_LABELS[r.cuisine] && lower.includes(CUISINE_LABELS[r.cuisine].toLowerCase())) {
+      score += 25;
     }
     return { r, score };
   })
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  return scored.slice(0, 6).map(x => x.r);
+  return scored.slice(0, 12).map(x => x.r);
 }
+
+// Suggestions shown in search field placeholder and on empty-result page
+export const SEARCH_HINTS = [
+  'лимон', 'хрустящее', 'паста болоньезе', 'острое', 'сливочное',
+  'курица', 'стейк', 'индия', 'турция', 'без мяса', 'быстро',
+  'медовое', 'мясо с овощами', 'свежее', 'тёплое сытное', 'паназиатское',
+  'граната', 'кисло-яркое', 'жареная корка', 'базилик', 'чимичурри',
+];
 
 function searchByFeeling(feelingKey) {
   const f = FEELINGS[feelingKey];
@@ -196,6 +227,10 @@ function random3() {
 const root = document.getElementById('view-root');
 
 function render(html) {
+  if (window.__hintTimer) {
+    clearInterval(window.__hintTimer);
+    window.__hintTimer = null;
+  }
   root.classList.remove('view');
   void root.offsetWidth;
   root.innerHTML = html;
@@ -383,11 +418,22 @@ function viewHome() {
   `);
 
   const form = document.getElementById('home-search-form');
+  const input = document.getElementById('home-search-input');
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const q = document.getElementById('home-search-input').value.trim();
+    const q = input.value.trim();
     if (q) location.hash = '#/search?q=' + encodeURIComponent(q);
   });
+  // Rotating placeholder — visibly shows what kinds of queries the search understands
+  let hintIdx = 0;
+  const updateHint = () => {
+    if (document.activeElement === input || input.value) return;
+    input.placeholder = SEARCH_HINTS[hintIdx % SEARCH_HINTS.length];
+    hintIdx++;
+  };
+  updateHint();
+  const hintTimer = setInterval(updateHint, 2200);
+  window.__hintTimer = hintTimer;
 
   root.querySelectorAll('[data-feel]').forEach(b => {
     b.addEventListener('click', () => {
@@ -425,15 +471,20 @@ function viewSearch(query) {
   const cards = (hasResults ? results : random3())
     .map(r => cardHtml(r)).join('');
 
+  const hintsChips = SEARCH_HINTS.slice(0, 8).map(h =>
+    `<a href="#/search?q=${encodeURIComponent(h)}" class="hint-chip">${escapeHtml(h)}</a>`
+  ).join('');
+
   render(`
     <div class="shell">
       <header class="results-header">
-        <div class="eyebrow results-eyebrow eyebrow-accent">${hasResults ? 'Похоже на' : 'Не нашла, но может быть'}</div>
-        <h1 class="results-title">${escapeHtml(query)}${!hasResults ? ' <em>· предложу так</em>' : ''}</h1>
+        <div class="eyebrow results-eyebrow eyebrow-accent">${hasResults ? `Похоже на «${escapeHtml(query)}»` : `Ничего под «${escapeHtml(query)}»`}</div>
+        <h1 class="results-title">${hasResults ? `Нашла ${results.length}` : 'Попробуй так'}</h1>
+        ${!hasResults ? `<div class="hint-chips">${hintsChips}</div>` : ''}
       </header>
       <div class="results-grid">${cards}</div>
-      <p style="text-align:center;color:var(--ink-soft);padding-bottom:64px;">
-        Не зашло? <a href="#/" style="color:var(--accent);font-weight:500;">Начать заново →</a>
+      <p style="text-align:center;color:var(--ink-soft);padding:24px 0 64px;">
+        <a href="#/" style="color:var(--accent);font-weight:600;">← Начать заново</a>
       </p>
     </div>
   `);

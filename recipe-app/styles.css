@@ -637,6 +637,33 @@ img { display: block; max-width: 100%; }
 .feel-tile[data-feel="hearty"] { --tile-color: var(--rust); --tile-bg: var(--rust-soft); }
 .feel-tile[data-feel="light"] { --tile-color: var(--teal); --tile-bg: var(--teal-soft); }
 
+/* ---------- Search hint chips (shown on empty search results) ---------- */
+
+.hint-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.hint-chip {
+  display: inline-block;
+  padding: 8px 14px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  transition: transform 0.14s var(--ease-out), background 0.14s var(--ease-out);
+}
+
+.hint-chip:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-1px);
+}
+
 /* ---------- LEGACY chip class kept for menu page filters ---------- */
 
 .chip {
