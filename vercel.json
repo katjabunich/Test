@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/fetch-images.mjs",
+  "buildCommand": "STRICT=1 node scripts/fetch-images.mjs",
   "outputDirectory": "recipe-app",
   "installCommand": "echo 'skip'",
   "framework": null,

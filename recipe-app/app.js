@@ -224,39 +224,33 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Image with elegant fallback if URL fails
-function imgEl(src, alt) {
-  return `<img src="${src}" alt="${escapeHtml(alt)}" loading="lazy" onerror="this.dataset.failed='1';this.replaceWith(window.__buildPhotoFallback(this.alt))" />`;
+// Resolve image source — every recipe uses the locally-bundled photo from build.
+function imgSrc(recipe) {
+  return `./images/${recipe.id}.jpg`;
 }
 
+// Image element. If a file ever goes missing at runtime, hide the parent .card
+// instead of showing a placeholder (per user preference: no broken-image fallback).
+function imgEl(recipe) {
+  return `<img src="${imgSrc(recipe)}" alt="${escapeHtml(recipe.name)}" loading="lazy" decoding="async" onerror="window.__handleImgFail(this)" />`;
+}
+
+window.__handleImgFail = function (img) {
+  const card = img.closest('.card');
+  if (card) {
+    card.style.display = 'none';
+  } else {
+    // detail/hero context — soften with neutral, no text
+    const parent = img.parentElement;
+    if (parent) parent.style.background = 'var(--surface-2)';
+    img.style.display = 'none';
+  }
+};
+
+// Legacy stub (kept harmless in case something old still calls it)
 window.__buildPhotoFallback = function (alt) {
   const wrap = document.createElement('div');
-  wrap.style.cssText = `
-    width:100%;height:100%;
-    display:flex;align-items:flex-end;
-    padding:24px;
-    background: linear-gradient(135deg, #f4f3ef 0%, #ece9e3 100%);
-    position:relative;overflow:hidden;
-  `;
-  const title = document.createElement('div');
-  title.textContent = alt;
-  title.style.cssText = `
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
-    color: #15171a;
-    z-index: 1;
-  `;
-  const dot = document.createElement('div');
-  dot.style.cssText = `
-    position:absolute;top:24px;left:24px;
-    width:10px;height:10px;border-radius:50%;
-    background:#e63d1e;
-  `;
-  wrap.appendChild(dot);
-  wrap.appendChild(title);
+  wrap.style.cssText = 'width:100%;height:100%;background:var(--surface-2);';
   return wrap;
 };
 
@@ -270,7 +264,7 @@ function cardHtml(r) {
   return `
     <a class="card" href="#/recipe/${r.id}">
       <div class="card-photo">
-        ${imgEl(r.image, r.name)}
+        ${imgEl(r)}
         <button class="card-fav ${fav}" data-fav-id="${r.id}" aria-label="Избранное">${isFav(r.id) ? '♥' : '♡'}</button>
       </div>
       <div class="card-meta">
@@ -285,7 +279,7 @@ function cardHtml(r) {
 function smallCardHtml(r) {
   return `
     <a class="card" href="#/recipe/${r.id}">
-      <div class="card-photo">${imgEl(r.image, r.name)}</div>
+      <div class="card-photo">${imgEl(r)}</div>
       <div class="card-meta">
         <div class="eyebrow">${CUISINE_LABELS[r.cuisine] || ''} · ${r.time} мин</div>
         <div class="card-title">${escapeHtml(r.name)}</div>
@@ -470,7 +464,7 @@ function viewRecipe(id) {
       </div>
 
       <section class="detail-hero">
-        <div class="detail-photo">${imgEl(r.image, r.name)}</div>
+        <div class="detail-photo">${imgEl(r)}</div>
         <div class="detail-text">
           <div class="eyebrow detail-eyebrow eyebrow-accent">${CUISINE_LABELS[r.cuisine] || ''}</div>
           <h1 class="detail-title">${escapeHtml(r.name)}</h1>
