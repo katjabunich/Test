@@ -34,6 +34,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Resolve `wiki:Article_Title` → real image URL via Wikipedia REST summary API.
 // Returns null if article has no image / doesn't exist.
+// Search Unsplash for a curated, professional food photo matching a query.
+// Returns the URL of the first high-relevance result.
+// Fallback key — can move to Vercel env (UNSPLASH_ACCESS_KEY) later
+const UNSPLASH_FALLBACK_KEY = 'EzHVfQPa7UaEhWyp_OXjEztr4_QGRxnSQc6kRBhjt90';
+
+async function searchUnsplashImage(query) {
+  const key = process.env.UNSPLASH_ACCESS_KEY || UNSPLASH_FALLBACK_KEY;
+  if (!key) return null;
+  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&content_filter=high&orientation=squarish`;
+  const res = await fetch(url, {
+    headers: {
+      ...COMMON_HEADERS,
+      Authorization: `Client-ID ${key}`,
+      Accept: 'application/json',
+      'Accept-Version': 'v1',
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const first = data.results?.[0];
+  if (!first) return null;
+  return first.urls?.regular || first.urls?.small || null;
+}
+
 async function resolveWikiArticleImage(title) {
   const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
   const res = await fetch(url, {
@@ -141,11 +166,18 @@ async function fetchOne(recipe) {
       }
       url = resolved;
     } else if (url.startsWith('commons:')) {
-      // Commons search for keyword — returns Wikimedia Commons file URL
       const query = url.slice(8);
       const resolved = await searchCommonsImage(query);
       if (!resolved) {
         return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
+      }
+      url = resolved;
+    } else if (url.startsWith('unsplash:')) {
+      // Unsplash search via API — curated professional food photo
+      const query = url.slice(9);
+      const resolved = await searchUnsplashImage(query);
+      if (!resolved) {
+        return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
       }
       url = resolved;
     }
