@@ -129,22 +129,32 @@ async function searchUnsplashImage(query) {
 }
 
 // TheMealDB fallback — 300 curated recipes with photos, no API key needed.
+// Try multiple query variants: full string, first 2 words, first word.
+// Returns first matching meal's photo.
 async function searchMealDB(query) {
-  // Use just the first word or two for better matching
-  const cleanQuery = query.split(/\s+/).slice(0, 3).join(' ');
-  const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(cleanQuery)}`;
-  try {
-    const res = await fetch(url, {
-      headers: { ...COMMON_HEADERS, Accept: 'application/json' },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const meal = data.meals?.[0];
-    return meal?.strMealThumb || null;
-  } catch {
-    return null;
+  const words = query.split(/\s+/).filter(Boolean);
+  // Build candidate searches: full, then progressively shorter prefixes
+  const variants = [];
+  if (words.length >= 1) variants.push(words.slice(0, 4).join(' '));
+  if (words.length >= 2) variants.push(words.slice(0, 2).join(' '));
+  if (words.length >= 1) variants.push(words[0]);
+  const seen = new Set();
+  for (const q of variants) {
+    if (seen.has(q)) continue;
+    seen.add(q);
+    try {
+      const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(q)}`;
+      const res = await fetch(url, {
+        headers: { ...COMMON_HEADERS, Accept: 'application/json' },
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const meal = data.meals?.[0];
+      if (meal?.strMealThumb) return meal.strMealThumb;
+    } catch {}
   }
+  return null;
 }
 
 async function resolveWikiArticleImage(title) {
