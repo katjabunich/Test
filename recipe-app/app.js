@@ -346,25 +346,24 @@ function viewHome() {
   render(`
     <div class="home">
       <section class="home-greet">
-        <h1 class="home-greet-title">${getTimeGreeting()}.</h1>
-        <p class="home-greet-sub">Что приготовим сегодня?</p>
+        <h1 class="home-greet-title">${getTimeGreeting()}<br>что <em>хочется</em>?</h1>
+        <p class="home-greet-sub">Выбери что-то одно — приготовим за полчаса.</p>
       </section>
 
       <section class="home-spotlight" data-surprise-id="${surpriseRecipe.id}">
         <div class="spotlight-photo">
           <img src="${imgSrc(surpriseRecipe)}" alt="${escapeHtml(surpriseRecipe.name)}" loading="eager" decoding="async" onerror="window.__handleImgFail(this)" />
-          <div class="spotlight-gradient"></div>
         </div>
+        <button class="spotlight-reshuffle" data-go="reshuffle" aria-label="Другое блюдо">↻</button>
         <div class="spotlight-content">
-          <div class="spotlight-eyebrow">Удиви меня</div>
+          <div class="spotlight-eyebrow">Сегодня</div>
           <div class="spotlight-title">${escapeHtml(surpriseRecipe.name)}</div>
-          <button class="spotlight-cta" data-go="surprise">Открыть рецепт →</button>
-          <button class="spotlight-reshuffle" data-go="reshuffle" aria-label="Другое блюдо">↻</button>
+          <button class="spotlight-cta" data-go="surprise">Готовить →</button>
         </div>
       </section>
 
       <section class="home-section">
-        <h2 class="home-section-title">Найти по вкусу</h2>
+        <h2 class="home-section-title">Знаю <em>что хочу</em></h2>
         <form class="home-search" id="home-search-form">
           <span class="home-search-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -377,7 +376,7 @@ function viewHome() {
       </section>
 
       <section class="home-section">
-        <h2 class="home-section-title">Или по ощущениям</h2>
+        <h2 class="home-section-title">Или <em>по ощущениям</em></h2>
         <div class="feel-grid">${feelingsHtml}</div>
       </section>
     </div>
@@ -413,11 +412,11 @@ function viewHome() {
 
 function getTimeGreeting() {
   const h = new Date().getHours();
-  if (h < 5) return 'Поздний вечер';
-  if (h < 11) return 'Доброе утро';
-  if (h < 16) return 'Добрый день';
-  if (h < 22) return 'Добрый вечер';
-  return 'Ночь';
+  if (h < 5) return 'Поздно.';
+  if (h < 11) return 'Доброе утро.';
+  if (h < 16) return 'Здравствуй.';
+  if (h < 22) return 'Добрый вечер.';
+  return 'Ночь.';
 }
 
 function viewSearch(query) {
