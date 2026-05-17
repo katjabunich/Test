@@ -16,6 +16,24 @@ const imagesDir = join(repoRoot, 'recipe-app/images');
 
 mkdirSync(imagesDir, { recursive: true });
 
+// Live URL of the production deployment — used to fetch prior manifest
+// so we can reuse already-resolved Unsplash URLs across builds (avoids
+// the demo API's 50 req/hour rate limit blocking late queries).
+const LIVE_URL = 'https://doit-git-claude-recipe-finder-app-fz5bs-katjabunichs-projects.vercel.app/images-manifest.json';
+
+let priorManifest = {};
+try {
+  const r = await fetch(LIVE_URL, { signal: AbortSignal.timeout(15_000) });
+  if (r.ok) {
+    priorManifest = await r.json();
+    console.log(`Loaded prior manifest from live deploy (${Object.keys(priorManifest).length} entries)`);
+  } else {
+    console.log(`Prior manifest fetch HTTP ${r.status} — proceeding without cache`);
+  }
+} catch (e) {
+  console.log(`No prior manifest available (${e.name || e.message}) — proceeding without cache`);
+}
+
 // Dynamic import of recipes.js (it's an ES module)
 const mod = await import(recipesPath);
 const recipes = mod.RECIPES;
@@ -156,30 +174,40 @@ async function fetchOne(recipe) {
     return { ok: false, recipe, reason: 'no_url', source: origImage };
   }
 
+  // Check prior manifest first — if cached for the same source, use the resolved URL.
+  // This avoids hitting the Unsplash API rate limit on every build.
+  const prior = priorManifest[recipe.id];
+  let resolvedFromCache = false;
+  if (prior && prior.ok && prior.source === origImage && prior.resolvedUrl) {
+    url = prior.resolvedUrl;
+    resolvedFromCache = true;
+  }
+
   try {
-    // Wiki-article reference? Resolve to direct image URL first.
-    if (url.startsWith('wiki:')) {
-      wikiArticle = url.slice(5);
-      const resolved = await resolveWikiArticleImage(wikiArticle);
-      if (!resolved) {
-        return { ok: false, recipe, reason: `wiki_no_image: ${wikiArticle}`, source: origImage };
+    // Resolve prefix only if we don't have a cached URL
+    if (!resolvedFromCache) {
+      if (url.startsWith('wiki:')) {
+        wikiArticle = url.slice(5);
+        const resolved = await resolveWikiArticleImage(wikiArticle);
+        if (!resolved) {
+          return { ok: false, recipe, reason: `wiki_no_image: ${wikiArticle}`, source: origImage };
+        }
+        url = resolved;
+      } else if (url.startsWith('commons:')) {
+        const query = url.slice(8);
+        const resolved = await searchCommonsImage(query);
+        if (!resolved) {
+          return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
+        }
+        url = resolved;
+      } else if (url.startsWith('unsplash:')) {
+        const query = url.slice(9);
+        const resolved = await searchUnsplashImage(query);
+        if (!resolved) {
+          return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
+        }
+        url = resolved;
       }
-      url = resolved;
-    } else if (url.startsWith('commons:')) {
-      const query = url.slice(8);
-      const resolved = await searchCommonsImage(query);
-      if (!resolved) {
-        return { ok: false, recipe, reason: `commons_no_match: ${query}`, source: origImage };
-      }
-      url = resolved;
-    } else if (url.startsWith('unsplash:')) {
-      // Unsplash search via API — curated professional food photo
-      const query = url.slice(9);
-      const resolved = await searchUnsplashImage(query);
-      if (!resolved) {
-        return { ok: false, recipe, reason: `unsplash_no_result_or_no_key: ${query}`, source: origImage };
-      }
-      url = resolved;
     }
 
     if (!url.startsWith('http')) {
@@ -210,6 +238,7 @@ async function fetchOne(recipe) {
       resolvedUrl: url,
       fileName: fileNameFromUrl(url),
       size: buf.length,
+      reusedCache: resolvedFromCache,
     };
   } catch (err) {
     return { ok: false, recipe, reason: err.name || err.message, source: origImage };
@@ -230,13 +259,16 @@ for (let i = 0; i < recipes.length; i += batchSize) {
       manifest[r.recipe.id] = {
         ok: true,
         source: r.source,
+        resolvedUrl: r.resolvedUrl || null,
         fileName: r.fileName,
         size: r.size || null,
         cached: !!r.cached,
+        reusedCache: !!r.reusedCache,
       };
       if (!r.cached) {
         okCount++;
-        process.stdout.write(`✓ ${r.recipe.id} → ${r.fileName || '(cached)'}\n`);
+        const marker = r.reusedCache ? '⚡' : '✓';
+        process.stdout.write(`${marker} ${r.recipe.id} → ${r.fileName || '(prior cache)'}\n`);
       }
     } else {
       manifest[r.recipe.id] = {
