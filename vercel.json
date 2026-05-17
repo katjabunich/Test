@@ -1,5 +1,5 @@
 {
-  "buildCommand": "echo 'Static deploy: recipe-app/'",
+  "buildCommand": "node scripts/fetch-images.mjs",
   "outputDirectory": "recipe-app",
   "installCommand": "echo 'skip'",
   "framework": null,

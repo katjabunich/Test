@@ -74,14 +74,16 @@ function markSeen(id) {
 }
 
 function updateBadge() {
-  const el = document.getElementById('shop-badge');
-  const count = state.shopping.filter(i => !i.checked).length;
-  if (count > 0) {
-    el.hidden = false;
-    el.textContent = count;
-  } else {
-    el.hidden = true;
-  }
+  const setBadge = (el, count) => {
+    if (!el) return;
+    if (count > 0) { el.hidden = false; el.textContent = count > 99 ? '99+' : count; }
+    else el.hidden = true;
+  };
+  const shopCount = state.shopping.filter(i => !i.checked).length;
+  const favCount = state.favorites.length;
+  setBadge(document.getElementById('shop-badge'), shopCount);
+  setBadge(document.getElementById('bnav-shop-badge'), shopCount);
+  setBadge(document.getElementById('bnav-fav-badge'), favCount);
 }
 
 // ============================================================
@@ -309,13 +311,18 @@ function bindCommonHandlers() {
 
 function updateNavActive() {
   const hash = location.hash || '#/';
+  const matches = (name) => {
+    if (name === 'home') return hash === '#/' || hash === '' || hash.startsWith('#/search') || hash.startsWith('#/feel/');
+    if (name === 'menu') return hash.startsWith('#/menu');
+    if (name === 'favorites') return hash.startsWith('#/favorites');
+    if (name === 'shopping') return hash.startsWith('#/shopping');
+    return false;
+  };
   document.querySelectorAll('[data-nav]').forEach(a => {
-    const nav = a.dataset.nav;
-    const should =
-      (nav === 'menu' && hash.startsWith('#/menu')) ||
-      (nav === 'favorites' && hash.startsWith('#/favorites')) ||
-      (nav === 'shopping' && hash.startsWith('#/shopping'));
-    a.classList.toggle('active', should);
+    a.classList.toggle('active', matches(a.dataset.nav));
+  });
+  document.querySelectorAll('[data-bnav]').forEach(a => {
+    a.classList.toggle('active', matches(a.dataset.bnav));
   });
 }
 

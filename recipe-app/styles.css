@@ -1236,6 +1236,113 @@ img { display: block; max-width: 100%; }
 }
 
 /* ============================================================
+   BOTTOM NAV (mobile native-app feel)
+   ============================================================ */
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .topbar .topnav { display: none; }
+
+  /* leave room for the nav at the bottom of every view */
+  .app {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0));
+  }
+}
+
+.bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  color: var(--ink-mid);
+  position: relative;
+  transition: color 0.16s var(--ease-out), transform 0.12s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bnav-item:active {
+  transform: scale(0.94);
+}
+
+.bnav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+
+.bnav-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.bnav-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.bnav-item.active {
+  color: var(--accent);
+}
+
+.bnav-item.active .bnav-icon svg {
+  stroke-width: 2;
+}
+
+.bnav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.bnav-badge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 22px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1.5px solid var(--surface);
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 
