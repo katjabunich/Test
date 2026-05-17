@@ -57,24 +57,54 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Fallback key — can move to Vercel env (UNSPLASH_ACCESS_KEY) later
 const UNSPLASH_FALLBACK_KEY = 'EzHVfQPa7UaEhWyp_OXjEztr4_QGRxnSQc6kRBhjt90';
 
+let unsplashDebugLogged = 0;
 async function searchUnsplashImage(query) {
   const key = process.env.UNSPLASH_ACCESS_KEY || UNSPLASH_FALLBACK_KEY;
-  if (!key) return null;
+  if (!key) {
+    if (unsplashDebugLogged < 1) {
+      console.log('  [unsplash debug] NO KEY at all (env or fallback)');
+      unsplashDebugLogged++;
+    }
+    return null;
+  }
   const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&content_filter=high&orientation=squarish`;
-  const res = await fetch(url, {
-    headers: {
-      ...COMMON_HEADERS,
-      Authorization: `Client-ID ${key}`,
-      Accept: 'application/json',
-      'Accept-Version': 'v1',
-    },
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const first = data.results?.[0];
-  if (!first) return null;
-  return first.urls?.regular || first.urls?.small || null;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        ...COMMON_HEADERS,
+        Authorization: `Client-ID ${key}`,
+        Accept: 'application/json',
+        'Accept-Version': 'v1',
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) {
+      // Log first 3 failures with full diagnostics
+      if (unsplashDebugLogged < 3) {
+        const body = await res.text().catch(() => '');
+        console.log(`  [unsplash debug] HTTP ${res.status} for "${query}" — body: ${body.slice(0, 200)}`);
+        console.log(`  [unsplash debug] rate-remaining: ${res.headers.get('x-ratelimit-remaining')}, rate-limit: ${res.headers.get('x-ratelimit-limit')}`);
+        unsplashDebugLogged++;
+      }
+      return null;
+    }
+    const data = await res.json();
+    const first = data.results?.[0];
+    if (!first) {
+      if (unsplashDebugLogged < 3) {
+        console.log(`  [unsplash debug] 0 results for "${query}"`);
+        unsplashDebugLogged++;
+      }
+      return null;
+    }
+    return first.urls?.regular || first.urls?.small || null;
+  } catch (err) {
+    if (unsplashDebugLogged < 3) {
+      console.log(`  [unsplash debug] EXCEPTION for "${query}": ${err.message}`);
+      unsplashDebugLogged++;
+    }
+    return null;
+  }
 }
 
 async function resolveWikiArticleImage(title) {
@@ -85,7 +115,9 @@ async function resolveWikiArticleImage(title) {
   });
   if (!res.ok) return null;
   const data = await res.json();
-  return data.originalimage?.source || data.thumbnail?.source || null;
+  // Prefer thumbnail (640px) over originalimage (multi-MB) — avoids Wikimedia
+  // rate-limit on huge originals, and 640px is plenty for the app cards.
+  return data.thumbnail?.source || data.originalimage?.source || null;
 }
 
 // Search Wikimedia Commons for food photos matching a keyword.
