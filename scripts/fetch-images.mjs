@@ -16,22 +16,41 @@ const imagesDir = join(repoRoot, 'recipe-app/images');
 
 mkdirSync(imagesDir, { recursive: true });
 
-// Live URL of the production deployment — used to fetch prior manifest
-// so we can reuse already-resolved Unsplash URLs across builds (avoids
-// the demo API's 50 req/hour rate limit blocking late queries).
+// Cache strategy for prior-resolved URLs (avoids Unsplash 50/hr rate limit
+// blocking late queries on a 96-recipe build).
+//
+// Tier 1: Local manifest committed in git at recipe-app/images-manifest.json.
+//         Fully reliable — read at build time, no network required.
+// Tier 2: Live URL fetch (fallback if local missing). Only works when the
+//         Vercel preview is publicly accessible (Deployment Protection off).
 const LIVE_URL = 'https://doit-git-claude-recipe-finder-app-fz5bs-katjabunichs-projects.vercel.app/images-manifest.json';
+const LOCAL_MANIFEST = join(repoRoot, 'recipe-app/images-manifest.json');
 
 let priorManifest = {};
+let manifestSource = 'none';
 try {
-  const r = await fetch(LIVE_URL, { signal: AbortSignal.timeout(15_000) });
-  if (r.ok) {
-    priorManifest = await r.json();
-    console.log(`Loaded prior manifest from live deploy (${Object.keys(priorManifest).length} entries)`);
-  } else {
-    console.log(`Prior manifest fetch HTTP ${r.status} — proceeding without cache`);
+  const { readFileSync, existsSync } = await import('node:fs');
+  if (existsSync(LOCAL_MANIFEST)) {
+    priorManifest = JSON.parse(readFileSync(LOCAL_MANIFEST, 'utf8'));
+    manifestSource = 'local';
+    console.log(`Loaded prior manifest from local git (${Object.keys(priorManifest).length} entries)`);
   }
 } catch (e) {
-  console.log(`No prior manifest available (${e.name || e.message}) — proceeding without cache`);
+  console.log(`Local manifest parse failed (${e.message}) — trying live URL`);
+}
+if (manifestSource === 'none') {
+  try {
+    const r = await fetch(LIVE_URL, { signal: AbortSignal.timeout(15_000) });
+    if (r.ok) {
+      priorManifest = await r.json();
+      manifestSource = 'live';
+      console.log(`Loaded prior manifest from live deploy (${Object.keys(priorManifest).length} entries)`);
+    } else {
+      console.log(`Prior manifest fetch HTTP ${r.status} — proceeding without cache`);
+    }
+  } catch (e) {
+    console.log(`No prior manifest available (${e.name || e.message}) — proceeding without cache`);
+  }
 }
 
 // Dynamic import of recipes.js (it's an ES module)
@@ -73,15 +92,23 @@ async function searchUnsplashImage(query) {
   const key = process.env.UNSPLASH_ACCESS_KEY || UNSPLASH_FALLBACK_KEY;
   if (!key) return null;
 
-  // Try /photos/random first — demo apps always have access here.
-  // Fallback to /search/photos if random fails.
-  const endpoints = [
-    `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&content_filter=high&orientation=squarish`,
-    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=5&content_filter=high&orientation=squarish`,
-  ];
+  // Strategy: Unsplash /photos/random and /search are strict on multi-word queries
+  // AND `orientation=squarish` filter dramatically cuts the result pool.
+  // We crop ANY photo to 1:1 via the CDN params (?w=800&h=800&fit=crop) so the
+  // source orientation doesn't matter. So: drop the orientation filter, and try
+  // progressively shorter queries (full → 4 words → 3 words → 2 words → 1 word)
+  // via /search/photos (which returns multiple candidates per call).
+  const words = query.split(/\s+/).filter(Boolean);
+  const variants = [];
+  // Build de-duped list of variants, longest first
+  for (let n = words.length; n >= 1; n--) {
+    const v = words.slice(0, n).join(' ');
+    if (!variants.includes(v)) variants.push(v);
+  }
 
-  for (let i = 0; i < endpoints.length; i++) {
-    const url = endpoints[i];
+  for (let i = 0; i < variants.length; i++) {
+    const q = variants[i];
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(q)}&per_page=10&content_filter=high`;
     try {
       const res = await fetch(url, {
         headers: {
@@ -93,34 +120,35 @@ async function searchUnsplashImage(query) {
         signal: AbortSignal.timeout(15_000),
       });
       if (!res.ok) {
-        if (unsplashDebugLogged < 4) {
+        if (unsplashDebugLogged < 6) {
           const body = await res.text().catch(() => '');
-          const endpoint = i === 0 ? 'random' : 'search';
-          console.log(`  [unsplash debug ${endpoint}] HTTP ${res.status} for "${query}"`);
-          console.log(`    body: ${body.slice(0, 300)}`);
-          console.log(`    rate-remaining: ${res.headers.get('x-ratelimit-remaining')}, rate-limit: ${res.headers.get('x-ratelimit-limit')}`);
+          console.log(`  [unsplash] HTTP ${res.status} for "${q}" (variant ${i + 1}/${variants.length})`);
+          console.log(`    body: ${body.slice(0, 200)}`);
+          console.log(`    rate-remaining: ${res.headers.get('x-ratelimit-remaining')}/${res.headers.get('x-ratelimit-limit')}`);
           unsplashDebugLogged++;
         }
-        continue; // try next endpoint
+        // Rate-limit (403) or auth issue — bail out completely
+        if (res.status === 403 || res.status === 401) return null;
+        continue;
       }
       const data = await res.json();
-      // /random returns a photo object; /search returns { results: [...] }
-      const photo = Array.isArray(data) ? data[0] : (data.results?.[0] || data);
+      const photo = data.results?.[0];
       let photoUrl = photo?.urls?.raw || photo?.urls?.regular || photo?.urls?.small;
       if (photoUrl) {
-        // Force a perfect 1:1 800x800 crop via Unsplash CDN parameters.
-        // Strip any existing query params and add ours.
+        // Force perfect 1:1 800x800 crop via Unsplash CDN params (entropy-aware
+        // crop picks the most interesting region — usually the food).
         const base = photoUrl.split('?')[0];
         photoUrl = `${base}?w=800&h=800&fit=crop&crop=entropy&q=85&auto=format`;
+        if (i > 0 && unsplashDebugLogged < 8) {
+          console.log(`  [unsplash] matched shorter variant "${q}" for "${query}"`);
+          unsplashDebugLogged++;
+        }
         return photoUrl;
       }
-      if (unsplashDebugLogged < 4) {
-        console.log(`  [unsplash debug] no urls.regular for "${query}", response keys: ${Object.keys(data || {}).join(',')}`);
-        unsplashDebugLogged++;
-      }
+      // Empty results — try shorter variant
     } catch (err) {
-      if (unsplashDebugLogged < 4) {
-        console.log(`  [unsplash debug] EXCEPTION for "${query}": ${err.message}`);
+      if (unsplashDebugLogged < 6) {
+        console.log(`  [unsplash] EXCEPTION for "${q}": ${err.message}`);
         unsplashDebugLogged++;
       }
     }
