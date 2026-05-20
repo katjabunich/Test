@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Обеды мира — поиск рецептов</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🍽️</span>
+        <span>Обеды мира</span>
+      </div>
+      <p class="header-sub">Интересные рецепты без рыбы, морепродуктов, бобовых и грибов</p>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="controls">
+      <div class="cuisine-tabs" id="cuisineTabs">
+        <button class="tab active" data-cuisine="all">Все кухни</button>
+        <button class="tab" data-cuisine="European">Европейская</button>
+        <button class="tab" data-cuisine="Asian">Азиатская</button>
+        <button class="tab" data-cuisine="MiddleEastern">Ближневосточная</button>
+        <button class="tab" data-cuisine="American">Американская</button>
+      </div>
+      <button class="btn-random" id="btnRandom">
+        <span>🎲</span> Удиви меня
+      </button>
+    </section>
+
+    <div class="recipes-grid" id="recipesGrid"></div>
+  </main>
+
+  <!-- Модальное окно -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
