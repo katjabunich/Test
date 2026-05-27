@@ -44,10 +44,11 @@ function formatDue(
 }
 
 const labelStyle = {
-  fontSize: 13,
-  fontWeight: 500,
-  color: "var(--ink-60)",
-  letterSpacing: "-0.005em",
+  fontSize: 14,
+  fontWeight: 600,
+  color: "var(--ink-40)",
+  letterSpacing: "0.02em",
+  textTransform: "uppercase" as const,
 } as const;
 
 /** Section heading used between groups on Today/Tasks/Settings/Habits. */
@@ -205,11 +206,11 @@ export default function TodayView({
             <h1
               style={{
                 fontFamily: "var(--font-emphasis)",
-                fontSize: 40,
+                fontSize: 44,
                 fontWeight: 700,
                 letterSpacing: "-0.03em",
-                lineHeight: 1.04,
-                color: "var(--ink)",
+                lineHeight: 1.02,
+                color: "var(--ink-strong)",
                 margin: 0,
               }}
             >
@@ -492,13 +493,14 @@ function HeroNextTask({
               display: "flex",
               alignItems: "center",
               gap: 6,
-              padding: "5px 12px",
-              background: "rgba(255,255,255,0.35)",
+              padding: "6px 14px",
+              background: "rgba(255,255,255,0.85)",
               borderRadius: 999,
-              fontSize: 11,
-              fontWeight: 600,
-              color: "var(--ink)",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--ink-strong)",
               letterSpacing: "-0.005em",
+              boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
             }}
           >
             <SphereIcon
@@ -515,9 +517,12 @@ function HeroNextTask({
           className="tnum"
           style={{
             fontSize: 12,
-            fontWeight: 600,
-            color: "var(--ink)",
+            fontWeight: 700,
+            color: "var(--ink-strong)",
             letterSpacing: "-0.005em",
+            padding: "4px 10px",
+            background: "rgba(255,255,255,0.75)",
+            borderRadius: 999,
           }}
         >
           {formatDue(task.due_date, overdue, lang, months, weekdaysShort)}
@@ -527,11 +532,11 @@ function HeroNextTask({
       <div
         style={{
           fontFamily: "var(--font-emphasis)",
-          fontSize: 28,
+          fontSize: 26,
           fontWeight: 700,
-          letterSpacing: "-0.025em",
-          lineHeight: 1.18,
-          color: "var(--ink)",
+          letterSpacing: "-0.02em",
+          lineHeight: 1.2,
+          color: "var(--ink-strong)",
           position: "relative",
         }}
       >
@@ -555,14 +560,14 @@ function HeroNextTask({
           className="tap"
           style={{
             flex: 1,
-            padding: "14px 0",
+            padding: "15px 0",
             borderRadius: 999,
-            background: "var(--ink)",
-            color,
+            background: "var(--ink-strong)",
+            color: "#FFFFFF",
             border: "none",
             cursor: "pointer",
-            fontSize: 14.5,
-            fontWeight: 600,
+            fontSize: 15,
+            fontWeight: 700,
             letterSpacing: "-0.01em",
             display: "flex",
             alignItems: "center",

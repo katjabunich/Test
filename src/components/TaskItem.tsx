@@ -310,10 +310,10 @@ export default function TaskItem({
         style={{
           background: cardBg,
           border: "none",
-          borderLeft: overdue ? "3px solid var(--alert)" : "none",
+          borderLeft: `4px solid ${overdue ? "var(--alert)" : sphereColor}`,
           borderRadius: 22,
           boxShadow: "var(--shadow-card)",
-          padding: overdue ? "14px 16px 14px 14px" : "14px 16px",
+          padding: "14px 16px 14px 14px",
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -334,10 +334,10 @@ export default function TaskItem({
         disabled={isPending || optimisticDone || optimisticDeferred}
         aria-label="Отметить выполненной"
         style={{
-          width: 22,
-          height: 22,
-          borderRadius: 11,
-          border: `2px solid ${sphereColor}`,
+          width: 26,
+          height: 26,
+          borderRadius: 13,
+          border: `2.5px solid ${sphereColor}`,
           background: optimisticDone ? sphereColor : "transparent",
           padding: 0,
           cursor: "pointer",
@@ -371,9 +371,9 @@ export default function TaskItem({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 15,
-            fontWeight: 500,
-            color: "var(--ink)",
+            fontSize: 15.5,
+            fontWeight: 600,
+            color: "var(--ink-strong)",
             letterSpacing: "-0.01em",
             opacity: optimisticDone ? 0.5 : 1,
             textDecoration: optimisticDone ? "line-through" : "none",
@@ -386,7 +386,7 @@ export default function TaskItem({
           {task.title}
         </div>
         {(sphere || due || task.recurrence) && (
-          <div style={{ display: "flex", gap: 8, marginTop: 5, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "center" }}>
             {sphere && (
               <span
                 style={{
@@ -401,9 +401,9 @@ export default function TaskItem({
               >
                 <span
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
+                    width: 7,
+                    height: 7,
+                    borderRadius: 4,
                     background: sphereColor,
                   }}
                 />
