@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
@@ -14,10 +15,13 @@ const SLIDES = [
 ] as const;
 
 export default function Onboarding() {
+  const pathname = usePathname();
   const t = useT();
   const lang = useLang();
   const { setLang } = useSetLang();
   const [done, setDone] = useState(true);
+
+  if (pathname.startsWith("/preview")) return null;
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
   const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);

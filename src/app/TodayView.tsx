@@ -52,10 +52,17 @@ const labelStyle = {
 
 /** Section heading used between groups on Today/Tasks/Settings/Habits. */
 const sectionHeadingStyle = {
-  fontSize: 13,
-  fontWeight: 600,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "5px 14px",
+  borderRadius: 999,
+  background: "var(--paper-warm)",
+  fontSize: 11,
+  fontWeight: 700,
   color: "var(--ink-80)",
-  letterSpacing: "-0.005em",
+  letterSpacing: "0.06em",
+  textTransform: "uppercase" as const,
 } as const;
 
 export default function TodayView({
@@ -303,8 +310,9 @@ export default function TodayView({
             <div
               style={{
                 background: "var(--paper-warm)",
-                border: "1px solid var(--ink-05)",
-                borderRadius: 22,
+                border: "none",
+                borderRadius: 28,
+                boxShadow: "var(--shadow-card)",
                 padding: "28px 22px",
                 textAlign: "center",
                 color: "var(--ink-60)",
@@ -439,7 +447,7 @@ function HeroNextTask({
       style={{
         background: color,
         color: "var(--ink)",
-        borderRadius: 22,
+        borderRadius: 28,
         padding: "16px 18px 18px",
         position: "relative",
         overflow: "hidden",
@@ -482,9 +490,9 @@ function HeroNextTask({
               display: "flex",
               alignItems: "center",
               gap: 6,
-              padding: "4px 10px",
+              padding: "5px 12px",
               background: "rgba(255,255,255,0.35)",
-              borderRadius: 8,
+              borderRadius: 999,
               fontSize: 11,
               fontWeight: 600,
               color: "var(--ink)",
@@ -545,8 +553,8 @@ function HeroNextTask({
           className="tap"
           style={{
             flex: 1,
-            padding: "12px 0",
-            borderRadius: 12,
+            padding: "14px 0",
+            borderRadius: 999,
             background: "var(--ink)",
             color,
             border: "none",
@@ -574,7 +582,7 @@ function HeroNextTask({
           style={{
             width: 46,
             height: 46,
-            borderRadius: 12,
+            borderRadius: 16,
             background: "rgba(255,255,255,0.35)",
             border: "none",
             cursor: "pointer",

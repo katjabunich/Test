@@ -45,21 +45,19 @@ export default function BottomNav() {
     <div
       style={{
         position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
+        bottom: "max(8px, calc(env(safe-area-inset-bottom, 0px) + 4px))",
+        left: 12,
+        right: 12,
         maxWidth: 460,
         margin: "0 auto",
         background: "var(--paper)",
-        borderTop: "1px solid var(--ink-10)",
-        padding: "10px 24px max(10px, calc(env(safe-area-inset-bottom) + 6px))",
+        borderRadius: 28,
+        boxShadow: "var(--shadow-nav)",
+        padding: "10px 20px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         zIndex: 50,
-        /* Force a compositor layer so iOS PWA standalone mode doesn't
-           re-paint the bar position on every scroll/keyboard event —
-           the "jiggle" Katja reported lives in that recompute path. */
         transform: "translate3d(0, 0, 0)",
         willChange: "transform",
         backfaceVisibility: "hidden",
@@ -75,9 +73,9 @@ export default function BottomNav() {
               aria-label="Создать"
               className="tap"
               style={{
-                width: 52,
-                height: 52,
-                borderRadius: 26,
+                width: 54,
+                height: 54,
+                borderRadius: 27,
                 border: "none",
                 background: "var(--mint-deep)",
                 color: "white",
@@ -85,7 +83,7 @@ export default function BottomNav() {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                boxShadow: "0 8px 20px rgba(79,156,106,0.35)",
+                boxShadow: "0 8px 24px rgba(79,156,106,0.30)",
               }}
             >
               <Icons.Plus size={22} stroke="#fff" strokeWidth={2.4} />

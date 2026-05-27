@@ -52,7 +52,7 @@ export default function HabitRing({
     });
   }
 
-  const stroke = 2;
+  const stroke = 2.5;
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(7, weekDone) / 7);

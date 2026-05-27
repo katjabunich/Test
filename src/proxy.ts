@@ -5,7 +5,7 @@ import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/env";
 /* Routes accessible without a session. /auth/* covers callback + sign-out.
    /api/* is excluded so route handlers can return 401 JSON instead of an
    HTML redirect that breaks fetch() callers. */
-const PUBLIC_PREFIXES = ["/login", "/auth", "/api"];
+const PUBLIC_PREFIXES = ["/login", "/auth", "/api", "/preview"];
 
 export async function proxy(request: NextRequest) {
   const url = getSupabaseUrl();
@@ -14,7 +14,11 @@ export async function proxy(request: NextRequest) {
   // don't crash the middleware.
   if (!url || !key) return NextResponse.next();
 
-  let response = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 
   const supabase = createServerClient(url, key, {
     cookies: {

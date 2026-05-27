@@ -239,7 +239,7 @@ export default function TaskItem({
       className={collapsing ? "task-collapse" : undefined}
       style={{
         position: "relative",
-        borderRadius: 16,
+        borderRadius: 22,
         overflow: "hidden",
         maxHeight: 140,
         transformOrigin: "top center",
@@ -254,7 +254,7 @@ export default function TaskItem({
             inset: 0,
             background:
               swipeDir === "left" ? "var(--mint-deep)" : "var(--butter)",
-            borderRadius: 16,
+            borderRadius: 22,
             display: "flex",
             alignItems: "center",
             justifyContent: swipeDir === "left" ? "flex-end" : "flex-start",
@@ -311,10 +311,11 @@ export default function TaskItem({
         onPointerCancel={onPointerCancel}
         style={{
           background: cardBg,
-          border: `1px solid ${cardBorder}`,
-          borderLeft: overdue ? "3px solid var(--alert)" : `1px solid ${cardBorder}`,
-          borderRadius: 16,
-          padding: overdue ? "12px 14px 12px 12px" : "12px 14px",
+          border: "none",
+          borderLeft: overdue ? "3px solid var(--alert)" : "none",
+          borderRadius: 22,
+          boxShadow: "var(--shadow-card)",
+          padding: overdue ? "14px 16px 14px 14px" : "14px 16px",
           display: "flex",
           alignItems: "center",
           gap: 12,
