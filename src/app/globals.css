@@ -2,28 +2,28 @@
 
 /* v4 — Tiffany mint accent + warm paper palette */
 :root {
-  /* Surfaces — warm paper, ink */
-  --paper:       #f7f2ea;
-  --paper-warm:  #f0e6d8;
-  --paper-deep:  #e8dbc6;
-  --ink:         #2d2620;
-  --ink-strong:  #1f1813;
-  --ink-80:      rgba(45,38,32,0.82);
-  --ink-60:      rgba(45,38,32,0.6);
-  --ink-40:      rgba(45,38,32,0.38);
-  --ink-20:      rgba(45,38,32,0.18);
-  --ink-10:      rgba(45,38,32,0.06);
-  --ink-05:      rgba(45,38,32,0.03);
+  /* Surfaces — clean white + neutral gray */
+  --paper:       #FAFAFA;
+  --paper-warm:  #FFFFFF;
+  --paper-deep:  #F0F0F0;
+  --ink:         #1A1A1A;
+  --ink-strong:  #000000;
+  --ink-80:      rgba(0,0,0,0.78);
+  --ink-60:      rgba(0,0,0,0.55);
+  --ink-40:      rgba(0,0,0,0.35);
+  --ink-20:      rgba(0,0,0,0.14);
+  --ink-10:      rgba(0,0,0,0.06);
+  --ink-05:      rgba(0,0,0,0.03);
 
-  /* Accent + sphere palette */
-  --mint:        #86c79a;
-  --mint-deep:   #4f9c6a;
-  --lilac:       #b5a3df;
-  --peach:       #f4936e;
-  --blush:       #e89bb0;
-  --butter:      #f5c563;
-  --pool:        #6ba4c2;
-  --alert:       #d96a52;
+  /* Accent — pastel Tiimo palette */
+  --mint:        #A8D8B9;
+  --mint-deep:   #6BBF8A;
+  --lilac:       #C4B8E8;
+  --peach:       #F9C4A8;
+  --blush:       #F2B5C8;
+  --butter:      #F5D76E;
+  --pool:        #A1C9E0;
+  --alert:       #E8756A;
 
   /* Type stacks — sans for body/UI, serif for emotional headings */
   --font-display: var(--font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
@@ -36,12 +36,12 @@
   --radius-xl: 28px;
   --radius-2xl: 32px;
 
-  /* Shadows — soft ambient instead of borders */
-  --shadow-card: 0 2px 12px rgba(45,38,32,0.06), 0 0.5px 3px rgba(45,38,32,0.04);
-  --shadow-card-lg: 0 6px 24px rgba(45,38,32,0.08);
-  --shadow-elevated: 0 12px 36px rgba(45,38,32,0.12);
-  --shadow-nav: 0 -4px 20px rgba(45,38,32,0.06);
-  --shadow-modal: 0 -12px 48px rgba(45,38,32,0.14);
+  /* Shadows — soft ambient on white */
+  --shadow-card: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-card-lg: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-elevated: 0 16px 48px rgba(0,0,0,0.12);
+  --shadow-nav: 0 -2px 24px rgba(0,0,0,0.08);
+  --shadow-modal: 0 -16px 56px rgba(0,0,0,0.12);
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);

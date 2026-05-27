@@ -55,12 +55,13 @@ const sectionHeadingStyle = {
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
-  padding: "5px 14px",
+  padding: "6px 16px",
   borderRadius: 999,
-  background: "var(--paper-warm)",
+  background: "#FFFFFF",
+  boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
   fontSize: 11,
   fontWeight: 700,
-  color: "var(--ink-80)",
+  color: "var(--ink-60)",
   letterSpacing: "0.06em",
   textTransform: "uppercase" as const,
 } as const;
@@ -309,7 +310,7 @@ export default function TodayView({
           ) : (
             <div
               style={{
-                background: "var(--paper-warm)",
+                background: "#FFFFFF",
                 border: "none",
                 borderRadius: 28,
                 boxShadow: "var(--shadow-card)",
@@ -448,7 +449,8 @@ function HeroNextTask({
         background: color,
         color: "var(--ink)",
         borderRadius: 28,
-        padding: "16px 18px 18px",
+        padding: "18px 20px 20px",
+        boxShadow: "var(--shadow-card-lg)",
         position: "relative",
         overflow: "hidden",
         cursor: "pointer",
