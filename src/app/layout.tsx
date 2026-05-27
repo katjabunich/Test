@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Lora, Manrope } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import SettingsTrigger from "@/components/SettingsTrigger";
@@ -12,22 +12,24 @@ import { getLang } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/lib/i18n/client";
 
 /* Two-family system:
-   - Lora: warm soft serif for emotional moments (H1s, hero title,
-     streak number, onboarding titles). Modern soft serif, full Cyrillic.
-   - Manrope: workhorse sans for body, lists, labels, UI chrome. Native
-     Cyrillic by Mikhail Sharanda, slightly rounded geometric. */
-const serif = Lora({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+   - Fraunces: rounded warm serif with soft optical sizing —
+     close to Tiimo's heading typeface (Recoleta-like). High-contrast
+     strokes, friendly personality, full Cyrillic support.
+   - Plus Jakarta Sans: clean geometric sans with slightly rounded
+     terminals — close to Tiimo's body typeface. Modern, friendly,
+     full Latin support (Cyrillic falls back to system). */
+const serif = Fraunces({
+  subsets: ["latin", "latin-ext"],
   variable: "--font-serif",
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800", "900"],
 });
 
-const sans = Manrope({
-  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
+const sans = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
