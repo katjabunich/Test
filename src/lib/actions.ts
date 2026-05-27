@@ -173,6 +173,69 @@ export async function deleteTask(id: string) {
   revalidatePath("/tasks");
 }
 
+/* ──────────────── Batch overdue actions ──────────────── */
+
+export async function rescheduleAllOverdueToToday() {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const t = today();
+  const { error } = await supabase
+    .from("tasks")
+    .update({ due_date: t, reminded_at: null })
+    .eq("user_id", user.id)
+    .is("completed_at", null)
+    .lt("due_date", t);
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/tasks");
+}
+
+export async function spreadOverdueAcrossWeek() {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const t = today();
+  const { data: overdue, error: readErr } = await supabase
+    .from("tasks")
+    .select("id")
+    .eq("user_id", user.id)
+    .is("completed_at", null)
+    .lt("due_date", t)
+    .order("due_date", { ascending: true });
+  if (readErr) throw new Error(readErr.message);
+  if (!overdue || overdue.length === 0) return;
+  const base = new Date(`${t}T00:00:00`);
+  const updates = overdue.map((task, i) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + Math.floor((i * 7) / overdue.length));
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return supabase
+      .from("tasks")
+      .update({ due_date: `${y}-${m}-${dd}`, reminded_at: null })
+      .eq("id", task.id);
+  });
+  await Promise.all(updates);
+  revalidatePath("/");
+  revalidatePath("/tasks");
+}
+
+export async function archiveAllOverdue() {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const t = today();
+  const { error } = await supabase
+    .from("tasks")
+    .update({ completed_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+    .is("completed_at", null)
+    .lt("due_date", t);
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/tasks");
+  revalidatePath("/stats");
+}
+
 /* ──────────────── Spheres ──────────────── */
 
 export async function createSphere(input: { name: string; color: string; emoji?: string | null }) {

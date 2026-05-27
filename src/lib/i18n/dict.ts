@@ -124,6 +124,19 @@ export const DICT = {
     empty_fresh: { ru: "Чисто. Добавь первое дело — кнопкой плюса внизу.", en: "Clean slate. Tap the + button below to add your first task." },
     empty_done_pre:{ ru: "Свободно на сегодня. На неделе ещё ",  en: "All clear today. " },
     empty_done_post:{ ru: " — найдёшь во вкладке «Задачи».",     en: " more this week — see the Tasks tab." },
+
+    /* Return card — shown when overdue tasks exist */
+    return_title:     { ru: "С возвращением!",          en: "Welcome back!" },
+    return_sub_pre:   { ru: "Накопилось ",               en: "" },
+    return_sub_post:  { ru: ". Что делаем?",             en: " tasks piled up. What shall we do?" },
+    return_today:     { ru: "Всё на сегодня",            en: "Move all to today" },
+    return_week:      { ru: "Раскидать на неделю",       en: "Spread across the week" },
+    return_clean:     { ru: "Начать с чистого листа",    en: "Start fresh" },
+
+    /* Progress bar */
+    progress_tasks:   { ru: "задач",                     en: "tasks" },
+    progress_habits:  { ru: "привычек",                  en: "habits" },
+    progress_of:      { ru: "из",                        en: "of" },
   },
 
   /* ──────────── Tasks ──────────── */

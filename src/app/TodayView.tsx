@@ -8,6 +8,11 @@ import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import { Icons, SphereIcon } from "@/components/Icons";
 import { snack } from "@/components/Snackbar";
+import {
+  rescheduleAllOverdueToToday,
+  spreadOverdueAcrossWeek,
+  archiveAllOverdue,
+} from "@/lib/actions";
 import { isPast, isToday, today, fromIsoDate, addDays } from "@/lib/date";
 import { computeStreak, groupLogsByHabit, isScheduledOn } from "@/lib/habits";
 import { completeTask } from "@/lib/actions";
@@ -66,6 +71,120 @@ const sectionHeadingStyle = {
   letterSpacing: "0.06em",
   textTransform: "uppercase" as const,
 } as const;
+
+function ReturnCard({ overdueCount }: { overdueCount: number }) {
+  const t = useT();
+  const [isPending, startTransition] = useTransition();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (overdueCount === 0 || dismissed) return null;
+
+  const btnStyle = {
+    flex: 1,
+    padding: "12px 8px",
+    borderRadius: 999,
+    border: "none",
+    fontSize: 13,
+    fontWeight: 700 as const,
+    cursor: isPending ? ("default" as const) : ("pointer" as const),
+    opacity: isPending ? 0.5 : 1,
+    transition: "opacity 200ms",
+  };
+
+  function act(fn: () => Promise<void>, msg: string) {
+    startTransition(async () => {
+      try {
+        await fn();
+        snack(msg);
+        setDismissed(true);
+      } catch { /* fall through */ }
+    });
+  }
+
+  return (
+    <div
+      style={{
+        margin: "0 18px 12px",
+        background: "#FFFFFF",
+        borderRadius: 24,
+        boxShadow: "var(--shadow-card-lg)",
+        padding: "22px 20px 18px",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "var(--font-emphasis)",
+          fontSize: 22,
+          fontWeight: 700,
+          color: "var(--ink-strong)",
+          letterSpacing: "-0.02em",
+          lineHeight: 1.2,
+          marginBottom: 6,
+        }}
+      >
+        {t("today.return_title")}
+      </div>
+      <div
+        style={{
+          fontSize: 14,
+          color: "var(--ink-60)",
+          lineHeight: 1.4,
+          marginBottom: 18,
+        }}
+      >
+        {t("today.return_sub_pre")}
+        <span className="tnum" style={{ fontWeight: 700, color: "var(--ink)" }}>
+          {overdueCount}
+        </span>
+        {" "}{t("today.progress_tasks")}
+        {t("today.return_sub_post")}
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          type="button"
+          className="tap"
+          onClick={() => act(rescheduleAllOverdueToToday, "✓")}
+          disabled={isPending}
+          style={{
+            ...btnStyle,
+            background: "var(--ink-strong)",
+            color: "#FFFFFF",
+          }}
+        >
+          {t("today.return_today")}
+        </button>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <button
+          type="button"
+          className="tap"
+          onClick={() => act(spreadOverdueAcrossWeek, "✓")}
+          disabled={isPending}
+          style={{
+            ...btnStyle,
+            background: "var(--paper-deep)",
+            color: "var(--ink)",
+          }}
+        >
+          {t("today.return_week")}
+        </button>
+        <button
+          type="button"
+          className="tap"
+          onClick={() => act(archiveAllOverdue, "✓")}
+          disabled={isPending}
+          style={{
+            ...btnStyle,
+            background: "var(--paper-deep)",
+            color: "var(--ink)",
+          }}
+        >
+          {t("today.return_clean")}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function TodayView({
   todayTasks,
@@ -157,14 +276,13 @@ export default function TodayView({
     });
   }, [todayTasks]);
 
-  const heroTask = sortedTodayTasks[0] ?? null;
-  const restTasks = sortedTodayTasks.slice(1);
   const overdueCount = sortedTodayTasks.filter(
     (t) => t.due_date && isPast(t.due_date),
   ).length;
-  const heroSphere = heroTask?.sphere_id
-    ? sphereById.get(heroTask.sphere_id) ?? null
-    : null;
+  const doneToday = 0; // completed tasks are filtered out server-side
+  const totalToday = sortedTodayTasks.length;
+  const habitsDoneCount = habitsToday.filter((h) => doneTodaySet.has(h.id)).length;
+  const habitsTotal = habitsToday.length;
 
   function weekDoneFor(habitId: string): number {
     const logged = logsByHabit.get(habitId);
@@ -296,19 +414,51 @@ export default function TodayView({
           </div>
         )}
 
-        {/* Hero "next task" + the rest */}
-        <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {heroTask ? (
-            <HeroNextTask
-              key={heroTask.id}
-              task={heroTask}
-              sphere={heroSphere}
-              onEdit={() => {
-                setEditing(heroTask);
-                setModalOpen(true);
+        {/* Return card — shown when overdue tasks exist */}
+        <ReturnCard overdueCount={overdueCount} />
+
+        {/* Progress bar */}
+        {totalToday > 0 && (
+          <div style={{ padding: "0 22px 6px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ink-40)",
               }}
-            />
-          ) : (
+            >
+              <div
+                style={{
+                  flex: 1,
+                  height: 6,
+                  borderRadius: 999,
+                  background: "var(--ink-05)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "var(--mint-deep)",
+                    width: totalToday > 0 ? `${Math.round((doneToday / totalToday) * 100)}%` : "0%",
+                    transition: "width 400ms var(--ease-out)",
+                  }}
+                />
+              </div>
+              <span className="tnum" style={{ flexShrink: 0 }}>
+                {doneToday} {t("today.progress_of")} {totalToday}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Flat task list — no hero, all tasks equal */}
+        <div style={{ padding: "0 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {sortedTodayTasks.length === 0 && (
             <div
               style={{
                 background: "#FFFFFF",
@@ -334,43 +484,7 @@ export default function TodayView({
             </div>
           )}
 
-          {(restTasks.length > 0 || overdueCount > 0) && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "8px 4px 0",
-              }}
-            >
-              <span style={sectionHeadingStyle}>
-                {t("today.h_next")} · <span className="tnum">{restTasks.length}</span>
-              </span>
-              {overdueCount > 0 && (
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: "var(--alert)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    letterSpacing: "-0.005em",
-                  }}
-                >
-                  <Icons.Alert
-                    size={12}
-                    stroke="var(--alert)"
-                    strokeWidth={2.2}
-                  />
-                  <span className="tnum">{overdueCount}</span>{" "}
-                  {t("today.overdue_count")}
-                </span>
-              )}
-            </div>
-          )}
-
-          {restTasks.map((task) => (
+          {sortedTodayTasks.map((task) => (
             <TaskItem
               key={task.id}
               task={task}
