@@ -99,7 +99,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
     background: "#FFFFFF",
     color: "var(--ink-strong)",
     fontSize: 14,
-    fontWeight: 700 as const,
+    fontWeight: 500 as const,
     fontFamily: "var(--font-display)",
     cursor: isPending ? ("default" as const) : ("pointer" as const),
     opacity: isPending ? 0.5 : 1,
