@@ -72,6 +72,15 @@ const sectionHeadingStyle = {
   textTransform: "uppercase" as const,
 } as const;
 
+/** Russian plural — 1 → одна, 2-4 → две/три/четыре, 5+ → много. */
+function pluralRu(n: number): "one" | "few" | "many" {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "one";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "few";
+  return "many";
+}
+
 function ReturnCard({ overdueCount }: { overdueCount: number }) {
   const t = useT();
   const [isPending, startTransition] = useTransition();
@@ -79,16 +88,23 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
 
   if (overdueCount === 0 || dismissed) return null;
 
-  const btnStyle = {
-    flex: 1,
-    padding: "12px 8px",
+  /* Tiimo-style option pills — white background, thin border, dark text.
+     All three actions look equal (matches Tiimo's "What's your biggest
+     need right now?" option style); no harsh black primary. */
+  const pillStyle = {
+    width: "100%",
+    padding: "14px 16px",
     borderRadius: 999,
-    border: "none",
-    fontSize: 13,
+    border: "1.5px solid var(--ink-10)",
+    background: "#FFFFFF",
+    color: "var(--ink-strong)",
+    fontSize: 14,
     fontWeight: 700 as const,
+    fontFamily: "var(--font-display)",
     cursor: isPending ? ("default" as const) : ("pointer" as const),
     opacity: isPending ? 0.5 : 1,
-    transition: "opacity 200ms",
+    transition: "opacity 200ms, background 200ms",
+    textAlign: "center" as const,
   };
 
   function act(fn: () => Promise<void>, msg: string) {
@@ -101,24 +117,32 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
     });
   }
 
+  const plural = pluralRu(overdueCount);
+  const subKey =
+    plural === "one"
+      ? "today.return_sub_one"
+      : plural === "few"
+      ? "today.return_sub_few"
+      : "today.return_sub_many";
+  const subContent = t(subKey, { n: overdueCount });
+
   return (
     <div
       style={{
-        margin: "0 18px 12px",
-        background: "#FFFFFF",
-        borderRadius: 24,
-        boxShadow: "var(--shadow-card-lg)",
-        padding: "22px 20px 18px",
+        margin: "0 18px 14px",
+        background: "var(--lilac)",
+        borderRadius: 28,
+        padding: "22px 22px 18px",
       }}
     >
       <div
         style={{
           fontFamily: "var(--font-emphasis)",
-          fontSize: 22,
+          fontSize: 24,
           fontWeight: 700,
           color: "var(--ink-strong)",
           letterSpacing: "-0.02em",
-          lineHeight: 1.2,
+          lineHeight: 1.15,
           marginBottom: 6,
         }}
       >
@@ -127,44 +151,29 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
       <div
         style={{
           fontSize: 14,
-          color: "var(--ink-60)",
+          color: "var(--ink-80)",
           lineHeight: 1.4,
           marginBottom: 18,
         }}
       >
-        {t("today.return_sub_pre")}
-        <span className="tnum" style={{ fontWeight: 700, color: "var(--ink)" }}>
-          {overdueCount}
-        </span>
-        {" "}{t("today.progress_tasks")}
-        {t("today.return_sub_post")}
+        {subContent}
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <button
           type="button"
           className="tap"
           onClick={() => act(rescheduleAllOverdueToToday, "✓")}
           disabled={isPending}
-          style={{
-            ...btnStyle,
-            background: "var(--ink-strong)",
-            color: "#FFFFFF",
-          }}
+          style={pillStyle}
         >
           {t("today.return_today")}
         </button>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
         <button
           type="button"
           className="tap"
           onClick={() => act(spreadOverdueAcrossWeek, "✓")}
           disabled={isPending}
-          style={{
-            ...btnStyle,
-            background: "var(--paper-deep)",
-            color: "var(--ink)",
-          }}
+          style={pillStyle}
         >
           {t("today.return_week")}
         </button>
@@ -173,11 +182,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
           className="tap"
           onClick={() => act(archiveAllOverdue, "✓")}
           disabled={isPending}
-          style={{
-            ...btnStyle,
-            background: "var(--paper-deep)",
-            color: "var(--ink)",
-          }}
+          style={pillStyle}
         >
           {t("today.return_clean")}
         </button>

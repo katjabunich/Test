@@ -127,8 +127,9 @@ export const DICT = {
 
     /* Return card — shown when overdue tasks exist */
     return_title:     { ru: "С возвращением!",          en: "Welcome back!" },
-    return_sub_pre:   { ru: "Накопилось ",               en: "" },
-    return_sub_post:  { ru: ". Что делаем?",             en: " tasks piled up. What shall we do?" },
+    return_sub_one:   { ru: "Накопилась одна задача. Что делаем?",  en: "One task piled up. What shall we do?" },
+    return_sub_few:   { ru: "Накопилось {n} задачи. Что делаем?",   en: "{n} tasks piled up. What shall we do?" },
+    return_sub_many:  { ru: "Накопилось {n} задач. Что делаем?",    en: "{n} tasks piled up. What shall we do?" },
     return_today:     { ru: "Всё на сегодня",            en: "Move all to today" },
     return_week:      { ru: "Раскидать на неделю",       en: "Spread across the week" },
     return_clean:     { ru: "Начать с чистого листа",    en: "Start fresh" },
@@ -371,7 +372,7 @@ export function tFor(lang: Lang) {
     if (!area || !key) return path;
     const leaf = lookup(area, key);
     if (!leaf) return path;
-    let v = leaf[lang] || leaf.ru;
+    let v = leaf[lang] ?? leaf.ru;
     if (vars) {
       for (const [k, val] of Object.entries(vars)) {
         v = v.replace(`{${k}}`, String(val));
