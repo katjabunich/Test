@@ -130,7 +130,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
     <div
       style={{
         margin: "0 18px 14px",
-        background: "var(--lilac)",
+        background: "var(--mint)",
         borderRadius: 28,
         padding: "22px 22px 18px",
       }}
