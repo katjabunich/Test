@@ -3,8 +3,8 @@
 /* v4 — Tiffany mint accent + warm paper palette */
 :root {
   /* Surfaces — clean white + neutral gray */
-  --paper:       #FAFAFA;
-  --paper-warm:  #FFFFFF;
+  --paper:       #FFFFFF;
+  --paper-warm:  #FAFAFA;
   --paper-deep:  #F0F0F0;
   --ink:         #1A1A1A;
   --ink-strong:  #000000;
@@ -68,6 +68,15 @@ html, body {
 
 body {
   min-height: 100dvh;
+  /* Soft pastel "focus zone" at the top fades into clean white below,
+     so the greeting + return card sit on a coloured stage while the
+     task list reads on neutral white. The fade is wide (~520px) so the
+     transition is imperceptible. */
+  background:
+    linear-gradient(180deg, #F4F0FA 0%, rgba(244,240,250,0.5) 280px, #FFFFFF 520px),
+    #FFFFFF;
+  background-attachment: scroll;
+  background-repeat: no-repeat;
 }
 
 main {
