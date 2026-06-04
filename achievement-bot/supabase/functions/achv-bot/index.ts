@@ -121,8 +121,14 @@ Deno.serve(async (req) => {
   const from = msg?.from ?? cb?.from;
   if (!from) return ok();
 
-  // Белый список из одного человека.
-  if (Number(from.id) !== Number(cfg.owner_telegram_id)) {
+  // Бутстрап владельца: если в конфиге ещё нет владельца (0), первый написавший
+  // закрепляется как хозяин. Бот новый и известен только ей — окно риска мизерное.
+  if (!cfg.owner_telegram_id || Number(cfg.owner_telegram_id) === 0) {
+    await db.from('config').update({ owner_telegram_id: from.id }).eq('id', true);
+    cfg.owner_telegram_id = from.id;
+    _cfg = null; // сбросить кеш, чтобы следующий запрос перечитал свежий конфиг
+  } else if (Number(from.id) !== Number(cfg.owner_telegram_id)) {
+    // Белый список из одного человека.
     const chat = msg?.chat?.id ?? cb?.message?.chat?.id;
     if (chat) await send(chat, PRIVATE_BOT);
     return ok();
