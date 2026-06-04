@@ -19,70 +19,76 @@ AI-разбор твоих сильных сторон. Работает **то�
 
 ## Архитектура
 
-- **Supabase Postgres** — таблицы `bot_users`, `entries` (RLS включён, доступ
-  только у Edge Functions через service_role; снаружи — ноль).
-- **Edge Function `bot`** — webhook Телеграма (запись, команды, кнопки).
-- **Edge Function `cron`** — вечерние напоминания и недельная сводка.
-- **pg_cron** — тикает каждый час и дёргает `cron`.
-- **Claude API** (опц.) — `/итоги`, модель Haiku (копейки; стартовых $5 хватает надолго).
+Бот живёт в **общем проекте Supabase**, но в собственной изолированной схеме
+`achievements` — это даёт чистое разделение данных без отдельного (платного)
+проекта-сервера.
+
+- **Schema `achievements`** — таблицы `users`, `entries`, `config`. Схема не
+  отдаётся в публичный API; RLS включён; ходит только Edge Function под
+  service_role. Снаружи — ноль доступа.
+- **Edge Function `achv-bot`** — webhook Телеграма (запись, команды, кнопки).
+- **Edge Function `achv-cron`** — вечерние напоминания и недельная сводка.
+- **pg_cron** — тикает каждый час и дёргает `achv-cron`.
+- **Claude API** (опц.) — `/итоги`, модель Haiku (копейки).
+
+Секреты (токен бота, ID владельца, подписи, ключ Claude) хранятся в строке
+таблицы `achievements.config` — у функций в этой установке нет отдельного
+хранилища секретов, поэтому конфиг лежит в БД и читается только сервером.
 
 Схема многопользовательская «изнутри», но запуск — для одного владельца
-(белый список по `OWNER_TELEGRAM_ID`).
+(белый список по `owner_telegram_id` из конфига).
 
 ## Безопасность
 
-- **Белый список из одного человека.** Бот обслуживает только `OWNER_TELEGRAM_ID`.
+- **Белый список из одного человека.** Бот обслуживает только `owner_telegram_id`.
   Любой другой получает «Это личный бот» и не может ни писать, ни читать.
 - **Подпись webhook'а.** Телеграм шлёт секрет в заголовке
   `x-telegram-bot-api-secret-token`; чужой POST отбрасывается.
 - **Секрет cron'а** в заголовке — функцию не дёрнуть снаружи.
-- **Секреты только на сервере** (`supabase secrets`), в git не попадают.
-- **База закрыта наружу** (RLS, без публичных политик).
+- **Конфиг в закрытой схеме** (RLS, не в публичном API, доступ только service_role).
+- **Данные изолированы** от других приложений проекта своей схемой.
 
 ## Развёртывание
 
-Нужен [Supabase CLI](https://supabase.com/docs/guides/cli) и токен бота.
+> Бот разворачивается в существующий проект Supabase (например `plant-app`).
+> Отдельный проект НЕ нужен — он стоил бы ~$10/мес, а схема `achievements`
+> даёт ту же изоляцию бесплатно.
 
 ### 1. Создать бота
 В Телеграме → **@BotFather** → `/newbot` → получить **токен**.
 Там же: `/setprivacy` → Enable, и `/setjoingroups` → Disable (бот только в личке).
 
 ### 2. Узнать свой Telegram ID
-Написать боту **@userinfobot** — он пришлёт твой числовой `id`. Это `OWNER_TELEGRAM_ID`.
+Написать боту **@userinfobot** — он пришлёт твой числовой `id`.
 
-### 3. Линкуем проект и применяем схему
-```sh
-supabase link --project-ref <PROJECT_REF>
-supabase db push                       # применит миграцию из supabase/migrations
-```
+### 3. Применить схему
+Выполнить миграцию `supabase/migrations/20260604000000_init.sql` в проекте
+(через `supabase db push` или дашборд → SQL Editor). Создаст схему `achievements`
+и три таблицы.
 
-### 4. Секреты
-```sh
-supabase secrets set \
-  TELEGRAM_BOT_TOKEN=... \
-  OWNER_TELEGRAM_ID=... \
-  TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 24) \
-  CRON_SECRET=$(openssl rand -hex 24) \
-  ANTHROPIC_API_KEY=sk-ant-...         # опционально
-```
-(сохрани значения `TELEGRAM_WEBHOOK_SECRET` и `CRON_SECRET` — пригодятся ниже)
+### 4. Залить конфиг
+В SQL Editor выполнить `insert into achievements.config (...) values (...)`
+по шаблону из `.env.example` — подставив токен, свой Telegram ID и две длинные
+случайные строки (webhook_secret, cron_secret).
 
 ### 5. Деплой функций
 ```sh
-supabase functions deploy bot
-supabase functions deploy cron
+supabase functions deploy achv-bot
+supabase functions deploy achv-cron
 ```
+(или через дашборд / Management API)
 
 ### 6. Подключить webhook Телеграма
 ```sh
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -d "url=https://<PROJECT_REF>.functions.supabase.co/bot" \
-  -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
+  -d "url=https://<PROJECT_REF>.functions.supabase.co/achv-bot" \
+  -d "secret_token=<webhook_secret из конфига>"
 ```
 
 ### 7. Включить расписание
 В дашборде Supabase → Database → Extensions включить `pg_cron` и `pg_net`,
-затем выполнить `supabase/schedule.sql` (подставив `<PROJECT_REF>` и `<CRON_SECRET>`).
+затем выполнить `supabase/schedule.sql` (подставив `<PROJECT_REF>`).
+Секрет cron'а подставлять не нужно — он берётся из `achievements.config`.
 
 ### 8. Проверить
 Написать боту `/start`. Готово ✨

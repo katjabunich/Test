@@ -1,7 +1,7 @@
 # Edge Functions вызываются Телеграмом и pg_cron без JWT — отключаем проверку,
 # защита у нас своя (секрет webhook'а и секрет cron'а в заголовках).
-[functions.bot]
+[functions.achv-bot]
 verify_jwt = false
 
-[functions.cron]
+[functions.achv-cron]
 verify_jwt = false
