@@ -47,8 +47,27 @@ create table if not exists achievements.config (
 );
 
 -- ── Безопасность ─────────────────────────────────────────────────────────────
--- RLS включён, политик нет: схема не отдаётся в PostgREST, ходит только функция
--- под service_role (обходит RLS). Снаружи доступа ноль.
+-- RLS включён, политик нет. Доступ к таблицам выдан ТОЛЬКО service_role (обходит
+-- RLS); anon/authenticated прав не получают, поэтому снаружи без service_role-ключа
+-- данные недоступны, даже несмотря на то что схема видна REST-слою.
 alter table achievements.users   enable row level security;
 alter table achievements.entries enable row level security;
 alter table achievements.config  enable row level security;
+
+-- ── Доступ для серверной функции ─────────────────────────────────────────────
+-- Edge Functions ходят в БД через PostgREST (supabase-js), а он РЕЖЕТ доступ по
+-- списку открытых схем независимо от роли. Поэтому мало выдать гранты — схему ещё
+-- надо добавить в pgrst.db_schemas, иначе функция получает 500 (PGRST205/106).
+grant usage on schema achievements to service_role;
+grant all privileges on all tables    in schema achievements to service_role;
+grant all privileges on all sequences in schema achievements to service_role;
+grant all privileges on all functions  in schema achievements to service_role;
+alter default privileges in schema achievements grant all on tables    to service_role;
+alter default privileges in schema achievements grant all on sequences to service_role;
+
+-- Открыть схему для PostgREST. ВНИМАНИЕ: список перетирается целиком — обязательно
+-- сохранить уже открытые схемы проекта (public, graphql_public, плюс storage если
+-- используется) и добавить к ним achievements.
+alter role authenticator set pgrst.db_schemas = 'public, graphql_public, achievements';
+notify pgrst, 'reload config';
+notify pgrst, 'reload schema';
