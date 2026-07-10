@@ -20,8 +20,6 @@ export default function Onboarding() {
   const lang = useLang();
   const { setLang } = useSetLang();
   const [done, setDone] = useState(true);
-
-  if (pathname.startsWith("/preview")) return null;
   const [step, setStep] = useState(0);
   const [exiting, setExiting] = useState(false);
   const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
@@ -31,6 +29,8 @@ export default function Onboarding() {
     if (!localStorage.getItem(STORAGE_KEY)) setDone(false);
   }, []);
 
+  // After all hooks — conditional early-returns must not skip hook calls.
+  if (pathname.startsWith("/preview")) return null;
   if (done) return null;
 
   function finish() {

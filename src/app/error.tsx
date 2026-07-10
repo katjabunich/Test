@@ -25,13 +25,21 @@ export default function GlobalError({
         padding: "32px 20px",
         maxWidth: 460,
         margin: "0 auto",
-        color: "var(--text)",
+        color: "var(--ink)",
       }}
     >
-      <h1 style={{ fontSize: 22, fontWeight: 600, margin: "0 0 10px", letterSpacing: "-0.02em" }}>
+      <h1
+        style={{
+          fontFamily: "var(--font-emphasis)",
+          fontSize: 22,
+          fontWeight: 600,
+          margin: "0 0 10px",
+          letterSpacing: "-0.02em",
+        }}
+      >
         {t("common.err_title")}
       </h1>
-      <p style={{ color: "var(--text-muted)", lineHeight: 1.55, fontSize: 14 }}>
+      <p style={{ color: "var(--ink-60)", lineHeight: 1.55, fontSize: 14 }}>
         {error.message || t("common.err_unknown")}
       </p>
       <button
@@ -40,7 +48,7 @@ export default function GlobalError({
         style={{
           marginTop: 20,
           padding: "12px 18px",
-          borderRadius: 12,
+          borderRadius: 999,
           border: "none",
           background: "var(--accent)",
           color: "white",
