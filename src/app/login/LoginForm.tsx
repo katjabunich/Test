@@ -81,10 +81,10 @@ export default function LoginForm({ next }: { next: string }) {
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
-            fontSize: 42,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.02,
+            fontSize: 32,
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
             color: "var(--ink)",
             margin: "0 0 12px",
             textWrap: "balance" as React.CSSProperties["textWrap"],
@@ -219,15 +219,15 @@ export default function LoginForm({ next }: { next: string }) {
                 marginTop: 4,
                 marginBottom: 14,
                 padding: "11px 13px",
-                borderRadius: 12,
+                borderRadius: 14,
                 background:
                   banner.kind === "error"
-                    ? "rgba(217,106,82,0.10)"
-                    : "rgba(79,156,106,0.14)",
+                    ? "rgba(194,91,74,0.08)"
+                    : "var(--accent-tint)",
                 color:
                   banner.kind === "error"
-                    ? "var(--alert, #c25a44)"
-                    : "var(--mint-deep)",
+                    ? "var(--alert)"
+                    : "var(--accent)",
                 fontSize: 13,
                 fontWeight: banner.kind === "info" ? 500 : 400,
                 lineHeight: 1.45,
@@ -258,15 +258,15 @@ export default function LoginForm({ next }: { next: string }) {
             style={{
               width: "100%",
               padding: "16px 0",
-              borderRadius: 16,
-              background: "var(--ink-strong)",
-              color: "var(--paper)",
+              borderRadius: 999,
+              background: "var(--accent)",
+              color: "#FFFFFF",
               border: "none",
               cursor: pending ? "default" : "pointer",
               fontSize: 15.5,
               fontWeight: 600,
               letterSpacing: "-0.005em",
-              boxShadow: "0 6px 16px rgba(31,24,19,0.28)",
+              boxShadow: "var(--shadow-card-lg)",
               marginTop: 8,
               opacity: pending ? 0.7 : 1,
               fontFamily: "var(--font-sans), -apple-system, system-ui, sans-serif",
@@ -350,7 +350,7 @@ function ModeTab({
         fontSize: 14,
         fontWeight: 600,
         letterSpacing: "-0.005em",
-        boxShadow: active ? "0 2px 6px rgba(45,38,32,0.10)" : "none",
+        boxShadow: active ? "var(--shadow-card)" : "none",
         transition: "background 200ms var(--ease-out), color 200ms var(--ease-out)",
       }}
     >
@@ -400,8 +400,8 @@ function Field({
         style={{
           width: "100%",
           padding: "13px 14px",
-          borderRadius: 12,
-          border: "1px solid var(--ink-10)",
+          borderRadius: 14,
+          border: "none",
           background: "var(--paper-warm)",
           fontSize: 15,
           color: "var(--ink)",
