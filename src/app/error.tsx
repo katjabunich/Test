@@ -50,7 +50,7 @@ export default function GlobalError({
           padding: "12px 18px",
           borderRadius: 999,
           border: "none",
-          background: "var(--accent)",
+          background: "var(--mint-deep)",
           color: "white",
           fontSize: 15,
           fontWeight: 500,

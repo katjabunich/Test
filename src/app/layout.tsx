@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Source_Serif_4, Onest } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import SettingsTrigger from "@/components/SettingsTrigger";
@@ -11,22 +11,24 @@ import { getUser } from "@/lib/auth";
 import { getLang } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/lib/i18n/client";
 
-/* Two-family system, «Фарфор и хвоя»:
-   - Source Serif 4: transitional text-serif (Tiempos-adjacent) that
-     holds up at 17–44px on mobile — unlike a display didone whose
-     hairline strokes fall apart small. Full Cyrillic support.
-   - Onest: warm humanist sans drawn for Russian-language interfaces;
-     near-metric swap for Inter without the stock-template feel. */
-const serif = Source_Serif_4({
+/* Two-family system matching Tiimo's aesthetic:
+   - Playfair Display: high-contrast Didone serif with elegant
+     thick/thin stroke variation. Close to Tiimo's heading typeface.
+     Full Cyrillic support.
+   - Inter: clean geometric sans, neutral and modern. Close to
+     Tiimo's body/UI typeface. Full Cyrillic support. */
+const serif = Playfair_Display({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-serif",
   display: "swap",
+  weight: ["500", "600", "700", "800", "900"],
 });
 
-const sans = Onest({
+const sans = Inter({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-sans",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +43,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#FAF8F4",
+  themeColor: "#FAFAFA",
   viewportFit: "cover",
 };
 
