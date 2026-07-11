@@ -159,12 +159,6 @@ export const DICT = {
     completed_snack: { ru: "Готово ✓",   en: "Done ✓" },
     deferred_snack:  { ru: "Отложено",   en: "Deferred" },
     undo:        { ru: "Отменить",        en: "Undo" },
-    search_ph:   { ru: "Поиск по задачам", en: "Search tasks" },
-    search_empty:{ ru: "Ничего не нашлось. Попробуй другое слово.", en: "Nothing found. Try another word." },
-    tab_active:  { ru: "Активные",        en: "Active" },
-    tab_done:    { ru: "Выполнено",       en: "Done" },
-    restore:     { ru: "Вернуть в активные", en: "Restore" },
-    done_empty:  { ru: "Выполненное появится здесь. Всему своё время.", en: "Done tasks will land here. All in good time." },
   },
 
   /* ──────────── Habits ──────────── */

@@ -77,10 +77,10 @@ export default function ResetPasswordForm() {
         <h1
           style={{
             fontFamily: "var(--font-emphasis)",
-            fontSize: 32,
-            fontWeight: 600,
-            letterSpacing: "-0.02em",
-            lineHeight: 1.1,
+            fontSize: 42,
+            fontWeight: 700,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.02,
             color: "var(--ink)",
             margin: "0 0 12px",
           }}
@@ -129,9 +129,9 @@ export default function ResetPasswordForm() {
                 marginTop: 4,
                 marginBottom: 14,
                 padding: "11px 13px",
-                borderRadius: 14,
-                background: "rgba(194,91,74,0.08)",
-                color: "var(--alert)",
+                borderRadius: 12,
+                background: "rgba(217,106,82,0.10)",
+                color: "var(--alert, #c25a44)",
                 fontSize: 13,
                 fontWeight: 400,
                 lineHeight: 1.45,
@@ -149,9 +149,9 @@ export default function ResetPasswordForm() {
                 marginTop: 4,
                 marginBottom: 14,
                 padding: "11px 13px",
-                borderRadius: 14,
-                background: "var(--accent-tint)",
-                color: "var(--accent)",
+                borderRadius: 12,
+                background: "rgba(79,156,106,0.14)",
+                color: "var(--mint-deep)",
                 fontSize: 13,
                 fontWeight: 500,
                 letterSpacing: "-0.003em",
@@ -168,12 +168,12 @@ export default function ResetPasswordForm() {
             style={{
               width: "100%",
               padding: "16px 0",
-              borderRadius: 999,
+              borderRadius: 16,
               background:
                 pending || done || !password || !confirm
                   ? "var(--ink-20)"
-                  : "var(--accent)",
-              color: "#FFFFFF",
+                  : "var(--ink-strong)",
+              color: "var(--paper)",
               border: "none",
               cursor: pending || done ? "default" : "pointer",
               fontSize: 15.5,
@@ -182,7 +182,7 @@ export default function ResetPasswordForm() {
               boxShadow:
                 pending || done || !password || !confirm
                   ? "none"
-                  : "var(--shadow-card-lg)",
+                  : "0 6px 16px rgba(31,24,19,0.28)",
               marginTop: 8,
               opacity: pending ? 0.7 : 1,
             }}
@@ -237,8 +237,8 @@ function Field({
         style={{
           width: "100%",
           padding: "13px 14px",
-          borderRadius: 14,
-          border: "none",
+          borderRadius: 12,
+          border: "1px solid var(--ink-10)",
           background: "var(--paper-warm)",
           fontSize: 15,
           color: "var(--ink)",
