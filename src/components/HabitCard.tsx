@@ -9,9 +9,11 @@ import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
 import { useT, useDaysWord } from "@/lib/i18n/client";
+import { Card } from "@/components/ui";
 
-/** Habit list row per v4: paperWarm card with thin ring on the left,
-    name + week progress in the middle, big streak number on the right. */
+/** Habit list row: white Card (--radius-lg, --shadow-card) with thin ring
+    on the left, name + 14-day heatmap in the middle, plump streak number
+    on the right. */
 export default function HabitCard({
   habit,
   logged,
@@ -93,16 +95,13 @@ export default function HabitCard({
   const offset = c * (1 - Math.min(7, weekDone) / 7);
 
   return (
-    <div
+    <Card
       onClick={() => onEdit(habit)}
       style={{
-        background: "var(--paper-warm)",
-        borderRadius: 16,
-        padding: 14,
+        padding: "14px 16px",
         display: "flex",
         alignItems: "center",
         gap: 14,
-        border: "1px solid var(--ink-05)",
         cursor: "pointer",
       }}
     >
@@ -177,8 +176,8 @@ export default function HabitCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 15,
-            fontWeight: 600,
+            fontSize: 16,
+            fontWeight: 700,
             color: "var(--ink)",
             letterSpacing: "-0.01em",
             overflow: "hidden",
@@ -221,10 +220,10 @@ export default function HabitCard({
         <div
           className="tnum"
           style={{
-            fontFamily: "var(--font-emphasis)",
+            fontFamily: "var(--font-display)",
             fontSize: 30,
-            fontWeight: 700,
-            letterSpacing: "-0.034em",
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
             lineHeight: 1,
             color: "var(--ink)",
           }}
@@ -235,7 +234,7 @@ export default function HabitCard({
           style={{
             marginTop: 2,
             fontSize: 11,
-            fontWeight: 500,
+            fontWeight: 600,
             color: "var(--ink-40)",
             letterSpacing: "-0.005em",
           }}
@@ -243,6 +242,6 @@ export default function HabitCard({
           {daysWord(streak)} {t("habits.in_a_row")}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

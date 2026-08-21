@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import type { Sphere, Task } from "@/lib/data";
+import { Card, ScreenHeader } from "@/components/ui";
 import { useT, useLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 import { fromIsoDate, toIsoDate } from "@/lib/date";
@@ -345,33 +346,21 @@ export default function StatsView({
   return (
     <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {/* Heading */}
-      <div style={{ padding: "8px 22px 14px" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.04,
-            color: "var(--ink)",
-            margin: 0,
-          }}
-        >
-          {t("stats.title")}
-        </h1>
-      </div>
+      <ScreenHeader style={{ paddingBottom: 14 }}>
+        {t("stats.title")}
+      </ScreenHeader>
 
       {/* Hero — big animated count + comparison */}
-      <div style={{ padding: "0 22px 20px" }}>
+      <div style={{ padding: "0 20px 20px" }}>
         <div
           className="tnum"
           style={{
-            fontFamily: "var(--font-emphasis)",
+            fontFamily: "var(--font-display)",
             fontSize: 96,
-            fontWeight: 700,
-            letterSpacing: "-0.04em",
-            lineHeight: 0.92,
-            color: "var(--ink)",
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            lineHeight: 0.95,
+            color: "var(--ink-strong)",
           }}
         >
           {animatedTotal}
@@ -380,7 +369,7 @@ export default function StatsView({
           style={{
             marginTop: 8,
             fontSize: 13,
-            fontWeight: 500,
+            fontWeight: 600,
             color: "var(--ink-60)",
             letterSpacing: "-0.005em",
           }}
@@ -396,7 +385,7 @@ export default function StatsView({
         style={{
           display: "flex",
           gap: 24,
-          padding: "0 22px",
+          padding: "0 20px",
           position: "relative",
           marginBottom: 22,
         }}
@@ -418,8 +407,8 @@ export default function StatsView({
                 border: "none",
                 cursor: "pointer",
                 fontSize: 13,
-                fontWeight: 600,
-                letterSpacing: "0.04em",
+                fontWeight: 700,
+                letterSpacing: "0.06em",
                 textTransform: "uppercase",
                 color: active ? "var(--ink)" : "var(--ink-40)",
                 transition: "color 280ms var(--ease-out)",
@@ -447,8 +436,8 @@ export default function StatsView({
           aria-hidden
           style={{
             position: "absolute",
-            left: 22,
-            right: 22,
+            left: 20,
+            right: 20,
             bottom: 0,
             height: 1,
             background: "var(--ink-10)",
@@ -461,7 +450,7 @@ export default function StatsView({
       {periodTasks.length > 0 && (
         <div
           style={{
-            padding: "0 22px 24px",
+            padding: "0 20px 24px",
             display: "flex",
             flexDirection: "column",
             gap: 12,
@@ -482,7 +471,7 @@ export default function StatsView({
 
       {/* Mini-calendar */}
       {calendarData && periodTasks.length > 0 && (
-        <div style={{ padding: "0 22px 26px" }}>
+        <div style={{ padding: "0 20px 26px" }}>
           {period === "week" ? (
             <WeekCalendar days={calendarData} sphereById={sphereById} lang={lang} />
           ) : (
@@ -493,16 +482,15 @@ export default function StatsView({
 
       {/* Day-card list (or full empty state if hero count == 0) */}
       {periodTasks.length === 0 ? (
-        <div style={{ padding: "0 22px 22px" }}>
+        <div style={{ padding: "0 20px 22px" }}>
           <div
             style={{
               padding: "44px 24px",
               textAlign: "center",
-              fontFamily: "var(--font-emphasis)",
-              fontSize: 16,
-              fontStyle: "italic",
-              fontWeight: 500,
-              lineHeight: 1.5,
+              fontSize: 15,
+              fontWeight: 600,
+              lineHeight: 1.55,
+              letterSpacing: "-0.005em",
               color: "var(--ink-60)",
             }}
           >
@@ -512,7 +500,7 @@ export default function StatsView({
       ) : (
         <div
           style={{
-            padding: "0 18px",
+            padding: "0 20px",
             display: "flex",
             flexDirection: "column",
             gap: 12,
@@ -537,11 +525,11 @@ export default function StatsView({
               style={{
                 marginTop: 4,
                 padding: "12px 16px",
-                borderRadius: 14,
+                borderRadius: "var(--radius-sm)",
                 border: "1.5px dashed var(--ink-20)",
                 background: "transparent",
                 fontSize: 13,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: "var(--ink-60)",
                 letterSpacing: "-0.005em",
                 cursor: "pointer",
@@ -644,7 +632,7 @@ function SphereRow({
           className="tnum"
           style={{
             fontSize: 14,
-            fontWeight: 600,
+            fontWeight: 700,
             color: "var(--ink)",
             letterSpacing: "-0.005em",
           }}
@@ -812,15 +800,17 @@ function MonthCalendar({
 
   const maxCount = Math.max(1, ...days.map((d) => d.tasks.length));
 
-  /* Warm gradient interpolation: paper-warm → butter → peach.
-     Anchor RGBs picked from globals.css. */
+  /* Warm watercolor interpolation: pale butter tint → butter → peach.
+     Anchors derived from the pastel tokens in globals.css (--butter
+     #F5D76E, --peach #F9C4A8), starting from a near-white butter wash so
+     low-activity cells stay clean on the pure white page. */
   function cellBackground(count: number): string {
     if (count === 0) return "var(--paper-deep)";
     const ratio = count / maxCount;
     const stops = [
-      { r: 237, g: 224, b: 205 }, // paper-warm
-      { r: 245, g: 197, b: 99 }, // butter
-      { r: 244, g: 147, b: 110 }, // peach
+      { r: 252, g: 244, b: 217 }, // butter washed toward white
+      { r: 245, g: 215, b: 110 }, // --butter
+      { r: 249, g: 196, b: 168 }, // --peach
     ];
     const t = Math.min(1, Math.max(0, ratio));
     const seg = t < 0.5 ? 0 : 1;
@@ -868,7 +858,7 @@ function MonthCalendar({
                 key={`blank-${i}`}
                 style={{
                   aspectRatio: "1 / 1",
-                  borderRadius: 8,
+                  borderRadius: "var(--radius-sm)",
                   background: "transparent",
                 }}
               />
@@ -881,7 +871,7 @@ function MonthCalendar({
               style={{
                 position: "relative",
                 aspectRatio: "1 / 1",
-                borderRadius: 8,
+                borderRadius: "var(--radius-sm)",
                 background: bg,
                 opacity: c.isFuture ? 0.55 : 1,
                 display: "flex",
@@ -894,9 +884,11 @@ function MonthCalendar({
                 className="tnum"
                 style={{
                   fontSize: 11,
-                  fontWeight: 500,
+                  fontWeight: 600,
+                  /* Fills are all light pastels now — dark ink stays
+                     readable on every step of the gradient. */
                   color: c.tasks.length >= maxCount * 0.5
-                    ? "var(--paper)"
+                    ? "var(--ink-80)"
                     : "var(--ink-60)",
                   letterSpacing: "-0.005em",
                 }}
@@ -949,13 +941,10 @@ function DayCard({
       return next;
     });
   return (
-    <div
+    <Card
       className="day-card-in"
       style={{
         padding: "16px 18px 18px",
-        background: "var(--paper-warm)",
-        border: "1px solid var(--ink-05)",
-        borderRadius: 18,
         animationDelay: `${animationDelayMs}ms`,
       }}
     >
@@ -971,11 +960,11 @@ function DayCard({
           style={{
             flex: 1,
             minWidth: 0,
-            fontFamily: "var(--font-emphasis)",
+            fontFamily: "var(--font-display)",
             fontSize: 18,
-            fontWeight: 600,
+            fontWeight: 800,
             letterSpacing: "-0.01em",
-            color: "var(--ink)",
+            color: "var(--ink-strong)",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -987,7 +976,7 @@ function DayCard({
           className="tnum"
           style={{
             fontSize: 14,
-            fontWeight: 600,
+            fontWeight: 700,
             color: tasks.length === 0 ? "var(--ink-40)" : "var(--ink)",
           }}
         >
@@ -998,10 +987,8 @@ function DayCard({
       {tasks.length === 0 ? (
         <div
           style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 14,
-            fontStyle: "italic",
-            fontWeight: 500,
+            fontSize: 13,
+            fontWeight: 600,
             color: "var(--ink-40)",
             letterSpacing: "-0.005em",
           }}
@@ -1025,7 +1012,7 @@ function DayCard({
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -1088,7 +1075,7 @@ function DoneItem({
           <div
             style={{
               fontSize: 15,
-              fontWeight: 500,
+              fontWeight: 700,
               color: "var(--ink)",
               letterSpacing: "-0.005em",
               overflow: "hidden",

@@ -79,20 +79,20 @@ export default function Snackbar() {
       role="status"
       style={{
         position: "fixed",
-        left: 22,
-        right: 22,
+        left: 20,
+        right: 20,
         bottom: "calc(env(safe-area-inset-bottom, 0px) + 88px)",
-        maxWidth: 416,
+        maxWidth: 420,
         margin: "0 auto",
-        background: "var(--ink-strong)",
-        color: "var(--paper)",
-        borderRadius: 12,
-        padding: "12px 14px 12px 16px",
+        background: "var(--ink)",
+        color: "#FFFFFF",
+        borderRadius: 999,
+        padding: "13px 16px 13px 22px",
         display: "flex",
         alignItems: "center",
         gap: 12,
         zIndex: 60,
-        boxShadow: "0 12px 32px rgba(31,24,19,0.32)",
+        boxShadow: "var(--shadow-elevated)",
         animation: "snack-in 280ms var(--ease-out) both",
         pointerEvents: "auto",
       }}
@@ -101,8 +101,8 @@ export default function Snackbar() {
         style={{
           flex: 1,
           fontSize: 14,
-          fontWeight: 500,
-          letterSpacing: "-0.005em",
+          fontWeight: 700,
+          letterSpacing: "-0.01em",
           lineHeight: 1.3,
         }}
       >
@@ -115,15 +115,16 @@ export default function Snackbar() {
           disabled={isUndoing}
           className="tap"
           style={{
-            background: "transparent",
+            background: "rgba(255,255,255,0.12)",
             border: "none",
+            borderRadius: 999,
             color: "var(--mint)",
             fontSize: 13.5,
-            fontWeight: 600,
-            letterSpacing: "-0.005em",
+            fontWeight: 800,
+            letterSpacing: "-0.01em",
             cursor: isUndoing ? "default" : "pointer",
             opacity: isUndoing ? 0.6 : 1,
-            padding: "4px 6px",
+            padding: "7px 14px",
           }}
         >
           {t("tasks.undo")}

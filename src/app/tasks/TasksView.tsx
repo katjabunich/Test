@@ -5,16 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
+import { Card, ScreenHeader, SectionLabel } from "@/components/ui";
 import { isPast, isToday, today, addDays, fromIsoDate } from "@/lib/date";
-import { useT, useWeekdaysShort } from "@/lib/i18n/client";
+import { useT, useLang, useWeekdaysShort } from "@/lib/i18n/client";
 
 type Group = {
-  key: "overdue" | "today" | "week" | "later" | "nodate";
-  /** Text colour for the group label */
-  accent?: string;
+  key: "today" | "week" | "later" | "nodate" | "overdue";
   items: Task[];
 };
 
+/* Calm-overdue rule (design brief): Сегодня → На неделе → Позже → Без даты,
+   and the former «Просрочено» group renamed «Ждут своего часа» goes LAST,
+   in a fully neutral (no --alert) style. */
 function groupTasks(tasks: Task[]): Group[] {
   const overdue: Task[] = [];
   const todays: Task[] = [];
@@ -41,11 +43,11 @@ function groupTasks(tasks: Task[]): Group[] {
   }
 
   const groups: Group[] = [];
-  if (overdue.length) groups.push({ key: "overdue", items: overdue, accent: "var(--alert)" });
   if (todays.length)  groups.push({ key: "today",   items: todays });
   if (week.length)    groups.push({ key: "week",    items: week });
   if (later.length)   groups.push({ key: "later",   items: later });
   if (noDate.length)  groups.push({ key: "nodate",  items: noDate });
+  if (overdue.length) groups.push({ key: "overdue", items: overdue });
   return groups;
 }
 
@@ -59,6 +61,7 @@ export default function TasksView({
   const router = useRouter();
   const search = useSearchParams();
   const t = useT();
+  const lang = useLang();
   const weekdaysShort = useWeekdaysShort();
   const [filter, setFilter] = useState<string | null>(null);
   const [dayFilter, setDayFilter] = useState<string | null>(null);
@@ -103,7 +106,10 @@ export default function TasksView({
   }, [tasks, filter]);
 
   const groups = useMemo(() => groupTasks(filtered), [filtered]);
-  const overdueCount = tasks.filter((t) => t.due_date && isPast(t.due_date)).length;
+  /* Derived from the same filtered set the groups render — the header
+     count and the group below can never disagree. */
+  const overdueCount =
+    groups.find((g) => g.key === "overdue")?.items.length ?? 0;
 
   const sphereById = useMemo(() => {
     const m = new Map<string, Sphere>();
@@ -120,51 +126,55 @@ export default function TasksView({
     return m;
   }, [tasks]);
 
+  /* Russian verb agreement: 1/21/31… «ждёт», everything else «ждут». */
+  const waitingKey =
+    overdueCount % 10 === 1 && overdueCount % 100 !== 11
+      ? "tasks.sub_waiting_one"
+      : "tasks.sub_waiting_many";
+
+  const dayLabel = useMemo(() => {
+    if (!dayFilter) return "";
+    const todayIso = today();
+    if (dayFilter === todayIso) return t("common.today");
+    if (dayFilter === addDays(todayIso, 1)) return capitalize(t("common.tomorrow"));
+    const d = fromIsoDate(dayFilter);
+    return new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-GB", {
+      day: "numeric",
+      month: "long",
+    }).format(d);
+  }, [dayFilter, lang, t]);
+
   return (
     <>
       {/* Heading */}
-      <div style={{ padding: "8px 22px 16px" }}>
-        <h1
+      <ScreenHeader
+        label={t("tasks.sub")}
+        style={{ paddingBottom: overdueCount > 0 ? 6 : 18 }}
+      >
+        {t("tasks.title")}
+      </ScreenHeader>
+      {overdueCount > 0 && (
+        <div
           style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.04,
-            color: "var(--ink)",
-            margin: 0,
+            padding: "0 20px 16px",
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: "var(--ink-40)",
+            letterSpacing: "-0.005em",
           }}
         >
-          {t("tasks.title")}
-        </h1>
-        {tasks.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 8,
-              marginTop: 8,
-              fontSize: 14,
-              fontWeight: 500,
-              letterSpacing: "-0.005em",
-            }}
-          >
-            <span style={{ color: "var(--ink-60)" }}>{t("tasks.sub")}</span>
-            {overdueCount > 0 && (
-              <span style={{ color: "var(--alert)" }}>
-                · <span className="tnum">{overdueCount}</span> {t("tasks.h_overdue").toLowerCase()}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+          <span className="tnum">
+            {t(waitingKey, { n: overdueCount })}
+          </span>
+        </div>
+      )}
 
       {/* Filter chips */}
       <div
         style={{
           display: "flex",
-          gap: 6,
-          padding: "0 0 16px 22px",
+          gap: 8,
+          padding: "0 0 16px 20px",
           overflowX: "auto",
           flexShrink: 0,
           scrollbarWidth: "none",
@@ -187,7 +197,7 @@ export default function TasksView({
             onClick={() => setFilter(s.id)}
           />
         ))}
-        <div style={{ minWidth: 18 }} />
+        <div style={{ minWidth: 20 }} />
       </div>
 
       {/* Week strip — tap a day to narrow the list to that date. */}
@@ -206,31 +216,31 @@ export default function TasksView({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "0 22px 12px",
+            padding: "0 20px 12px",
           }}
         >
           <span
             style={{
-              fontSize: 12.5,
-              fontWeight: 500,
+              fontSize: 13,
+              fontWeight: 600,
               color: "var(--ink-60)",
               letterSpacing: "-0.005em",
             }}
           >
-            {dayFilterLabel(dayFilter)}
+            {dayLabel}
           </span>
           <button
             type="button"
             onClick={() => setDayFilter(null)}
             className="tap"
             style={{
-              padding: "4px 10px",
-              borderRadius: 8,
-              border: "1px solid var(--ink-10)",
-              background: "transparent",
+              padding: "5px 12px",
+              borderRadius: 999,
+              border: "1.5px solid var(--ink-10)",
+              background: "#FFFFFF",
               color: "var(--ink-60)",
-              fontSize: 11.5,
-              fontWeight: 600,
+              fontSize: 12,
+              fontWeight: 700,
               letterSpacing: "-0.005em",
               cursor: "pointer",
             }}
@@ -243,23 +253,21 @@ export default function TasksView({
       {/* Groups */}
       <div
         style={{
-          padding: "0 18px",
+          padding: "0 20px",
           display: "flex",
           flexDirection: "column",
-          gap: 18,
+          gap: 22,
         }}
       >
         {groups.length === 0 ? (
-          <div
+          <Card
             style={{
               padding: "28px 22px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
+              fontWeight: 600,
               lineHeight: 1.5,
-              background: "var(--paper-warm)",
-              border: "1px solid var(--ink-05)",
-              borderRadius: 22,
             }}
           >
             {filter ? (
@@ -270,50 +278,40 @@ export default function TasksView({
                 <span className="mark-butter">{t("tasks.empty_hint")}</span>
               </>
             )}
-          </div>
+          </Card>
         ) : (
           groups.map((g) => (
             <div key={g.key}>
-              {/* Plain text section header — label + count, hairline below */}
+              {/* Plump section label + quiet count. The overdue group wears
+                  the calm «Ждут своего часа» title — no alert red anywhere. */}
               <div
                 style={{
                   display: "flex",
                   alignItems: "baseline",
                   gap: 8,
-                  padding: "0 4px 8px",
+                  padding: "0 6px 10px",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "var(--ink-80)",
-                    letterSpacing: "-0.005em",
-                  }}
-                >
-                  {t(`tasks.h_${g.key}`)}
-                </span>
+                <SectionLabel>
+                  {g.key === "overdue"
+                    ? t("today.waiting_title")
+                    : t(`tasks.h_${g.key}`)}
+                </SectionLabel>
                 <span
                   className="tnum"
                   style={{
-                    fontSize: 12,
-                    fontWeight: 500,
+                    fontFamily: "var(--font-display)",
+                    fontSize: 13,
+                    fontWeight: 800,
                     color: "var(--ink-40)",
                     opacity: 0.7,
                   }}
                 >
-                  · {g.items.length}
+                  {g.items.length}
                 </span>
               </div>
               <div
-                style={{
-                  height: 1,
-                  background: "var(--ink-10)",
-                  margin: "0 4px 12px",
-                }}
-              />
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 7 }}
+                style={{ display: "flex", flexDirection: "column", gap: 8 }}
               >
                 {g.items.map((task) => (
                   <TaskItem
@@ -348,6 +346,10 @@ export default function TasksView({
   );
 }
 
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 /** Mon-Sun preview strip with per-day counts. Tap on a day toggles a
     list-level day-filter; tapping the active day again clears it. */
 function WeekStrip({
@@ -362,7 +364,7 @@ function WeekStrip({
   onPick: (iso: string) => void;
 }) {
   return (
-    <div style={{ padding: "0 18px 16px" }}>
+    <div style={{ padding: "0 20px 16px" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {days.map((d) => {
           const dayLabel = weekdays[d.date.getDay()];
@@ -378,29 +380,25 @@ function WeekStrip({
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 6,
-                padding: "8px 0 10px",
-                borderRadius: 12,
+                padding: "9px 0 11px",
+                borderRadius: "var(--radius-sm)",
                 background: isActive
-                  ? "var(--ink)"
+                  ? "var(--mint)"
                   : d.isToday
                   ? "var(--paper-warm)"
                   : "transparent",
-                border: isActive ? "1.5px solid var(--ink)" : "none",
-                color: isActive ? "var(--paper)" : "var(--ink)",
+                border: "none",
+                color: "var(--ink)",
                 cursor: "pointer",
               }}
             >
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: 600,
-                  letterSpacing: "0.04em",
+                  fontWeight: 700,
+                  letterSpacing: "0.05em",
                   textTransform: "uppercase",
-                  color: isActive
-                    ? "var(--paper)"
-                    : d.isToday
-                    ? "var(--ink)"
-                    : "var(--ink-40)",
+                  color: isActive || d.isToday ? "var(--ink)" : "var(--ink-40)",
                 }}
               >
                 {dayLabel}
@@ -408,10 +406,11 @@ function WeekStrip({
               <span
                 className="tnum"
                 style={{
-                  fontFamily: d.isToday || isActive ? "var(--font-emphasis)" : "inherit",
-                  fontSize: d.isToday || isActive ? 18 : 15,
-                  fontWeight: d.isToday || isActive ? 700 : 500,
-                  color: isActive ? "var(--paper)" : "var(--ink)",
+                  fontFamily:
+                    d.isToday || isActive ? "var(--font-display)" : "inherit",
+                  fontSize: d.isToday || isActive ? 19 : 15,
+                  fontWeight: d.isToday || isActive ? 800 : 600,
+                  color: "var(--ink)",
                   letterSpacing: "-0.01em",
                   lineHeight: 1,
                 }}
@@ -434,7 +433,7 @@ function WeekStrip({
                       width: 3,
                       height: 3,
                       borderRadius: 2,
-                      background: isActive ? "rgba(245,237,224,0.4)" : "var(--ink-10)",
+                      background: isActive ? "var(--ink-20)" : "var(--ink-10)",
                     }}
                   />
                 ) : (
@@ -446,7 +445,7 @@ function WeekStrip({
                         height: 4,
                         borderRadius: 2,
                         background: isActive
-                          ? "var(--paper)"
+                          ? "var(--ink)"
                           : d.isToday
                           ? "var(--mint-deep)"
                           : "var(--ink-40)",
@@ -459,9 +458,9 @@ function WeekStrip({
                     className="tnum"
                     style={{
                       fontSize: 9,
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: isActive
-                        ? "var(--paper)"
+                        ? "var(--ink)"
                         : d.isToday
                         ? "var(--mint-deep)"
                         : "var(--ink-40)",
@@ -480,24 +479,9 @@ function WeekStrip({
   );
 }
 
-const RU_MONTHS = [
-  "января", "февраля", "марта", "апреля", "мая", "июня",
-  "июля", "августа", "сентября", "октября", "ноября", "декабря",
-];
-
-/** Human-readable summary of which day the day-filter is pinning to. */
-function dayFilterLabel(iso: string): string {
-  const d = fromIsoDate(iso);
-  const todayIso = today();
-  if (iso === todayIso) return "Сегодня";
-  if (iso === addDays(todayIso, 1)) return "Завтра";
-  if (iso === addDays(todayIso, -1)) return "Вчера";
-  return `${d.getDate()} ${RU_MONTHS[d.getMonth()]}`;
-}
-
-/** Sphere chips wear their sphere colour as a soft tint (always on, even
-   when inactive) so the filter row reads like a colour palette of life
-   areas. The "Все" chip stays neutral and inverts on active. */
+/** Sphere chips wear their sphere colour only when active (pastel fill);
+    inactive chips are quiet white pills with a coloured marker dot, so the
+    colour "fires" once — in the active filter and the task cards below. */
 function FilterChip({
   label,
   count,
@@ -512,35 +496,12 @@ function FilterChip({
   active: boolean;
   onClick: () => void;
 }) {
-  // Active sphere chip wears its saturated colour. Inactive chips —
-  // neutral paper-warm with just a coloured marker dot — so the colour
-  // "fires" only inside task cards, not twice in a row above them.
-  const bg = color
-    ? active
-      ? color
-      : "var(--paper-warm)"
-    : active
-    ? "var(--ink)"
-    : "var(--paper-warm)";
-  const border = color
-    ? active
-      ? color
-      : "var(--ink-05)"
-    : active
-    ? "var(--ink)"
-    : "var(--ink-05)";
-  const textColor = color
-    ? "var(--ink)"
-    : active
-    ? "var(--paper)"
-    : "var(--ink)";
-  const countColor = color
-    ? active
-      ? "var(--ink)"
-      : "var(--ink-40)"
-    : active
-    ? "var(--paper)"
-    : "var(--ink-40)";
+  /* Active chip: pastel fill (sphere colour, or mint for «Все»), ink text.
+     Inactive chip: white pill with a hairline border. No dark-ink fills —
+     the plump-pastel language keeps colour soft and text always ink. */
+  const activeBg = color ?? "var(--mint)";
+  const bg = active ? activeBg : "#FFFFFF";
+  const border = active ? activeBg : "var(--ink-10)";
 
   return (
     <button
@@ -548,8 +509,8 @@ function FilterChip({
       onClick={onClick}
       className="tap"
       style={{
-        padding: "7px 12px",
-        borderRadius: 10,
+        padding: "8px 14px",
+        borderRadius: 999,
         flexShrink: 0,
         background: bg,
         display: "flex",
@@ -559,24 +520,23 @@ function FilterChip({
         cursor: "pointer",
       }}
     >
-      {color && (
+      {color && !active && (
         <span
           aria-hidden
           style={{
             width: 7,
             height: 7,
             borderRadius: 4,
-            background: active ? "var(--ink)" : color,
-            opacity: active ? 0.4 : 1,
+            background: color,
           }}
         />
       )}
       <span
         style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: textColor,
-          letterSpacing: "-0.005em",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--ink-strong)",
+          letterSpacing: "-0.01em",
         }}
       >
         {label}
@@ -584,10 +544,10 @@ function FilterChip({
       <span
         className="tnum"
         style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: countColor,
-          opacity: 0.7,
+          fontSize: 12.5,
+          fontWeight: 700,
+          color: active ? "var(--ink)" : "var(--ink-40)",
+          opacity: active ? 0.55 : 0.8,
         }}
       >
         {count}

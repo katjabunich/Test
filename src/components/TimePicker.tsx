@@ -60,12 +60,12 @@ export default function TimePicker({
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
+          padding: "10px 20px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -97,11 +97,13 @@ export default function TimePicker({
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
+            fontFamily: "var(--font-display)",
+            fontSize: 21,
+            fontWeight: 800,
+            color: "var(--ink-strong)",
             marginBottom: 16,
-            letterSpacing: "-0.005em",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.1,
           }}
         >
           {title ?? t("time.title")}
@@ -128,14 +130,14 @@ export default function TimePicker({
                 className="tap tnum"
                 style={{
                   padding: "12px 0",
-                  borderRadius: 12,
+                  borderRadius: "var(--radius-sm)",
                   border: active
-                    ? "1.5px solid var(--ink)"
-                    : "1px solid var(--ink-05)",
-                  background: active ? "var(--ink)" : "var(--paper-warm)",
-                  color: active ? "var(--paper)" : "var(--ink)",
+                    ? "1.5px solid var(--mint-deep)"
+                    : "1.5px solid var(--ink-10)",
+                  background: active ? "var(--mint-deep)" : "#FFFFFF",
+                  color: active ? "#FFFFFF" : "var(--ink)",
                   fontSize: 15,
-                  fontWeight: 600,
+                  fontWeight: active ? 800 : 600,
                   letterSpacing: "-0.005em",
                   cursor: "pointer",
                 }}
@@ -149,13 +151,13 @@ export default function TimePicker({
         {value && !PRESETS.includes(value) && (
           <div
             style={{
-              padding: "10px 12px",
+              padding: "10px 14px",
               marginBottom: 14,
               fontSize: 12.5,
-              fontWeight: 500,
+              fontWeight: 600,
               color: "var(--ink-60)",
               background: "var(--paper-warm)",
-              borderRadius: 12,
+              borderRadius: "var(--radius-sm)",
               letterSpacing: "-0.005em",
             }}
           >
@@ -170,14 +172,14 @@ export default function TimePicker({
           style={{
             width: "100%",
             padding: "13px 0",
-            borderRadius: 14,
-            border: "1px solid var(--ink-10)",
-            background: "transparent",
+            borderRadius: 999,
+            border: "1.5px solid var(--ink-10)",
+            background: "#FFFFFF",
             color: "var(--ink-80)",
             fontSize: 14,
-            fontWeight: 500,
+            fontWeight: 700,
             cursor: "pointer",
-            letterSpacing: "-0.005em",
+            letterSpacing: "-0.01em",
           }}
         >
           {t("common.cancel")}

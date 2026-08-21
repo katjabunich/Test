@@ -159,12 +159,12 @@ export default function TaskEditModal({
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
+          padding: "10px 20px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -196,11 +196,13 @@ export default function TaskEditModal({
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
+            fontFamily: "var(--font-display)",
+            fontSize: 21,
+            fontWeight: 800,
+            color: "var(--ink-strong)",
             marginBottom: 14,
-            letterSpacing: "-0.005em",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.1,
           }}
         >
           {isEdit ? t("task.title_edit") : t("task.title_new")}
@@ -245,11 +247,12 @@ export default function TaskEditModal({
         {/* Сфера */}
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
+            fontSize: 12.5,
+            fontWeight: 700,
+            color: "var(--ink-40)",
             marginBottom: 10,
-            letterSpacing: "-0.005em",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
           }}
         >
           {t("task.sphere_label")}
@@ -436,8 +439,8 @@ export default function TaskEditModal({
               width: "100%",
               padding: "12px 14px",
               fontSize: 14,
-              border: "1px solid var(--ink-10)",
-              borderRadius: 12,
+              border: "1.5px solid var(--ink-10)",
+              borderRadius: "var(--radius-md)",
               background: "var(--paper-warm)",
               outline: "none",
               fontFamily: "inherit",
@@ -453,12 +456,12 @@ export default function TaskEditModal({
             role="alert"
             style={{
               marginTop: 14,
-              padding: "10px 12px",
-              borderRadius: 12,
-              background: "rgba(217,106,82,0.10)",
-              color: "var(--alert)",
+              padding: "10px 14px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(245,215,110,0.35)",
+              color: "var(--ink)",
               fontSize: 13,
-              fontWeight: 500,
+              fontWeight: 600,
               lineHeight: 1.45,
               letterSpacing: "-0.005em",
             }}
@@ -483,13 +486,13 @@ export default function TaskEditModal({
               disabled={isPending}
               className="tap"
               style={{
-                padding: "13px 14px",
-                borderRadius: 14,
-                border: "1px solid var(--ink-10)",
-                background: "transparent",
+                padding: "13px 16px",
+                borderRadius: 999,
+                border: "1.5px solid var(--ink-10)",
+                background: "#FFFFFF",
                 color: "var(--alert)",
                 fontSize: 14,
-                fontWeight: 500,
+                fontWeight: 700,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -507,18 +510,18 @@ export default function TaskEditModal({
             style={{
               flex: 1,
               padding: "15px 0",
-              borderRadius: 14,
+              borderRadius: 999,
               background: title.trim()
-                ? "var(--ink-strong)"
+                ? "var(--mint-deep)"
                 : "var(--ink-20)",
-              color: "var(--paper)",
+              color: "#FFFFFF",
               border: "none",
               cursor: title.trim() ? "pointer" : "not-allowed",
               fontSize: 15,
-              fontWeight: 600,
+              fontWeight: 800,
               letterSpacing: "-0.01em",
               boxShadow: title.trim()
-                ? "0 6px 16px rgba(31,24,19,0.28)"
+                ? "0 6px 16px rgba(107,191,138,0.35)"
                 : "none",
             }}
           >
@@ -567,7 +570,7 @@ function Row({
         style={{
           flex: 1,
           fontSize: 14,
-          fontWeight: 500,
+          fontWeight: 600,
           color: "var(--ink)",
           letterSpacing: "-0.005em",
         }}
@@ -598,18 +601,18 @@ function SphereChipButton({
       onClick={onClick}
       className="tap"
       style={{
-        padding: "7px 12px",
-        borderRadius: 10,
-        background: active && color ? color : "var(--paper-warm)",
-        border: `1px solid ${active && color ? color : "var(--ink-05)"}`,
-        color: "var(--ink)",
-        fontSize: 12.5,
-        fontWeight: 600,
+        padding: "8px 14px",
+        borderRadius: 999,
+        background: active ? color ?? "var(--mint)" : "#FFFFFF",
+        border: `1.5px solid ${active ? color ?? "var(--mint)" : "var(--ink-10)"}`,
+        color: "var(--ink-strong)",
+        fontSize: 13,
+        fontWeight: 700,
         cursor: "pointer",
         display: "inline-flex",
         alignItems: "center",
         gap: 6,
-        letterSpacing: "-0.005em",
+        letterSpacing: "-0.01em",
       }}
     >
       {color && (

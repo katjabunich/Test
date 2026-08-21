@@ -6,6 +6,7 @@ import { createSphere, deleteSphere, updateSphere } from "@/lib/actions";
 import { Icons } from "@/components/Icons";
 import { feedbackModalOpen } from "@/lib/feedback";
 import { useT } from "@/lib/i18n/client";
+import { SectionLabel } from "@/components/ui";
 
 const COLORS = [
   "#86c79a", // mint
@@ -120,12 +121,12 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
+          padding: "10px 20px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -157,11 +158,13 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 14,
-            letterSpacing: "-0.005em",
+            fontFamily: "var(--font-display)",
+            fontSize: 24,
+            fontWeight: 800,
+            color: "var(--ink-strong)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            marginBottom: 18,
           }}
         >
           {isEdit ? t("sphere.title_edit") : t("sphere.title_new")}
@@ -173,7 +176,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             style={{
               width: 56,
               height: 56,
-              borderRadius: 14,
+              borderRadius: "var(--radius-sm)",
               background: color,
               display: "flex",
               alignItems: "center",
@@ -194,10 +197,10 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               flex: 1,
               padding: "12px 14px",
               fontSize: 16,
-              fontWeight: 500,
+              fontWeight: 600,
               letterSpacing: "-0.01em",
-              border: "1px solid var(--ink-10)",
-              borderRadius: 12,
+              border: "1.5px solid var(--ink-10)",
+              borderRadius: "var(--radius-sm)",
               background: "var(--paper-warm)",
               outline: "none",
             }}
@@ -214,17 +217,9 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             for anything else. Replaces the previous single text field,
             which (a) opened the keyboard immediately and (b) let users
             type plain text that wouldn't render anywhere. */}
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ marginBottom: 10 }}>
           {t("sphere.icon_label")}
-        </div>
+        </SectionLabel>
         <div
           style={{
             display: "grid",
@@ -247,7 +242,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 10,
+                  borderRadius: "var(--radius-sm)",
                   border: `1px solid ${active ? "var(--ink)" : "var(--ink-10)"}`,
                   background: active ? "var(--ink)" : "var(--paper-warm)",
                   fontSize: 20,
@@ -295,8 +290,8 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               width: 70,
               padding: "8px 0",
               fontSize: 18,
-              border: "1px solid var(--ink-10)",
-              borderRadius: 10,
+              border: "1.5px solid var(--ink-10)",
+              borderRadius: "var(--radius-sm)",
               background: "var(--paper-warm)",
               outline: "none",
               textAlign: "center",
@@ -323,17 +318,9 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
           )}
         </div>
 
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ marginBottom: 10 }}>
           {t("sphere.color_label")}
-        </div>
+        </SectionLabel>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (
             <button
@@ -367,10 +354,10 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               disabled={isPending}
               className="tap"
               style={{
-                padding: "13px 14px",
-                borderRadius: 14,
-                border: "1px solid var(--ink-10)",
-                background: "transparent",
+                padding: "13px 16px",
+                borderRadius: 999,
+                border: "1.5px solid var(--ink-10)",
+                background: "#FFFFFF",
                 color: "var(--alert)",
                 fontSize: 14,
                 cursor: "pointer",
@@ -390,18 +377,18 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
             style={{
               flex: 1,
               padding: "15px 0",
-              borderRadius: 14,
+              borderRadius: 999,
               background: name.trim()
-                ? "var(--ink-strong)"
+                ? "var(--mint-deep)"
                 : "var(--ink-20)",
-              color: "var(--paper)",
+              color: "#FFFFFF",
               border: "none",
               cursor: name.trim() ? "pointer" : "not-allowed",
               fontSize: 15,
-              fontWeight: 600,
+              fontWeight: 800,
               letterSpacing: "-0.01em",
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(31,24,19,0.28)"
+                ? "0 6px 16px rgba(107,191,138,0.35)"
                 : "none",
             }}
           >

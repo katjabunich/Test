@@ -77,12 +77,12 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
+          padding: "10px 20px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -114,11 +114,13 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 14,
-            letterSpacing: "-0.005em",
+            fontFamily: "var(--font-display)",
+            fontSize: 24,
+            fontWeight: 800,
+            color: "var(--ink-strong)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            marginBottom: 18,
           }}
         >
           {t("pw.title")}
@@ -150,11 +152,12 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
             style={{
               marginTop: 4,
               marginBottom: 14,
-              padding: "11px 13px",
-              borderRadius: 12,
-              background: "rgba(217,106,82,0.10)",
-              color: "var(--alert, #c25a44)",
+              padding: "11px 14px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(232,117,106,0.10)",
+              color: "var(--alert)",
               fontSize: 13,
+              fontWeight: 600,
               lineHeight: 1.45,
             }}
           >
@@ -168,12 +171,12 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
             style={{
               marginTop: 4,
               marginBottom: 14,
-              padding: "11px 13px",
-              borderRadius: 12,
-              background: "rgba(79,156,106,0.14)",
+              padding: "11px 14px",
+              borderRadius: "var(--radius-sm)",
+              background: "rgba(107,191,138,0.14)",
               color: "var(--mint-deep)",
               fontSize: 13.5,
-              fontWeight: 500,
+              fontWeight: 700,
               lineHeight: 1.45,
             }}
           >
@@ -190,14 +193,14 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
             style={{
               flex: 1,
               padding: "14px 0",
-              borderRadius: 14,
-              background: "var(--paper-warm)",
+              borderRadius: 999,
+              background: "#FFFFFF",
               color: "var(--ink-80)",
-              border: "1px solid var(--ink-10)",
+              border: "1.5px solid var(--ink-10)",
               cursor: "pointer",
               fontSize: 14.5,
-              fontWeight: 600,
-              letterSpacing: "-0.005em",
+              fontWeight: 700,
+              letterSpacing: "-0.01em",
             }}
           >
             {t("common.cancel")}
@@ -210,15 +213,15 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
             style={{
               flex: 1,
               padding: "14px 0",
-              borderRadius: 14,
-              background: "var(--ink-strong)",
-              color: "var(--paper)",
+              borderRadius: 999,
+              background: "var(--mint-deep)",
+              color: "#FFFFFF",
               border: "none",
               cursor: pending ? "default" : "pointer",
               fontSize: 14.5,
-              fontWeight: 600,
-              letterSpacing: "-0.005em",
-              boxShadow: "0 5px 14px rgba(31,24,19,0.24)",
+              fontWeight: 800,
+              letterSpacing: "-0.01em",
+              boxShadow: "0 6px 16px rgba(107,191,138,0.35)",
               opacity: pending ? 0.7 : 1,
             }}
           >
@@ -283,8 +286,8 @@ function Field({
         style={{
           width: "100%",
           padding: "13px 14px",
-          borderRadius: 12,
-          border: "1px solid var(--ink-10)",
+          borderRadius: "var(--radius-sm)",
+          border: "1.5px solid var(--ink-10)",
           background: "var(--paper-warm)",
           fontSize: 15,
           color: "var(--ink)",

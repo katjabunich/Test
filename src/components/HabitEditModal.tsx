@@ -6,6 +6,7 @@ import { createHabit, deleteHabit, updateHabit } from "@/lib/actions";
 import { HABIT_PRESET_ICONS, HabitIcon, Icons, parseHabitIcon } from "@/components/Icons";
 import { feedbackModalOpen } from "@/lib/feedback";
 import { useT, useLang } from "@/lib/i18n/client";
+import { PillButton, SectionLabel } from "@/components/ui";
 
 const COLORS = [
   "#86c79a", "#f4936e", "#f5c563", "#6ba4c2",
@@ -125,12 +126,12 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
           padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -162,11 +163,13 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 14,
-            letterSpacing: "-0.005em",
+            fontFamily: "var(--font-display)",
+            fontSize: 24,
+            fontWeight: 800,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+            color: "var(--ink-strong)",
+            marginBottom: 16,
           }}
         >
           {isEdit ? t("habit.title_edit") : t("habit.title_new")}
@@ -178,7 +181,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
             style={{
               width: 56,
               height: 56,
-              borderRadius: 14,
+              borderRadius: "var(--radius-sm)",
               background: color,
               border: `1px solid ${color}`,
               display: "flex",
@@ -204,10 +207,10 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               flex: 1,
               padding: "12px 14px",
               fontSize: 16,
-              fontWeight: 500,
+              fontWeight: 600,
               letterSpacing: "-0.01em",
               border: "1px solid var(--ink-10)",
-              borderRadius: 12,
+              borderRadius: "var(--radius-sm)",
               background: "var(--paper-warm)",
               outline: "none",
             }}
@@ -221,17 +224,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         </div>
 
         {/* Icon picker */}
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ marginBottom: 10 }}>
           {t("habit.icon_label")}
-        </div>
+        </SectionLabel>
         <div
           style={{
             display: "grid",
@@ -255,7 +250,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 10,
+                  borderRadius: "var(--radius-sm)",
                   border: `1px solid ${active ? "var(--ink)" : "var(--ink-10)"}`,
                   background: active ? "var(--ink)" : "var(--paper-warm)",
                   color: active ? "var(--paper)" : "var(--ink-80)",
@@ -291,7 +286,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               padding: "8px 0",
               fontSize: 18,
               border: "1px solid var(--ink-10)",
-              borderRadius: 10,
+              borderRadius: "var(--radius-sm)",
               background: "var(--paper-warm)",
               outline: "none",
               textAlign: "center",
@@ -300,17 +295,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         </div>
 
         {/* Color */}
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ marginBottom: 10 }}>
           {t("habit.color_label")}
-        </div>
+        </SectionLabel>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
           {COLORS.map((c) => (
             <button
@@ -337,17 +324,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
         </div>
 
         {/* Schedule */}
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ marginBottom: 10 }}>
           {t("habit.schedule_label")}
-        </div>
+        </SectionLabel>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           <ScheduleChip
             active={scheduleType === "daily"}
@@ -383,7 +362,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
                       ? "1.5px solid var(--mint-deep)"
                       : "1px solid var(--ink-10)",
                     background: days.includes(idx)
-                      ? "rgba(79,156,106,0.12)"
+                      ? "rgba(107,191,138,0.14)"
                       : "var(--paper-warm)",
                     color: days.includes(idx) ? "var(--mint-deep)" : "var(--ink)",
                     fontSize: 12,
@@ -406,9 +385,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               disabled={isPending}
               className="tap"
               style={{
-                padding: "13px 14px",
-                borderRadius: 14,
-                border: "1px solid var(--ink-10)",
+                padding: "13px 16px",
+                borderRadius: 999,
+                border: "1.5px solid var(--ink-10)",
                 background: "transparent",
                 color: "var(--alert)",
                 fontSize: 14,
@@ -421,31 +400,24 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               <Icons.Trash size={15} stroke="var(--alert)" strokeWidth={1.8} />
             </button>
           )}
-          <button
-            type="button"
+          <PillButton
+            variant="filled"
+            color={name.trim() ? "var(--mint-deep)" : "var(--ink-20)"}
             onClick={submit}
             disabled={isPending || !name.trim()}
-            className="tap"
             style={{
               flex: 1,
               padding: "15px 0",
-              borderRadius: 14,
-              background: name.trim()
-                ? "var(--ink-strong)"
-                : "var(--ink-20)",
-              color: "var(--paper)",
-              border: "none",
-              cursor: name.trim() ? "pointer" : "not-allowed",
+              color: "#FFFFFF",
               fontSize: 15,
-              fontWeight: 600,
-              letterSpacing: "-0.01em",
+              fontWeight: 800,
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(31,24,19,0.28)"
+                ? "0 6px 16px rgba(107,191,138,0.35)"
                 : "none",
             }}
           >
             {t("common.done")}
-          </button>
+          </PillButton>
         </div>
       </div>
     </div>
@@ -467,15 +439,15 @@ function ScheduleChip({
       onClick={onClick}
       className="tap"
       style={{
-        padding: "7px 12px",
-        borderRadius: 10,
+        padding: "8px 14px",
+        borderRadius: 999,
         border: active
           ? "1.5px solid var(--mint-deep)"
-          : "1px solid var(--ink-05)",
-        background: active ? "rgba(79,156,106,0.12)" : "var(--paper-warm)",
+          : "1px solid var(--ink-10)",
+        background: active ? "rgba(107,191,138,0.14)" : "#FFFFFF",
         color: active ? "var(--mint-deep)" : "var(--ink)",
-        fontSize: 11.5,
-        fontWeight: 600,
+        fontSize: 12,
+        fontWeight: 700,
         cursor: "pointer",
       }}
     >

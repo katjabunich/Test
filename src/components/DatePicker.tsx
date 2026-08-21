@@ -138,12 +138,12 @@ export default function DatePicker({
           width: "100%",
           maxWidth: 460,
           background: "var(--paper)",
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          padding: "10px 22px calc(22px + env(safe-area-inset-bottom))",
+          borderTopLeftRadius: "var(--radius-xl)",
+          borderTopRightRadius: "var(--radius-xl)",
+          padding: "10px 20px calc(22px + env(safe-area-inset-bottom))",
           maxHeight: "92vh",
           overflowY: "auto",
-          boxShadow: "0 -10px 40px rgba(45,38,32,0.18)",
+          boxShadow: "var(--shadow-modal)",
         }}
       >
         <button
@@ -175,11 +175,13 @@ export default function DatePicker({
         </button>
         <div
           style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "var(--ink-60)",
+            fontFamily: "var(--font-display)",
+            fontSize: 21,
+            fontWeight: 800,
+            color: "var(--ink-strong)",
             marginBottom: 14,
-            letterSpacing: "-0.005em",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.1,
           }}
         >
           {title ?? t("datepick.title")}
@@ -202,15 +204,15 @@ export default function DatePicker({
               className="tap"
               style={{
                 padding: "8px 14px",
-                borderRadius: 10,
+                borderRadius: 999,
                 border: p.active
-                  ? "1.5px solid var(--ink)"
-                  : "1px solid var(--ink-05)",
-                background: p.active ? "var(--ink)" : "var(--paper-warm)",
-                color: p.active ? "var(--paper)" : "var(--ink)",
-                fontSize: 12.5,
-                fontWeight: 600,
-                letterSpacing: "-0.005em",
+                  ? "1.5px solid var(--mint)"
+                  : "1.5px solid var(--ink-10)",
+                background: p.active ? "var(--mint)" : "#FFFFFF",
+                color: "var(--ink-strong)",
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "-0.01em",
                 cursor: "pointer",
               }}
             >
@@ -252,11 +254,11 @@ export default function DatePicker({
           </button>
           <div
             style={{
-              fontFamily: "var(--font-emphasis)",
+              fontFamily: "var(--font-display)",
               fontSize: 18,
-              fontWeight: 600,
+              fontWeight: 800,
               letterSpacing: "-0.01em",
-              color: "var(--ink)",
+              color: "var(--ink-strong)",
             }}
           >
             {monthLabel}
@@ -335,22 +337,22 @@ export default function DatePicker({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 10,
+                  borderRadius: "var(--radius-sm)",
                   border: "none",
                   background: isSelected
-                    ? "var(--ink)"
+                    ? "var(--mint-deep)"
                     : isToday
-                    ? "rgba(79,156,106,0.12)"
+                    ? "rgba(107,191,138,0.14)"
                     : "transparent",
                   color: isSelected
-                    ? "var(--paper)"
+                    ? "#FFFFFF"
                     : !inMonth
                     ? "var(--ink-40)"
                     : isToday
                     ? "var(--mint-deep)"
                     : "var(--ink)",
                   fontSize: 14,
-                  fontWeight: isSelected || isToday ? 600 : 500,
+                  fontWeight: isSelected || isToday ? 800 : 600,
                   letterSpacing: "-0.005em",
                   cursor: "pointer",
                   position: "relative",
@@ -374,14 +376,14 @@ export default function DatePicker({
             style={{
               flex: 1,
               padding: "12px 0",
-              borderRadius: 14,
-              border: "1px solid var(--ink-10)",
-              background: "transparent",
+              borderRadius: 999,
+              border: "1.5px solid var(--ink-10)",
+              background: "#FFFFFF",
               color: "var(--ink-80)",
               fontSize: 13.5,
-              fontWeight: 500,
+              fontWeight: 700,
               cursor: "pointer",
-              letterSpacing: "-0.005em",
+              letterSpacing: "-0.01em",
             }}
           >
             {t("datepick.jump_today")}
@@ -393,14 +395,14 @@ export default function DatePicker({
             style={{
               flex: 1,
               padding: "12px 0",
-              borderRadius: 14,
-              border: "1px solid var(--ink-10)",
-              background: "transparent",
+              borderRadius: 999,
+              border: "1.5px solid var(--ink-10)",
+              background: "#FFFFFF",
               color: "var(--ink-80)",
               fontSize: 13.5,
-              fontWeight: 500,
+              fontWeight: 700,
               cursor: "pointer",
-              letterSpacing: "-0.005em",
+              letterSpacing: "-0.01em",
             }}
           >
             {t("common.cancel")}

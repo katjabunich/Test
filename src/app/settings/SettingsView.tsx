@@ -14,6 +14,7 @@ import { setDigestTime } from "@/lib/profile";
 import { reorderSpheres } from "@/lib/actions";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
+import { Card, ScreenHeader, SectionLabel } from "@/components/ui";
 import {
   DndContext,
   PointerSensor,
@@ -184,55 +185,35 @@ export default function SettingsView({
     <>
       <div
         style={{
-          padding: "8px 22px 12px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
           gap: 16,
+          paddingRight: 20,
         }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1
-            style={{
-              fontFamily: "var(--font-emphasis)",
-              fontSize: 40,
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.04,
-              color: "var(--ink)",
-              margin: 0,
-            }}
-          >
-            {t("settings.title")}
-          </h1>
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 500,
-              color: "var(--ink-60)",
-              marginTop: 8,
-              letterSpacing: "-0.005em",
-            }}
-          >
-            {t("settings.sub")}
-          </div>
-        </div>
+        <ScreenHeader
+          label={t("settings.sub")}
+          style={{ flex: 1, minWidth: 0, padding: "8px 0 18px 20px" }}
+        >
+          {t("settings.title")}
+        </ScreenHeader>
         <Link
           href={closeHref}
           aria-label="Закрыть настройки"
           className="tap"
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            background: "var(--paper-warm)",
-            border: "1px solid var(--ink-05)",
+            width: 44,
+            height: 44,
+            borderRadius: 999,
+            background: "#FFFFFF",
+            boxShadow: "var(--shadow-card)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "var(--ink-60)",
             flexShrink: 0,
-            marginTop: 6,
+            marginTop: 8,
             textDecoration: "none",
           }}
         >
@@ -240,39 +221,26 @@ export default function SettingsView({
         </Link>
       </div>
 
-      <div style={{ padding: "0 18px" }}>
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--ink-80)",
-            padding: "0 4px 8px",
-            borderBottom: "1px solid var(--ink-10)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+      <div style={{ padding: "0 20px" }}>
+        <SectionLabel style={{ padding: "0 4px", marginBottom: 12 }}>
           {t("settings.h_spheres")}
-        </div>
+        </SectionLabel>
 
         {orderedSpheres.length === 0 ? (
-          <div
+          <Card
             style={{
-              background: "var(--paper-warm)",
-              borderRadius: 18,
-              border: "1px solid var(--ink-05)",
-              overflow: "hidden",
-              marginBottom: 10,
-              padding: "28px 14px 32px",
+              marginBottom: 12,
+              padding: "28px 16px 32px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14,
+              fontWeight: 600,
               lineHeight: 1.5,
             }}
           >
             <SpheresEmpty />
             {t("settings.no_spheres")}
-          </div>
+          </Card>
         ) : (
           <DndContext
             sensors={sensors}
@@ -283,14 +251,10 @@ export default function SettingsView({
               items={orderedSpheres.map((s) => s.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div
-                style={{
-                  background: "var(--paper-warm)",
-                  borderRadius: 18,
-                  border: "1px solid var(--ink-05)",
-                  marginBottom: 10,
-                }}
-              >
+              {/* No overflow:hidden here — the dragged row's lift shadow
+                  must be able to escape the card bounds. Rows are
+                  transparent at rest, so the corners stay clean. */}
+              <Card style={{ padding: "4px 0", marginBottom: 12 }}>
                 {orderedSpheres.map((s, i) => (
                   <SortableSphereRow
                     key={s.id}
@@ -302,7 +266,7 @@ export default function SettingsView({
                     }}
                   />
                 ))}
-              </div>
+              </Card>
             </SortableContext>
           </DndContext>
         )}
@@ -316,43 +280,31 @@ export default function SettingsView({
           className="tap"
           style={{
             width: "100%",
-            padding: "12px 16px",
-            borderRadius: 14,
+            padding: "13px 16px",
+            borderRadius: 999,
             border: "1.5px dashed var(--ink-20)",
             background: "transparent",
             textAlign: "center",
-            fontSize: 13,
-            fontWeight: 600,
+            fontSize: 14,
+            fontWeight: 700,
             color: "var(--ink-60)",
             cursor: "pointer",
-            marginBottom: 16,
-            letterSpacing: "-0.005em",
+            marginBottom: 24,
+            letterSpacing: "-0.01em",
           }}
         >
           {t("settings.add_sphere")}
         </button>
 
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--ink-80)",
-            padding: "0 4px 8px",
-            borderBottom: "1px solid var(--ink-10)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ padding: "0 4px", marginBottom: 12 }}>
           {t("settings.h_account")}
-        </div>
+        </SectionLabel>
 
-        <div
+        <Card
           style={{
-            background: "var(--paper-warm)",
-            borderRadius: 18,
-            border: "1px solid var(--ink-05)",
+            padding: "4px 0",
             overflow: "hidden",
-            marginBottom: 16,
+            marginBottom: 24,
           }}
         >
           <div
@@ -360,7 +312,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "11px 14px",
+              padding: "13px 16px",
               borderBottom: "1px solid var(--ink-05)",
             }}
           >
@@ -389,7 +341,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "11px 14px",
+              padding: "13px 16px",
               background: "transparent",
               border: "none",
               borderBottom: "1px solid var(--ink-05)",
@@ -420,7 +372,7 @@ export default function SettingsView({
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "11px 14px",
+                padding: "13px 16px",
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
@@ -441,30 +393,13 @@ export default function SettingsView({
               </span>
             </button>
           </form>
-        </div>
+        </Card>
 
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--ink-80)",
-            padding: "0 4px 8px",
-            borderBottom: "1px solid var(--ink-10)",
-            marginBottom: 10,
-            letterSpacing: "-0.005em",
-          }}
-        >
+        <SectionLabel style={{ padding: "0 4px", marginBottom: 12 }}>
           {t("settings.h_app")}
-        </div>
+        </SectionLabel>
 
-        <div
-          style={{
-            background: "var(--paper-warm)",
-            borderRadius: 18,
-            border: "1px solid var(--ink-05)",
-            overflow: "hidden",
-          }}
-        >
+        <Card style={{ padding: "4px 0", overflow: "hidden" }}>
           <SettingsToggleRow
             Icon={Icons.Volume}
             label={t("settings.sound")}
@@ -496,7 +431,7 @@ export default function SettingsView({
               display: "flex",
               alignItems: "center",
               gap: 12,
-              padding: "11px 14px",
+              padding: "13px 16px",
               borderBottom: pushOn ? "1px solid var(--ink-05)" : "none",
               opacity: pushOn ? 1 : 0.55,
             }}
@@ -569,12 +504,12 @@ export default function SettingsView({
               className="tap"
               style={{
                 width: "100%",
-                padding: "12px 14px",
+                padding: "13px 16px",
                 background: "transparent",
                 border: "none",
                 textAlign: "left",
-                fontSize: 13,
-                fontWeight: 500,
+                fontSize: 13.5,
+                fontWeight: 700,
                 color: "var(--mint-deep)",
                 cursor: pushBusy ? "default" : "pointer",
                 opacity: pushBusy ? 0.5 : 1,
@@ -584,7 +519,7 @@ export default function SettingsView({
               {t("settings.push_test")}
             </button>
           )}
-        </div>
+        </Card>
         {pushMsg && (
           <div
             style={{
@@ -624,8 +559,9 @@ export default function SettingsView({
 
 /** Single sphere row wired into @dnd-kit/sortable. The list-shape (rounded
     container with hairline dividers) is preserved by toggling the row's
-    own bottom-border, and the row carries its own paper-warm background
-    while it's being dragged so it visibly lifts above its siblings. */
+    own bottom-border, and the row carries its own white background while
+    it's being dragged so it visibly lifts above its siblings on the white
+    Card surface (the elevated shadow does the actual lifting). */
 function SortableSphereRow({
   sphere,
   isLast,
@@ -651,17 +587,15 @@ function SortableSphereRow({
     display: "flex",
     alignItems: "center",
     gap: 12,
-    padding: "12px 14px",
+    padding: "12px 16px",
     borderBottom: isDragging || isLast ? "none" : "1px solid var(--ink-05)",
-    background: isDragging ? "var(--paper-warm)" : "transparent",
+    background: isDragging ? "#FFFFFF" : "transparent",
     border: "none",
     cursor: isDragging ? "grabbing" : "pointer",
     textAlign: "left",
     touchAction: "manipulation",
-    boxShadow: isDragging
-      ? "0 12px 24px rgba(45,38,32,0.18), 0 2px 6px rgba(45,38,32,0.10)"
-      : "none",
-    borderRadius: isDragging ? 14 : 0,
+    boxShadow: isDragging ? "var(--shadow-elevated)" : "none",
+    borderRadius: isDragging ? "var(--radius-md)" : 0,
     zIndex: isDragging ? 2 : "auto",
     position: "relative",
   };
@@ -680,7 +614,7 @@ function SortableSphereRow({
         style={{
           width: 36,
           height: 36,
-          borderRadius: 10,
+          borderRadius: "var(--radius-sm)",
           background: sphere.color,
           display: "flex",
           alignItems: "center",
@@ -701,7 +635,7 @@ function SortableSphereRow({
           style={{
             display: "block",
             fontSize: 15,
-            fontWeight: 500,
+            fontWeight: 700,
             color: "var(--ink)",
             letterSpacing: "-0.01em",
           }}
@@ -711,60 +645,6 @@ function SortableSphereRow({
       </span>
       <Icons.Chevron size={16} stroke="var(--ink-40)" />
     </button>
-  );
-}
-
-function SettingsRow({
-  Icon,
-  label,
-  value,
-  accent,
-  disabled,
-  last,
-}: {
-  Icon: (p: { size?: number; stroke?: string; strokeWidth?: number }) => React.JSX.Element;
-  label: string;
-  value: string;
-  accent?: boolean;
-  disabled?: boolean;
-  last?: boolean;
-}) {
-  const accentColor = accent ? "var(--mint-deep)" : "var(--ink-60)";
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "11px 14px",
-        borderBottom: last ? "none" : "1px solid var(--ink-05)",
-        opacity: disabled ? 0.55 : 1,
-      }}
-    >
-      <Icon size={18} stroke={accentColor} strokeWidth={1.8} />
-      <span
-        style={{
-          flex: 1,
-          fontSize: 14.5,
-          fontWeight: accent ? 600 : 500,
-          color: "var(--ink)",
-          letterSpacing: "-0.005em",
-        }}
-      >
-        {label}
-      </span>
-      <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color: accentColor,
-          letterSpacing: "-0.005em",
-        }}
-      >
-        {value}
-      </span>
-      <Icons.Chevron size={15} stroke="var(--ink-40)" />
-    </div>
   );
 }
 
@@ -792,7 +672,7 @@ function SettingsToggleRow({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "11px 14px",
+        padding: "13px 16px",
         borderBottom: last ? "none" : "1px solid var(--ink-05)",
         background: "transparent",
         border: "none",
@@ -858,7 +738,7 @@ function LanguageRow({
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "10px 14px",
+        padding: "11px 16px",
         borderBottom: "1px solid var(--ink-05)",
       }}
     >
@@ -874,12 +754,14 @@ function LanguageRow({
       >
         {t("settings.language")}
       </span>
+      {/* Plump segmented control: pill track on --paper-deep, active
+          segment lifts as a white pill. */}
       <div
         role="tablist"
         style={{
           display: "inline-flex",
           background: "var(--paper-deep)",
-          borderRadius: 12,
+          borderRadius: 999,
           padding: 3,
           gap: 2,
         }}
@@ -895,15 +777,16 @@ function LanguageRow({
               aria-pressed={active}
               style={{
                 border: "none",
-                background: active ? "var(--paper)" : "transparent",
+                background: active ? "#FFFFFF" : "transparent",
                 color: active ? "var(--ink)" : "var(--ink-60)",
-                fontSize: 12,
-                fontWeight: 600,
-                padding: "5px 10px",
-                borderRadius: 9,
+                fontSize: 12.5,
+                fontWeight: 800,
+                padding: "7px 13px",
+                borderRadius: 999,
                 cursor: "pointer",
                 letterSpacing: "0.04em",
-                boxShadow: active ? "0 1px 2px rgba(45,38,32,0.12)" : "none",
+                boxShadow: active ? "var(--shadow-card)" : "none",
+                transition: "background 200ms var(--ease-out), color 200ms var(--ease-out)",
               }}
             >
               {l.toUpperCase()}

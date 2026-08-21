@@ -166,6 +166,10 @@ export const DICT = {
     undo:        { ru: "Отменить",        en: "Undo" },
     /* Neutral overdue meta on task rows, e.g. «с 12 авг» / "since Aug 12" */
     overdue_since: { ru: "с {date}",      en: "since {date}" },
+    /* Calm header summary of the «Ждут своего часа» group (no red).
+       Two forms for the Russian verb: 1/21/31… ждёт, otherwise ждут. */
+    sub_waiting_one:  { ru: "{n} ждёт своего часа", en: "{n} waiting for later" },
+    sub_waiting_many: { ru: "{n} ждут своего часа", en: "{n} waiting for later" },
   },
 
   /* ──────────── Habits ──────────── */

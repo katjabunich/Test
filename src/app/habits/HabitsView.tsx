@@ -10,6 +10,13 @@ import { computeStreak, groupLogsByHabit } from "@/lib/habits";
 import { reorderHabits } from "@/lib/actions";
 import { useT, useDaysWord } from "@/lib/i18n/client";
 import {
+  Card,
+  FocusCard,
+  PillButton,
+  ScreenHeader,
+  SectionLabel,
+} from "@/components/ui";
+import {
   DndContext,
   PointerSensor,
   TouchSensor,
@@ -107,41 +114,15 @@ export default function HabitsView({
 
   return (
     <>
-      <div style={{ padding: "8px 22px 18px" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-emphasis)",
-            fontSize: 40,
-            fontWeight: 700,
-            letterSpacing: "-0.03em",
-            lineHeight: 1.04,
-            color: "var(--ink)",
-            margin: 0,
-          }}
-        >
-          {t("habits.title")}
-        </h1>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "var(--ink-60)",
-            marginTop: 8,
-            letterSpacing: "-0.005em",
-          }}
-        >
-          {t("habits.sub")}
-        </div>
-      </div>
+      <ScreenHeader label={t("habits.sub")}>{t("habits.title")}</ScreenHeader>
 
       {/* Hero — best streak (full-bleed mint, emotional centre) */}
       {top && top.streak > 0 && (
         <div style={{ padding: "0 0 18px" }}>
-          <div
+          <FocusCard
+            bg="var(--mint)"
             style={{
-              background: "var(--mint)",
-              borderRadius: 22,
-              margin: "0 18px",
+              margin: "0 20px",
               padding: "22px 22px 24px",
               position: "relative",
               overflow: "hidden",
@@ -190,11 +171,12 @@ export default function HabitsView({
             )}
             <div
               style={{
-                fontSize: 12,
-                fontWeight: 500,
+                fontSize: 13,
+                fontWeight: 700,
                 color: "var(--paper)",
-                opacity: 0.85,
-                letterSpacing: "-0.005em",
+                opacity: 0.9,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
                 position: "relative",
               }}
             >
@@ -224,10 +206,10 @@ export default function HabitsView({
                 <div
                   className="tnum"
                   style={{
-                    fontFamily: "var(--font-emphasis)",
+                    fontFamily: "var(--font-display)",
                     fontSize: 76,
-                    fontWeight: 700,
-                    letterSpacing: "-0.04em",
+                    fontWeight: 800,
+                    letterSpacing: "-0.03em",
                     lineHeight: 0.9,
                     color: "var(--paper)",
                   }}
@@ -239,7 +221,7 @@ export default function HabitsView({
                 <div
                   style={{
                     fontSize: 13,
-                    fontWeight: 500,
+                    fontWeight: 600,
                     color: "var(--paper)",
                     opacity: 0.85,
                     letterSpacing: "-0.005em",
@@ -263,70 +245,53 @@ export default function HabitsView({
                 </div>
               </div>
             </div>
-          </div>
+          </FocusCard>
         </div>
       )}
 
       <div
         style={{
-          padding: "0 18px",
+          padding: "0 20px",
           display: "flex",
           flexDirection: "column",
-          gap: 8,
+          gap: 10,
         }}
       >
         {habits.length === 0 ? (
-          <div
+          <Card
             style={{
               padding: "26px 22px 22px",
               textAlign: "center",
               color: "var(--ink-60)",
               fontSize: 14.5,
-              background: "var(--paper-warm)",
-              border: "1px solid var(--ink-05)",
-              borderRadius: 22,
               lineHeight: 1.5,
             }}
           >
             {t("habits.empty_body")}{" "}
             <span className="mark-butter">{t("habits.empty_title")}</span>.
-            <button
-              type="button"
-              onClick={() => {
-                setEditing(null);
-                setModalOpen(true);
-              }}
-              className="tap"
-              style={{
-                display: "inline-block",
-                marginTop: 14,
-                padding: "10px 20px",
-                borderRadius: 12,
-                border: "none",
-                background: "var(--mint-deep)",
-                color: "var(--paper)",
-                fontSize: 13.5,
-                fontWeight: 600,
-                letterSpacing: "-0.005em",
-                cursor: "pointer",
-              }}
-            >
-              {t("habits.add")}
-            </button>
-          </div>
+            <div style={{ marginTop: 14 }}>
+              <PillButton
+                variant="filled"
+                color="var(--mint-deep)"
+                onClick={() => {
+                  setEditing(null);
+                  setModalOpen(true);
+                }}
+                style={{
+                  color: "#FFFFFF",
+                  fontWeight: 800,
+                  padding: "10px 20px",
+                }}
+              >
+                {t("habits.add")}
+              </PillButton>
+            </div>
+          </Card>
         ) : (
           <>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--ink-80)",
-                padding: "0 4px 8px",
-                letterSpacing: "-0.005em",
-              }}
-            >
+            <SectionLabel style={{ padding: "0 4px 4px" }}>
               {t("habits.title")}
-            </div>
+            </SectionLabel>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -336,7 +301,7 @@ export default function HabitsView({
                 items={orderedHabits.map((h) => h.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {orderedHabits.map((habit) => (
                     <SortableHabitCard
                       key={habit.id}
@@ -362,12 +327,12 @@ export default function HabitsView({
                 width: "100%",
                 marginTop: 8,
                 padding: "12px 16px",
-                borderRadius: 14,
+                borderRadius: 999,
                 border: "1.5px dashed var(--ink-20)",
                 background: "transparent",
                 textAlign: "center",
                 fontSize: 13,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: "var(--ink-60)",
                 cursor: "pointer",
                 letterSpacing: "-0.005em",
@@ -415,10 +380,10 @@ function SortableHabitCard({
     transition,
     position: "relative",
     zIndex: isDragging ? 2 : "auto",
-    boxShadow: isDragging
-      ? "0 14px 28px rgba(45,38,32,0.20), 0 2px 6px rgba(45,38,32,0.10)"
-      : "none",
-    borderRadius: 16,
+    /* Radius matches the white Card inside (--radius-lg) so the lifted
+       drag shadow hugs the card's new contour. */
+    boxShadow: isDragging ? "var(--shadow-elevated)" : "none",
+    borderRadius: "var(--radius-lg)",
     touchAction: "manipulation",
   };
 

@@ -133,7 +133,7 @@ export default function HabitRing({
         style={{
           fontSize: 11,
           color: "var(--ink-60)",
-          fontWeight: 500,
+          fontWeight: 600,
           width: "100%",
           textAlign: "center",
           lineHeight: 1.25,
