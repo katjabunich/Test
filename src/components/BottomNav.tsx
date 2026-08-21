@@ -51,8 +51,8 @@ export default function BottomNav() {
         maxWidth: 460,
         margin: "0 auto",
         background: "#FFFFFF",
-        borderRadius: 28,
-        boxShadow: "0 -2px 28px rgba(0,0,0,0.10), 0 1px 6px rgba(0,0,0,0.06)",
+        borderRadius: "var(--radius-xl)",
+        boxShadow: "var(--shadow-nav)",
         padding: "10px 20px",
         display: "flex",
         justifyContent: "space-between",
@@ -83,7 +83,8 @@ export default function BottomNav() {
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                boxShadow: "0 8px 24px rgba(79,156,106,0.30)",
+                /* Tinted glow derived from --mint-deep #6BBF8A */
+                boxShadow: "0 8px 24px rgba(107,191,138,0.35)",
               }}
             >
               <Icons.Plus size={22} stroke="#fff" strokeWidth={2.4} />
@@ -116,8 +117,8 @@ export default function BottomNav() {
             />
             <span
               style={{
-                fontSize: 10,
-                fontWeight: isActive ? 700 : 500,
+                fontSize: 10.5,
+                fontWeight: 700,
                 letterSpacing: "0.01em",
                 lineHeight: 1,
                 color: "currentColor",

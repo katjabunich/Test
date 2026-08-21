@@ -45,6 +45,7 @@ export default function PreviewPage() {
         spheres={spheres}
         habits={habits}
         logs={logs}
+        doneToday={2}
         initialName="Катя"
       />
       <BottomNav />

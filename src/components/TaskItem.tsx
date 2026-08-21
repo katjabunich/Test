@@ -5,7 +5,7 @@ import type { Sphere, Task } from "@/lib/data";
 import { completeTask, deferTask } from "@/lib/actions";
 import { isPast, isToday, fromIsoDate } from "@/lib/date";
 import { feedbackTaskComplete } from "@/lib/feedback";
-import { useT, useLang, useWeekdaysShort } from "@/lib/i18n/client";
+import { useT, useLang, useMonths, useWeekdaysShort } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 import { Icons } from "@/components/Icons";
 import { snack } from "@/components/Snackbar";
@@ -20,29 +20,32 @@ function dueLabel(
   due: string | null,
   lang: Lang,
   weekdays: readonly string[],
-): { text: string; tone: "muted" | "warn" } | null {
+  months: readonly string[],
+  t: (k: string, vars?: Record<string, string | number>) => string,
+): { text: string } | null {
   if (!due) return null;
-  if (isToday(due)) return { text: lang === "en" ? "today" : "сегодня", tone: "muted" };
+  if (isToday(due)) return { text: lang === "en" ? "today" : "сегодня" };
   if (isPast(due)) {
+    /* Neutral, guilt-free overdue meta: «с 12 авг» / "since Aug 12".
+       Russian month names in the dict are full genitive — clip to the
+       conventional 3-letter shorthand; English is already short. */
     const d = fromIsoDate(due);
-    const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
-    if (lang === "en") {
-      return { text: days === 1 ? "yesterday" : `${days}d ago`, tone: "warn" };
-    }
-    return { text: days === 1 ? "вчера" : `${days} дн назад`, tone: "warn" };
+    const month = lang === "ru" ? months[d.getMonth()].slice(0, 3) : months[d.getMonth()];
+    const date =
+      lang === "en" ? `${month} ${d.getDate()}` : `${d.getDate()} ${month}`;
+    return { text: t("tasks.overdue_since", { date }) };
   }
   const d = fromIsoDate(due);
-  const t = new Date();
-  t.setHours(0, 0, 0, 0);
-  const diff = Math.round((d.getTime() - t.getTime()) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diff = Math.round((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   if (diff <= 7) {
-    return { text: weekdays[d.getDay()], tone: "muted" };
+    return { text: weekdays[d.getDay()] };
   }
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   return {
     text: lang === "en" ? `${dd}/${mm}` : `${dd}.${mm}`,
-    tone: "muted",
   };
 }
 
@@ -61,11 +64,11 @@ export default function TaskItem({
   const t = useT();
   const lang = useLang();
   const weekdaysShort = useWeekdaysShort();
+  const months = useMonths();
   const [optimisticDone, setOptimisticDone] = useState(false);
   const [optimisticDeferred, setOptimisticDeferred] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const due = dueLabel(task.due_date, lang, weekdaysShort);
-  const overdue = !!(task.due_date && isPast(task.due_date));
+  const due = dueLabel(task.due_date, lang, weekdaysShort, months, t);
   const sphereColor = sphere?.color ?? "var(--ink-40)";
 
   /* Swipe state. dx is the live offset; isDragging tells us whether to
@@ -215,13 +218,9 @@ export default function TaskItem({
     }
   }, [optimisticDone, optimisticDeferred, dx, isDragging]);
 
-  // Sphere-tinted paper card; overdue keeps its sphere tint and gets a
-  // clay accent stripe on the left edge so the sphere code stays legible
-  // even on a list full of overdue tasks.
+  /* White card; the left bar is ALWAYS the sphere colour — overdue gets
+     no red anywhere (--alert is reserved for destructive actions). */
   const cardBg = "#FFFFFF";
-  const cardBorder = sphere
-    ? `${sphere.color}40` // ~25% of the sphere colour
-    : "var(--ink-05)";
 
   /* Reveal-action progress: 0 = idle, 1 = at COMMIT_THRESHOLD. Used to fade
      the action chip in as the row slides off it. */
@@ -237,7 +236,7 @@ export default function TaskItem({
       className={collapsing ? "task-collapse" : undefined}
       style={{
         position: "relative",
-        borderRadius: 22,
+        borderRadius: "var(--radius-lg)",
         overflow: "hidden",
         maxHeight: 140,
         transformOrigin: "top center",
@@ -252,7 +251,7 @@ export default function TaskItem({
             inset: 0,
             background:
               swipeDir === "left" ? "var(--mint-deep)" : "var(--butter)",
-            borderRadius: 22,
+            borderRadius: "var(--radius-lg)",
             display: "flex",
             alignItems: "center",
             justifyContent: swipeDir === "left" ? "flex-end" : "flex-start",
@@ -310,8 +309,8 @@ export default function TaskItem({
         style={{
           background: cardBg,
           border: "none",
-          borderLeft: `4px solid ${overdue ? "var(--alert)" : sphereColor}`,
-          borderRadius: 22,
+          borderLeft: `4px solid ${sphereColor}`,
+          borderRadius: "var(--radius-lg)",
           boxShadow: "var(--shadow-card)",
           padding: "14px 16px 14px 14px",
           display: "flex",
@@ -371,8 +370,8 @@ export default function TaskItem({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
           style={{
-            fontSize: 15.5,
-            fontWeight: 600,
+            fontSize: 16,
+            fontWeight: 700,
             color: "var(--ink-strong)",
             letterSpacing: "-0.01em",
             opacity: optimisticDone ? 0.5 : 1,
@@ -418,8 +417,8 @@ export default function TaskItem({
                 className="tnum"
                 style={{
                   fontSize: 12,
-                  fontWeight: 500,
-                  color: due.tone === "warn" ? "var(--alert)" : "var(--ink-60)",
+                  fontWeight: 600,
+                  color: "var(--ink-40)",
                   letterSpacing: "-0.005em",
                 }}
               >

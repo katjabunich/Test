@@ -138,6 +138,11 @@ export const DICT = {
     progress_tasks:   { ru: "задач",                     en: "tasks" },
     progress_habits:  { ru: "привычек",                  en: "habits" },
     progress_of:      { ru: "из",                        en: "of" },
+
+    /* Waiting-for-later section — calm home for overdue tasks */
+    waiting_title:    { ru: "Ждут своего часа",          en: "Waiting for later" },
+    move_to_today:    { ru: "На сегодня",                en: "Do today" },
+    moved_snack:      { ru: "Перенесено на сегодня ✓",   en: "Moved to today ✓" },
   },
 
   /* ──────────── Tasks ──────────── */
@@ -159,6 +164,8 @@ export const DICT = {
     completed_snack: { ru: "Готово ✓",   en: "Done ✓" },
     deferred_snack:  { ru: "Отложено",   en: "Deferred" },
     undo:        { ru: "Отменить",        en: "Undo" },
+    /* Neutral overdue meta on task rows, e.g. «с 12 авг» / "since Aug 12" */
+    overdue_since: { ru: "с {date}",      en: "since {date}" },
   },
 
   /* ──────────── Habits ──────────── */

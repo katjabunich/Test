@@ -85,6 +85,29 @@ export async function fetchUpcomingTasks(days = 7): Promise<Task[]> {
   return (data ?? []) as Task[];
 }
 
+/** Count of tasks completed since the server's local start-of-today.
+    Cheap head-only count used by the Today progress bar. Note: dates in
+    this app are local-day strings computed on whatever machine runs the
+    code (see lib/date.ts); the server's midnight is the pragmatic
+    boundary here, consistent with fetchTodayTasks using server today(). */
+export async function fetchTodayCompletedCount(): Promise<number> {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const { count, error } = await supabase
+    .from("tasks")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .not("completed_at", "is", null)
+    .gte("completed_at", start.toISOString());
+  if (error) {
+    console.error("fetchTodayCompletedCount:", error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 /* ──────────────── Habits ──────────────── */
 
 export async function fetchHabits(): Promise<Habit[]> {

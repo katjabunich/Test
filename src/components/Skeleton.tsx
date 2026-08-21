@@ -40,10 +40,10 @@ export function SkeletonRow() {
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "12px 14px",
-        background: "var(--paper-warm)",
-        border: "1px solid var(--ink-05)",
-        borderRadius: 16,
+        padding: "14px 16px 14px 14px",
+        background: "#FFFFFF",
+        borderRadius: "var(--radius-lg)",
+        boxShadow: "var(--shadow-card)",
       }}
     >
       <div

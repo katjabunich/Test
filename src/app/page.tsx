@@ -2,6 +2,7 @@ import {
   fetchHabits,
   fetchRecentHabitLogs,
   fetchSpheres,
+  fetchTodayCompletedCount,
   fetchTodayTasks,
   fetchUpcomingTasks,
 } from "@/lib/db";
@@ -12,13 +13,15 @@ export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
   const user = await requireUser();
-  const [todayTasks, upcomingTasks, spheres, habits, logs] = await Promise.all([
-    fetchTodayTasks(),
-    fetchUpcomingTasks(7),
-    fetchSpheres(),
-    fetchHabits(),
-    fetchRecentHabitLogs(7),
-  ]);
+  const [todayTasks, upcomingTasks, spheres, habits, logs, doneToday] =
+    await Promise.all([
+      fetchTodayTasks(),
+      fetchUpcomingTasks(7),
+      fetchSpheres(),
+      fetchHabits(),
+      fetchRecentHabitLogs(7),
+      fetchTodayCompletedCount(),
+    ]);
 
   const meta = (user.user_metadata ?? {}) as { display_name?: string | null };
   const initialName =
@@ -33,6 +36,7 @@ export default async function TodayPage() {
       spheres={spheres}
       habits={habits}
       logs={logs}
+      doneToday={doneToday}
       initialName={initialName}
     />
   );

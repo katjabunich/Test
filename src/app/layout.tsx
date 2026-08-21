@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { M_PLUS_Rounded_1c, Nunito } from "next/font/google";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import SettingsTrigger from "@/components/SettingsTrigger";
@@ -11,24 +11,24 @@ import { getUser } from "@/lib/auth";
 import { getLang } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/lib/i18n/client";
 
-/* Two-family system matching Tiimo's aesthetic:
-   - Playfair Display: high-contrast Didone serif with elegant
-     thick/thin stroke variation. Close to Tiimo's heading typeface.
-     Full Cyrillic support.
-   - Inter: clean geometric sans, neutral and modern. Close to
-     Tiimo's body/UI typeface. Full Cyrillic support. */
-const serif = Playfair_Display({
+/* Two-family rounded system ("крупные пухлые шрифты"):
+   - M PLUS Rounded 1c: plump, fully-rounded display face for H1s,
+     hero numbers, card headings and section labels. Full Cyrillic
+     support. Not a variable font — we load only the two display
+     weights we actually use.
+   - Nunito: rounded, friendly variable sans for body/UI/meta.
+     Full Cyrillic support; harmonises with the display face. */
+const rounded = M_PLUS_Rounded_1c({
   subsets: ["latin", "latin-ext", "cyrillic"],
-  variable: "--font-serif",
+  variable: "--font-rounded",
   display: "swap",
-  weight: ["500", "600", "700", "800", "900"],
+  weight: ["700", "800"],
 });
 
-const sans = Inter({
+const sans = Nunito({
   subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
   variable: "--font-sans",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -43,7 +43,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#FAFAFA",
+  themeColor: "#FFFFFF",
   viewportFit: "cover",
 };
 
@@ -53,7 +53,7 @@ export default async function RootLayout({
   const [user, lang] = await Promise.all([getUser(), getLang()]);
   const authed = !!user;
   return (
-    <html lang={lang} className={`${sans.variable} ${serif.variable}`}>
+    <html lang={lang} className={`${sans.variable} ${rounded.variable}`}>
       <body>
         <LanguageProvider initial={lang}>
           <main>
