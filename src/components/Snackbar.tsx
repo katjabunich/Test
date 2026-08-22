@@ -58,6 +58,13 @@ export default function Snackbar() {
     startUndo(async () => {
       try {
         await uncompleteTask(id);
+        /* Tell the (possibly still-mounted) TaskItem to un-collapse: its
+           optimisticDone state survives router.refresh because the task
+           never left the server list, so without this the row stays
+           hidden and undo looks broken. */
+        window.dispatchEvent(
+          new CustomEvent("doit:undone", { detail: { taskId: id } }),
+        );
         /* Snackbar lives in the root layout, not inside the page tree,
            so Next.js doesn't reliably auto-refresh the current page's
            RSC payload after the action's revalidatePath runs. Force a

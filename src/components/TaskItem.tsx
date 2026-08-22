@@ -83,6 +83,22 @@ export default function TaskItem({
   const lockedAxis = useRef<"horizontal" | "vertical" | null>(null);
   const moved = useRef(false);
 
+  /* Undo from the snackbar: the task never leaves the server list before
+     the refresh, so this component instance survives with its collapsed
+     optimisticDone state — reset it or the row stays invisible and the
+     undo button looks broken. */
+  useEffect(() => {
+    function handleUndone(e: Event) {
+      const detail = (e as CustomEvent<{ taskId?: string }>).detail;
+      if (detail?.taskId !== task.id) return;
+      setOptimisticDone(false);
+      setOptimisticDeferred(false);
+      setDx(0);
+    }
+    window.addEventListener("doit:undone", handleUndone);
+    return () => window.removeEventListener("doit:undone", handleUndone);
+  }, [task.id]);
+
   function handleComplete(e?: React.MouseEvent) {
     e?.stopPropagation();
     setOptimisticDone(true);
