@@ -67,7 +67,7 @@ const WELCOME = `Привет 🤗
 Я твой личный дневник достижений. Сюда ты записываешь хорошее, что случилось — *в том числе и благодаря тебе*. Даже маленькое. Даже то, что кажется «само получилось».
 
 Как пользоваться — проще некуда:
-• Просто *напиши мне* что произошло. Я сохраню.
+• Просто *напиши мне* что произошло. Можно сразу несколько штук — каждое с новой строки.
 • Каждый вечер я мягко спрошу сам, чтобы ты не забывала.
 • Раз в неделю пришлю список — посмотреть, сколько всего ты сделала.
 
@@ -82,7 +82,7 @@ const WELCOME = `Привет 🤗
 Попробуй прямо сейчас: напиши одно хорошее, что было сегодня ✨`;
 const HELP = `Что я умею:
 
-• Просто напиши мне — сохраню как достижение.
+• Просто напиши мне — сохраню как достижение. Несколько штук — каждое с новой строки.
 /week — список за последние 7 дней
 /итоги — AI-разбор твоих сильных сторон и паттернов
 /export — выгрузить всё текстом
@@ -90,12 +90,34 @@ const HELP = `Что я умею:
 /pause — пауза напоминаний  /resume — включить
 /help — это меню`;
 const PRIVATE_BOT = 'Это личный бот 🙅 Он работает только со своим владельцем.';
-const AGENCY_PROMPT = 'А в чём тут была *твоя* заслуга — даже маленькая?';
-const AGENCY_WAIT = 'Слушаю — в чём твой вклад? (или /skip)';
-const AGENCY_SAVED = 'Вот это важно записать 💪 Добавила.';
 const AGENCY_SKIPPED = 'Ок, и так хорошо ✨';
 
-const AGENCY_CHANCE = 0.34;
+// Вопрос «в чём твоя заслуга?» выключен: она и так пишет заслугу внутри текста
+// («заставила себя», «настояла», «не поленилась»), а вопрос читался как навязчивый.
+const AGENCY_CHANCE = 0;
+
+
+// Группировка по дням: раньше всё валилось сплошным списком без дат.
+const TZ = 'Europe/Amsterdam';
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  const wd = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, weekday: 'short' }).format(d);
+  const dm = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, day: 'numeric', month: 'long' }).format(d);
+  return `${wd}, ${dm}`;
+}
+function dayKey(iso: string) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+}
+function renderByDay(entries: { body: string; agency_note: string | null; created_at: string }[]) {
+  const out: string[] = [];
+  let cur = '';
+  for (const e of entries) {
+    const k = dayKey(e.created_at);
+    if (k !== cur) { cur = k; out.push(`\n*${dayLabel(e.created_at)}*`); }
+    out.push(`• ${e.body}${e.agency_note ? ` — _${e.agency_note}_` : ''}`);
+  }
+  return out.join('\n').trim();
+}
 
 // ── Типы строк БД ─────────────────────────────────────────────────────────────
 type User = {
@@ -182,34 +204,35 @@ async function onText(user: User, text: string) {
     }
   }
 
-  // Ждём приписку «в чём заслуга» к прошлой записи?
-  if (user.awaiting_agency_for) {
-    await db.from('entries').update({ agency_note: text }).eq('id', user.awaiting_agency_for);
-    await db.from('users').update({ awaiting_agency_for: null }).eq('id', user.id);
-    return void send(user.chat_id, AGENCY_SAVED);
-  }
+  // Одно сообщение почти всегда содержит НЕСКОЛЬКО достижений — по одному в строке.
+  // Раньше всё это падало одной записью и в сводке слипалось в один пункт-кашу.
+  const parts = text
+    .split('\n')
+    .map((s) => s.replace(/^\s*[-•*—]\s*/, '').trim())
+    .filter(Boolean);
+  if (!parts.length) return;
 
-  // Обычная запись.
-  const { data: entry } = await db.from('entries')
-    .insert({ user_id: user.id, body: text, source: 'manual' }).select('id').single();
+  // created_at со сдвигом в миллисекунду — чтобы порядок внутри сообщения сохранился.
+  const base = Date.now();
+  const rows = parts.map((body, i) => ({
+    user_id: user.id,
+    body,
+    source: 'manual',
+    created_at: new Date(base + i).toISOString(),
+  }));
+  await db.from('entries').insert(rows);
 
-  if (entry && Math.random() < AGENCY_CHANCE) {
-    await send(user.chat_id, `${pick(SAVED)}\n\n${AGENCY_PROMPT}`, [[
-      { text: '✍️ Допишу', callback_data: `agency:${entry.id}` },
-      { text: 'Пропустить', callback_data: 'skip' },
-    ]]);
-  } else {
-    await send(user.chat_id, pick(SAVED));
-  }
+  const n = parts.length;
+  await send(
+    user.chat_id,
+    n > 1 ? `${pick(SAVED)} — ${n} ${plural(n, 'запись', 'записи', 'записей')}` : pick(SAVED),
+  );
 }
 
 async function onCallback(user: User, cb: any) {
   const data: string = cb.data ?? '';
   await tg('answerCallbackQuery', { callback_query_id: cb.id });
-  if (data.startsWith('agency:')) {
-    await db.from('users').update({ awaiting_agency_for: data.slice(7) }).eq('id', user.id);
-    await send(user.chat_id, AGENCY_WAIT);
-  } else if (data === 'skip') {
+  if (data === 'skip') {
     await send(user.chat_id, AGENCY_SKIPPED);
   }
 }
@@ -221,9 +244,8 @@ async function weekSummary(user: User) {
   const entries = (data ?? []) as Entry[];
   if (!entries.length)
     return void send(user.chat_id, 'За последнюю неделю записей пока нет. Это не «ничего не было» — просто ещё не пойманное. Напиши хоть одно 💛');
-  const body = entries.map((e) => `• ${e.body}${e.agency_note ? ` — _${e.agency_note}_` : ''}`).join('\n');
-  const head = `Вот что ты сделала за неделю — ${entries.length} ${plural(entries.length, 'запись', 'записи', 'записей')} 💛\n`;
-  await send(user.chat_id, head + '\n' + body);
+  const head = `Вот что ты сделала за неделю — ${entries.length} ${plural(entries.length, 'хорошая вещь', 'хорошие вещи', 'хороших вещей')} 💛\n`;
+  await send(user.chat_id, head + renderByDay(entries));
 }
 
 async function exportAll(user: User) {

@@ -42,6 +42,29 @@ const EVENING = [
   'Ловлю твой день: одно достижение, большое или крошечное?',
 ];
 
+
+// Группировка по дням: раньше всё валилось сплошным списком без дат.
+const TZ = 'Europe/Amsterdam';
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  const wd = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, weekday: 'short' }).format(d);
+  const dm = new Intl.DateTimeFormat('ru-RU', { timeZone: TZ, day: 'numeric', month: 'long' }).format(d);
+  return `${wd}, ${dm}`;
+}
+function dayKey(iso: string) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso));
+}
+function renderByDay(entries: { body: string; agency_note: string | null; created_at: string }[]) {
+  const out: string[] = [];
+  let cur = '';
+  for (const e of entries) {
+    const k = dayKey(e.created_at);
+    if (k !== cur) { cur = k; out.push(`\n*${dayLabel(e.created_at)}*`); }
+    out.push(`• ${e.body}${e.agency_note ? ` — _${e.agency_note}_` : ''}`);
+  }
+  return out.join('\n').trim();
+}
+
 type User = {
   id: string; chat_id: number; reminder_hour: number; timezone: string;
   last_reminded_on: string | null; last_weekly_on: string | null;
@@ -99,7 +122,6 @@ async function weekly(u: User) {
     await send(u.chat_id, 'Неделя прошла без записей 🌙 Ничего страшного — давай начнём новую с одного хорошего момента? Просто напиши мне.');
     return;
   }
-  const body = entries.map((e) => `• ${e.body}${e.agency_note ? ` — _${e.agency_note}_` : ''}`).join('\n');
-  const head = `Воскресный итог 💛 За неделю ты собрала ${entries.length} ${plural(entries.length, 'достижение', 'достижения', 'достижений')}:\n`;
-  await send(u.chat_id, head + '\n' + body + '\n\nГорда тобой. Хочешь разбор сильных сторон — /итоги');
+  const head = `Воскресный итог 💛 За неделю ты собрала ${entries.length} ${plural(entries.length, 'хорошую вещь', 'хорошие вещи', 'хороших вещей')}:\n`;
+  await send(u.chat_id, head + renderByDay(entries) + '\n\nГорда тобой. Хочешь разбор сильных сторон — /итоги');
 }
