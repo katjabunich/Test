@@ -11,9 +11,11 @@ import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
 import { useT, useDaysWord } from "@/lib/i18n/client";
 import { Card } from "@/components/ui";
 
-/** Habit list row: white Card (--radius-lg, --shadow-card) with thin ring
-    on the left, name + 14-day heatmap in the middle, plump streak number
-    on the right. */
+/** Habit tile for the 2-column /habits grid: white Card (--radius-lg,
+    --shadow-card), vertical composition — big tappable ring on top
+    (ring = toggle today), name below, 7×2 two-week heatmap, plump
+    streak line at the bottom. Tapping the tile itself opens the edit
+    modal. */
 export default function HabitCard({
   habit,
   logged,
@@ -49,10 +51,9 @@ export default function HabitCard({
   const todayIso = today();
   const doneToday = localLogged.has(todayIso);
 
-  /* Two-week rolling heatmap (oldest on the left, today on the right). 21
-     days felt sparse for new users and hard to scan past the first stretch
-     of consistency; two weeks gives a dense, readable canvas that fills in
-     quickly enough to feel rewarding. */
+  /* Two-week rolling heatmap (oldest first, today last). Rendered as a
+     7-column × 2-row dot grid so it fits a half-width tile: top row =
+     last week, bottom row = this week ending in today. */
   const cells = useMemo(() => {
     const out: Array<{ date: string; done: boolean; scheduled: boolean }> = [];
     for (let i = 13; i >= 0; i--) {
@@ -92,8 +93,8 @@ export default function HabitCard({
     });
   }
 
-  const stroke = 2;
-  const size = 48;
+  const stroke = 2.5;
+  const size = 60;
   const r = (size - stroke * 2) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(7, weekDone) / 7);
@@ -102,11 +103,15 @@ export default function HabitCard({
     <Card
       onClick={() => onEdit(habit)}
       style={{
-        padding: "14px 16px",
+        padding: "16px 12px 14px",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
-        gap: 14,
+        textAlign: "center",
+        gap: 0,
         cursor: "pointer",
+        minWidth: 0,
+        height: "100%",
       }}
     >
       <button
@@ -158,7 +163,7 @@ export default function HabitCard({
         <div
           style={{
             position: "absolute",
-            inset: 6,
+            inset: 8,
             borderRadius: "50%",
             background: doneToday ? mutedColor : "transparent",
             display: "flex",
@@ -171,62 +176,79 @@ export default function HabitCard({
         >
           <HabitIcon
             value={habit.emoji}
-            size={20}
+            size={24}
             stroke="currentColor"
             strokeWidth={2}
           />
         </div>
       </button>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            color: "var(--ink)",
-            letterSpacing: "-0.01em",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            lineHeight: 1.2,
-          }}
-        >
-          {habit.name}
-        </div>
-        <div
-          aria-label={`${weekDone}/7 ${t("habits.week_progress")}`}
-          style={{
-            marginTop: 6,
-            display: "flex",
-            gap: 2,
-          }}
-        >
-          {cells.map((c) => (
-            <span
-              key={c.date}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 1.5,
-                background: c.done
-                  ? mutedColor
-                  : c.scheduled
-                  ? "var(--ink-10)"
-                  : "transparent",
-                border: c.done ? "none" : "1px solid var(--ink-05)",
-                flexShrink: 0,
-              }}
-            />
-          ))}
-        </div>
+      <div
+        style={{
+          marginTop: 10,
+          width: "100%",
+          minWidth: 0,
+          fontSize: 15,
+          fontWeight: 800,
+          color: "var(--ink)",
+          letterSpacing: "-0.01em",
+          lineHeight: 1.25,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+        }}
+      >
+        {habit.name}
       </div>
 
-      <div style={{ textAlign: "right" }}>
-        <div
+      <div
+        aria-label={`${weekDone}/7 ${t("habits.week_progress")}`}
+        style={{
+          marginTop: 10,
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 8px)",
+          gap: 3,
+          justifyContent: "center",
+        }}
+      >
+        {cells.map((c) => (
+          <span
+            key={c.date}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 2,
+              background: c.done
+                ? mutedColor
+                : c.scheduled
+                ? "var(--ink-10)"
+                : "transparent",
+              border: c.done ? "none" : "1px solid var(--ink-05)",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Streak line pinned to the tile bottom so rows of tiles align. */}
+      <div
+        style={{
+          marginTop: "auto",
+          paddingTop: 10,
+          display: "flex",
+          alignItems: "baseline",
+          justifyContent: "center",
+          gap: 5,
+          minWidth: 0,
+          maxWidth: "100%",
+        }}
+      >
+        <span
           className="tnum"
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: 30,
+            fontSize: 26,
             fontWeight: 800,
             letterSpacing: "-0.02em",
             lineHeight: 1,
@@ -234,18 +256,20 @@ export default function HabitCard({
           }}
         >
           {streak}
-        </div>
-        <div
+        </span>
+        <span
           style={{
-            marginTop: 2,
             fontSize: 11,
             fontWeight: 600,
             color: "var(--ink-40)",
             letterSpacing: "-0.005em",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
           {daysWord(streak)} {t("habits.in_a_row")}
-        </div>
+        </span>
       </div>
     </Card>
   );

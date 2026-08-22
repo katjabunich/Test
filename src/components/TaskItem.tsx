@@ -49,11 +49,12 @@ function dueLabel(
   };
 }
 
-/** Task row per «Рассвет» A2: sphere-tinted card (white mixed with the
-    sphere colour carries the sphere identity — no left colour bar),
-    muted sphere-bordered checkbox left, sphere chip + due label below
-    the title. Swipe-left commits "Готово", swipe-right defers to
-    tomorrow. */
+/** Task row per «Рассвет» A2, Tiimo composition: sphere-tinted card
+    (white mixed with the sphere colour — no left colour bar), a 40px
+    sphere icon-avatar on the LEFT (sphere emoji in a tinted circle),
+    title + meta next to it, and the round muted-sphere-bordered
+    checkbox moved to the RIGHT edge. Swipe-left commits "Готово",
+    swipe-right defers to tomorrow. */
 export default function TaskItem({
   task,
   sphere,
@@ -337,45 +338,40 @@ export default function TaskItem({
           WebkitUserSelect: "none",
         }}
       >
-      <button
-        type="button"
-        onClick={handleComplete}
-        disabled={isPending || optimisticDone || optimisticDeferred}
-        aria-label="Отметить выполненной"
+      {/* Sphere icon-avatar — the row's identity anchor on the left:
+          sphere emoji inside a circle tinted a step deeper than the
+          card; a task without an emoji (or without a sphere) gets a
+          quiet 10px dot instead. */}
+      <div
+        aria-hidden
         style={{
-          width: 26,
-          height: 26,
-          borderRadius: 13,
-          border: `2.5px solid ${optimisticDone ? "var(--terra)" : sphereMuted}`,
-          background: optimisticDone ? "var(--terra)" : "transparent",
-          padding: 0,
-          cursor: "pointer",
+          width: 40,
+          height: 40,
+          borderRadius: 20,
           flexShrink: 0,
+          background: `color-mix(in srgb, #FFFFFF 75%, ${sphereColor})`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "background 200ms var(--ease-out)",
+          fontSize: 18,
+          lineHeight: 1,
+          userSelect: "none",
         }}
       >
-        {optimisticDone && (
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 12 12"
-            fill="none"
-            className="check-pop"
-          >
-            <path
-              d="M2 6.5 L5 9 L10 3.5"
-              fill="none"
-              stroke="#fff"
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+        {sphere?.emoji ? (
+          sphere.emoji
+        ) : (
+          <span
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              background: sphereMuted,
+              display: "block",
+            }}
+          />
         )}
-      </button>
+      </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div
@@ -455,6 +451,47 @@ export default function TaskItem({
           </div>
         )}
       </div>
+
+      {/* Round checkbox — moved to the right edge, Tiimo-style. */}
+      <button
+        type="button"
+        onClick={handleComplete}
+        disabled={isPending || optimisticDone || optimisticDeferred}
+        aria-label="Отметить выполненной"
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 15,
+          border: `2.5px solid ${optimisticDone ? "var(--terra)" : sphereMuted}`,
+          background: optimisticDone ? "var(--terra)" : "transparent",
+          padding: 0,
+          cursor: "pointer",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background 200ms var(--ease-out)",
+        }}
+      >
+        {optimisticDone && (
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 12 12"
+            fill="none"
+            className="check-pop"
+          >
+            <path
+              d="M2 6.5 L5 9 L10 3.5"
+              fill="none"
+              stroke="#fff"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
+      </button>
       </div>
     </div>
   );
