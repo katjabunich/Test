@@ -97,6 +97,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
           <PillButton
             onClick={() => act(rescheduleAllOverdueToToday, "✓")}
             disabled={isPending}
+            className="press-tint"
             style={{ width: "100%", padding: "14px 16px" }}
           >
             {t("today.return_today")}
@@ -104,6 +105,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
           <PillButton
             onClick={() => act(spreadOverdueAcrossWeek, "✓")}
             disabled={isPending}
+            className="press-tint"
             style={{ width: "100%", padding: "14px 16px" }}
           >
             {t("today.return_week")}
@@ -111,6 +113,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
           <PillButton
             onClick={() => act(archiveAllOverdue, "✓")}
             disabled={isPending}
+            className="press-tint"
             style={{ width: "100%", padding: "14px 16px" }}
           >
             {t("today.return_clean")}
@@ -425,17 +428,29 @@ export default function TodayView({
               onClick={startNameEdit}
               className="tap"
               style={{
-                background: "transparent",
                 border: "none",
                 padding: 0,
                 font: "inherit",
                 letterSpacing: "inherit",
-                color: "var(--terra)",
                 cursor: "pointer",
-                textDecoration: name ? "none" : "underline",
-                textDecorationStyle: name ? undefined : "dotted",
-                textDecorationThickness: name ? undefined : "1.5px",
-                textUnderlineOffset: name ? undefined : "5px",
+                /* Gradient text needs the background clipped to the
+                   glyphs; the empty-name placeholder keeps flat terra so
+                   its dotted underline (drawn in `color`) stays visible. */
+                ...(name
+                  ? {
+                      background: "linear-gradient(90deg, #C4673F, #D9A05B)",
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      color: "transparent",
+                    }
+                  : {
+                      background: "transparent",
+                      color: "var(--terra)",
+                      textDecoration: "underline",
+                      textDecorationStyle: "dotted" as const,
+                      textDecorationThickness: "1.5px",
+                      textUnderlineOffset: "5px",
+                    }),
               }}
             >
               {name ?? t("today.name_ph")}
@@ -502,7 +517,7 @@ export default function TodayView({
                     borderRadius: 999,
                     background: "linear-gradient(90deg, #C4673F, #D9A05B)",
                     width: `${Math.round((doneToday / totalToday) * 100)}%`,
-                    transition: "width 400ms var(--ease-out)",
+                    transition: "width 600ms var(--ease-out)",
                   }}
                 />
               </div>
@@ -589,15 +604,29 @@ export default function TodayView({
               </span>
             </button>
 
-            {waitingOpen && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  marginTop: 12,
-                }}
-              >
+            {/* Smooth expand/collapse: the 0fr→1fr grid row transitions
+               height without measuring content; visibility snaps at the
+               transition edge and keeps collapsed pills out of tab order. */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateRows: waitingOpen ? "1fr" : "0fr",
+                opacity: waitingOpen ? 1 : 0,
+                visibility: waitingOpen ? "visible" : "hidden",
+                transition:
+                  "grid-template-rows 300ms var(--ease-out), opacity 260ms var(--ease-out), visibility 300ms",
+              }}
+              aria-hidden={!waitingOpen}
+            >
+              <div style={{ overflow: "hidden", minHeight: 0 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                    marginTop: 12,
+                  }}
+                >
                 {waitingTasks.map((task) => (
                   <div
                     key={task.id}
@@ -628,8 +657,9 @@ export default function TodayView({
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>

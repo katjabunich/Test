@@ -242,7 +242,9 @@ export default function TaskItem({
 
   return (
     <div
-      className={collapsing ? "task-collapse" : undefined}
+      /* .press = pure-CSS press physics (:active scale + spring release)
+         so the pointer-event swipe logic below stays untouched. */
+      className={collapsing ? "task-collapse" : "press"}
       style={{
         position: "relative",
         borderRadius: "var(--radius-lg)",
@@ -342,6 +344,7 @@ export default function TaskItem({
         onClick={handleComplete}
         disabled={isPending || optimisticDone || optimisticDeferred}
         aria-label="Отметить выполненной"
+        className={optimisticDone ? "check-glow" : undefined}
         style={{
           width: 26,
           height: 26,

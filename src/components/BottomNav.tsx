@@ -71,7 +71,9 @@ export default function BottomNav() {
               type="button"
               onClick={handleNew}
               aria-label="Создать"
-              className="tap"
+              /* press-fab: deeper :active sink (0.92) + the terra glow
+                 pulling in, spring release — see globals.css */
+              className="press-fab"
               style={{
                 width: 54,
                 height: 54,

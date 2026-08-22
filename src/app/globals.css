@@ -128,6 +128,33 @@ select {
   opacity: 0.85;
 }
 
+/* Press physics — cards visibly sink under the finger and spring back
+   on release. Pure CSS (:active) so TaskItem's pointer-event swipe
+   logic is untouched. */
+.press {
+  transition: transform 260ms var(--ease-spring);
+}
+.press:active {
+  transform: scale(0.98);
+}
+
+/* FAB press — deeper sink + the glow pulling in closer while pressed.
+   !important lets the pressed shadow win over the inline resting one. */
+.press-fab {
+  transition: transform 260ms var(--ease-spring), box-shadow 260ms var(--ease-spring);
+}
+.press-fab:active {
+  transform: scale(0.92);
+  box-shadow: 0 4px 12px rgba(184,92,58,0.45) !important;
+}
+
+/* Pill acknowledgement — warm terra tint layered over the white pill
+   while pressed (outline PillButton; !important beats the inline
+   white background). */
+.press-tint:active {
+  background: linear-gradient(rgba(196,103,63,0.08), rgba(196,103,63,0.08)), #FFFFFF !important;
+}
+
 /* Animated check (used by checkbox + ring) */
 @keyframes check-pop {
   0%   { transform: scale(0.6); opacity: 0; }
@@ -135,6 +162,25 @@ select {
   100% { transform: scale(1); opacity: 1; }
 }
 .check-pop { animation: check-pop 280ms var(--ease-out); }
+
+/* Warm glow pulse around the check circle on completion — plays once,
+   on top of check-pop, terra-tinted. */
+@keyframes check-glow {
+  from { box-shadow: 0 0 0 0 rgba(196,103,63,0.4); }
+  to   { box-shadow: 0 0 0 12px rgba(196,103,63,0); }
+}
+.check-glow { animation: check-glow 420ms var(--ease-out); }
+
+/* Habit ring burst — a duplicated ring outline scales up and fades when
+   a habit is toggled done. Quiet, fires once per toggle-on. */
+@keyframes ring-burst {
+  from { transform: scale(1);    opacity: 0.5; }
+  to   { transform: scale(1.45); opacity: 0;   }
+}
+.ring-burst {
+  animation: ring-burst 450ms var(--ease-out) forwards;
+  pointer-events: none;
+}
 
 /* Page transition — re-fires on pathname change via key */
 @keyframes page-in {

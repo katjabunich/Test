@@ -32,6 +32,8 @@ export default function HabitCard({
   const mutedColor = `color-mix(in srgb, ${color} 80%, #3B2E26)`;
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
+  /* One-shot ring-burst on toggle-on; cleared when the animation ends. */
+  const [burst, setBurst] = useState(false);
   const [, startTransition] = useTransition();
 
   const streak = useMemo(() => computeStreak(habit, localLogged), [habit, localLogged]);
@@ -81,6 +83,7 @@ export default function HabitCard({
       // above so it doesn't fire alongside the regular tick.
       const wouldBeMilestone = isStreakMilestone(streak + 1);
       if (!wouldBeMilestone) feedbackHabitComplete();
+      setBurst(true);
     }
     setLocalLogged(next);
     startTransition(async () => {
@@ -101,6 +104,7 @@ export default function HabitCard({
   return (
     <Card
       onClick={() => onEdit(habit)}
+      className="press"
       style={{
         padding: "14px 16px",
         display: "flex",
@@ -128,6 +132,19 @@ export default function HabitCard({
           flexShrink: 0,
         }}
       >
+        {burst && (
+          <span
+            aria-hidden
+            className="ring-burst"
+            onAnimationEnd={() => setBurst(false)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: `${stroke}px solid ${mutedColor}`,
+            }}
+          />
+        )}
         <svg
           width={size}
           height={size}

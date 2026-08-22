@@ -25,6 +25,9 @@ export default function HabitRing({
   size?: number;
 }) {
   const [optimistic, setOptimistic] = useState(doneToday);
+  /* One-shot ring-burst on toggle-on; cleared when the animation ends
+     so it never replays on re-render or server-confirmed done state. */
+  const [burst, setBurst] = useState(false);
   const [isPending, startTransition] = useTransition();
   const color = habit.color || "var(--mint)";
   /* Same muting rule as HabitCard: candy DB colours pulled toward warm
@@ -46,6 +49,7 @@ export default function HabitRing({
       }
     }
     setOptimistic(!wasDone);
+    if (!wasDone) setBurst(true);
     startTransition(async () => {
       try {
         await toggleHabitLog(habit.id, today());
@@ -84,6 +88,19 @@ export default function HabitRing({
       }}
     >
       <div style={{ position: "relative", width: size, height: size }}>
+        {burst && (
+          <span
+            aria-hidden
+            className="ring-burst"
+            onAnimationEnd={() => setBurst(false)}
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: `${stroke}px solid ${mutedColor}`,
+            }}
+          />
+        )}
         <svg
           width={size}
           height={size}

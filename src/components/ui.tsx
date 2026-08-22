@@ -151,6 +151,7 @@ export function PillButton({
   variant = "outline",
   color,
   style,
+  className,
   ariaLabel,
 }: {
   children: ReactNode;
@@ -160,12 +161,14 @@ export function PillButton({
   /** Fill colour for the "filled" variant, e.g. "var(--mint)". */
   color?: string;
   style?: CSSProperties;
+  /** Extra class(es) merged with the built-in "tap" (e.g. "press-tint"). */
+  className?: string;
   ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
-      className="tap"
+      className={className ? `tap ${className}` : "tap"}
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
