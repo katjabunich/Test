@@ -41,47 +41,17 @@ export default function Loading() {
         ))}
       </div>
 
-      {/* Sunrise scene placeholder — sun disc near the left horizon,
-          caption top-right, horizon hairline (matches TodayView) */}
-      <div style={{ padding: "0 20px 12px" }}>
-        <div style={{ position: "relative", height: 124 }}>
-          <div
-            className="skel"
-            style={{
-              position: "absolute",
-              left: 10,
-              bottom: 20,
-              width: 38,
-              height: 38,
-              borderRadius: "50%",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: 6,
-              right: 2,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: 6,
-            }}
-          >
-            <Skeleton h={14} w={56} />
-            <Skeleton h={11} w={88} />
-          </div>
-          <div
-            className="skel"
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 18,
-              height: 1,
-              borderRadius: 999,
-            }}
-          />
-        </div>
+      {/* Progress bar line */}
+      <div
+        style={{
+          padding: "0 20px 6px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <Skeleton h={6} br={999} style={{ flex: 1 }} w="auto" />
+        <Skeleton h={12} w={48} />
       </div>
 
       {/* Task cards */}

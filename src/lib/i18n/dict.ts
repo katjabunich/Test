@@ -139,10 +139,6 @@ export const DICT = {
     progress_habits:  { ru: "привычек",                  en: "habits" },
     progress_of:      { ru: "из",                        en: "of" },
 
-    /* Sunrise scene captions */
-    sun_caption:      { ru: "солнце встаёт",             en: "the sun is rising" },
-    sun_zenith:       { ru: "солнце в зените",           en: "the sun is high" },
-
     /* Waiting-for-later section — calm home for overdue tasks */
     waiting_title:    { ru: "Ждут своего часа",          en: "Waiting for later" },
     move_to_today:    { ru: "На сегодня",                en: "Do today" },

@@ -29,7 +29,7 @@ import {
   SortableContext,
   arrayMove,
   useSortable,
-  rectSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -299,17 +299,9 @@ export default function HabitsView({
             >
               <SortableContext
                 items={orderedHabits.map((h) => h.id)}
-                strategy={rectSortingStrategy}
+                strategy={verticalListSortingStrategy}
               >
-                {/* 2-column tile grid — the composition change: habits are
-                    square-ish tiles, not full-width rows. */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                    gap: 12,
-                  }}
-                >
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {orderedHabits.map((habit) => (
                     <SortableHabitCard
                       key={habit.id}
@@ -361,12 +353,10 @@ export default function HabitsView({
   );
 }
 
-/** HabitCard tile wrapped for @dnd-kit/sortable (grid reorder via
-    rectSortingStrategy). The drag transform applies to the wrapper;
-    HabitCard itself is unchanged so its inner ring-tap and onEdit still
-    work. A 250ms long-press starts the drag on touch — quick taps fall
-    through to the tile's onClick. On lift the tile scales up slightly
-    and gains the elevated shadow. */
+/** HabitCard wrapped for @dnd-kit/sortable. The drag transform applies to
+    the wrapper; HabitCard itself is unchanged so its inner ring-tap and
+    onEdit still work. A 250ms long-press starts the drag on touch — quick
+    taps fall through to the card's onClick. */
 function SortableHabitCard({
   habit,
   logged,
@@ -385,23 +375,16 @@ function SortableHabitCard({
     isDragging,
   } = useSortable({ id: habit.id });
 
-  const baseTransform = CSS.Transform.toString(transform);
   const style: React.CSSProperties = {
-    /* rectSortingStrategy hands out translate-only transforms; append the
-       lift scale on the dragged tile so neighbours slide without scaling. */
-    transform: isDragging
-      ? `${baseTransform ?? ""} scale(1.03)`.trim()
-      : baseTransform,
+    transform: CSS.Transform.toString(transform),
     transition,
     position: "relative",
     zIndex: isDragging ? 2 : "auto",
     /* Radius matches the white Card inside (--radius-lg) so the lifted
-       drag shadow hugs the tile's contour. */
+       drag shadow hugs the card's new contour. */
     boxShadow: isDragging ? "var(--shadow-elevated)" : "none",
     borderRadius: "var(--radius-lg)",
     touchAction: "manipulation",
-    /* Tiles in one grid row stretch to equal height. */
-    height: "100%",
   };
 
   return (

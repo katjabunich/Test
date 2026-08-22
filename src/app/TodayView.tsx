@@ -28,136 +28,6 @@ function pickGreeting(t: (k: string) => string): string {
   return t("today.evening");
 }
 
-/* Sunrise-scene arc geometry. The sun's centre travels a quarter of an
-   ellipse: horizontal position in % of the scene width, vertical rise in
-   px above its resting spot. θ sweeps 180° (progress 0, resting on the
-   left horizon) → 90° (progress 1, zenith at cx — slightly right of the
-   scene centre). */
-const SUN_ARC = {
-  cx: 58, // % — arc centre; the zenith lands here
-  rx: 50, // % — horizontal radius (left end of the arc sits at cx-rx = 8%)
-  ry: 60, // px — vertical rise from horizon rest to zenith
-  base: 20, // px — sun's bottom offset when resting on the horizon
-  horizon: 18, // px — horizon hairline offset from the scene bottom
-  sun: 38, // px — sun disc diameter
-} as const;
-
-function sunPoint(p: number): { x: number; y: number } {
-  const clamped = Math.min(1, Math.max(0, p));
-  const theta = Math.PI - (Math.PI / 2) * clamped;
-  /* Rounded to 2dp: raw cos/sin float noise (32.999999999999986%) differs
-     from the browser-normalized style value and trips React hydration. */
-  return {
-    x: Math.round((SUN_ARC.cx + SUN_ARC.rx * Math.cos(theta)) * 100) / 100,
-    y: Math.round(SUN_ARC.ry * Math.sin(theta) * 100) / 100,
-  };
-}
-
-/** Sunrise scene — the Today centrepiece replacing the thin progress
-    bar. A glowing sun disc climbs a dotted arc from the left horizon
-    (nothing done) to its zenith (everything done); position animates
-    along the arc when a task completes. With zero tasks the sun simply
-    rests on the horizon and the caption stays hidden. */
-function SunScene({ done, total }: { done: number; total: number }) {
-  const t = useT();
-  const progress = total > 0 ? done / total : 0;
-  const { x, y } = sunPoint(progress);
-  /* Trajectory dots — same parametric math as the sun, so the disc sits
-     exactly on its path. 13 dots, f = 0 … 1. */
-  const dots = Array.from({ length: 13 }, (_, i) => sunPoint(i / 12));
-
-  return (
-    <div style={{ padding: "0 20px 12px" }}>
-      <div style={{ position: "relative", height: 124 }}>
-        {/* Dotted arc path */}
-        {dots.map((d, i) => (
-          <div
-            key={i}
-            aria-hidden
-            style={{
-              position: "absolute",
-              left: `${d.x}%`,
-              bottom: SUN_ARC.base + SUN_ARC.sun / 2 - 1.5 + d.y,
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              transform: "translateX(-50%)",
-              background: "rgba(59,46,38,0.12)",
-            }}
-          />
-        ))}
-
-        {/* Warm horizon hairline, fading out at both edges */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: SUN_ARC.horizon,
-            height: 1,
-            background:
-              "linear-gradient(90deg, rgba(196,103,63,0) 0%, rgba(196,103,63,0.3) 12%, rgba(196,103,63,0.3) 88%, rgba(196,103,63,0) 100%)",
-          }}
-        />
-
-        {/* The sun — soft glowing disc, no rays, no face */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: `${x}%`,
-            bottom: SUN_ARC.base + y,
-            transform: "translateX(-50%)",
-            width: SUN_ARC.sun,
-            height: SUN_ARC.sun,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle at 42% 38%, #E8B37E 0%, #D9A05B 78%)",
-            boxShadow: "0 0 24px 8px rgba(217,160,91,0.55)",
-            transition:
-              "left 600ms var(--ease-out), bottom 600ms var(--ease-out)",
-          }}
-        />
-
-        {/* Right-aligned caption: counter + a quiet poetic line */}
-        {total > 0 && (
-          <div
-            style={{
-              position: "absolute",
-              top: 6,
-              right: 2,
-              textAlign: "right",
-            }}
-          >
-            <div
-              className="tnum"
-              style={{
-                fontSize: 15,
-                fontWeight: 800,
-                color: "var(--ink-60)",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {done} {t("today.progress_of")} {total}
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "var(--ink-40)",
-                marginTop: 2,
-              }}
-            >
-              {done >= total ? t("today.sun_zenith") : t("today.sun_caption")}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 /** Russian plural — 1 → одна, 2-4 → две/три/четыре, 5+ → много. */
 function pluralRu(n: number): "one" | "few" | "many" {
   const mod10 = n % 10;
@@ -430,7 +300,7 @@ export default function TodayView({
               height: 340,
               borderRadius: "50%",
               background:
-                "radial-gradient(circle, rgba(232,179,126,0.6) 0%, rgba(232,179,126,0) 68%)",
+                "radial-gradient(circle, rgba(232,179,126,0.5) 0%, rgba(232,179,126,0) 68%)",
             }}
           />
         </div>
@@ -534,9 +404,44 @@ export default function TodayView({
         {/* Return card — batch actions, only for a real backlog (3+) */}
         <ReturnCard overdueCount={overdueCount} />
 
-        {/* Sunrise scene — the sun climbs from horizon to zenith as
-           today's tasks (done / open+done) get completed */}
-        <SunScene done={doneToday} total={totalToday} />
+        {/* Progress bar — done/total includes tasks already completed today */}
+        {totalToday > 0 && (
+          <div style={{ padding: "0 20px 6px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ink-40)",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  height: 6,
+                  borderRadius: 999,
+                  background: "var(--ink-05)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "linear-gradient(90deg, #C4673F, #D9A05B)",
+                    width: `${Math.round((doneToday / totalToday) * 100)}%`,
+                    transition: "width 400ms var(--ease-out)",
+                  }}
+                />
+              </div>
+              <span className="tnum" style={{ flexShrink: 0 }}>
+                {doneToday} {t("today.progress_of")} {totalToday}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Flat task list — today only, all tasks equal */}
         <div style={{ padding: "0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
