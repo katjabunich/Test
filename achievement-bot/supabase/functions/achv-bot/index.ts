@@ -73,7 +73,7 @@ const WELCOME = `Привет 🤗
 
 Команды (по желанию):
 /week — что было за неделю
-/hard — тяжёлый день: ничего не пишешь, просто смотришь на своё
+/hard — тяжёлый день: ничего не пишешь, просто смотришь на своё\n/themes — о чём твой дневник\n/letter — последнее месячное письмо
 /итоги — разбор: какие у тебя повторяются сильные стороны
 /export — выгрузить все записи
 /time 21:00 — поменять время вечернего сообщения
@@ -83,7 +83,7 @@ const HELP = `Что я умею:
 
 • Просто напиши мне — сохраню как достижение. Несколько штук — каждое с новой строки.
 /week — список за последние 7 дней
-/hard — тяжёлый день: ничего писать не надо, покажу твоё прошлое
+/hard — тяжёлый день: ничего писать не надо, покажу твоё прошлое\n/themes — о чём твой дневник\n/letter — последнее месячное письмо
 /итоги — AI-разбор твоих сильных сторон и паттернов
 /export — выгрузить всё текстом
 /time 21:00 — время вечернего сообщения
@@ -189,6 +189,10 @@ async function onText(user: User, text: string) {
       case '/export': return void exportAll(user);
       case '/тяжело':
       case '/hard':   return void hardDay(user);
+      case '/темы':
+      case '/themes': return void themes(user);
+      case '/письмо':
+      case '/letter': return void letter(user);
       case '/time':   return void setTime(user, arg);
       case '/pause':
         await db.from('users').update({ reminder_enabled: false }).eq('id', user.id);
@@ -252,6 +256,33 @@ async function hardDay(user: User) {
   }
   const lines = picks.map((e) => `• ${e.body}\n  _${dayLabel(e.created_at)}_`).join('\n');
   await send(user.chat_id, `Тогда ничего не надо записывать.\n\nВот что у тебя уже есть:\n\n${lines}`);
+}
+
+// Карта дневника: о чём он вообще. Темы проставляются заранее, здесь только счёт.
+async function themes(user: User) {
+  const { data } = await db.from('entries').select('theme').eq('user_id', user.id);
+  const all = (data ?? []) as { theme: string | null }[];
+  if (!all.length) return void send(user.chat_id, 'Записей пока нет.');
+
+  const count = new Map<string, number>();
+  for (const e of all) {
+    const t = e.theme ?? 'Разное';
+    count.set(t, (count.get(t) ?? 0) + 1);
+  }
+  const sorted = [...count.entries()].sort((a, b) => b[1] - a[1]);
+  const top = sorted[0][1];
+  const lines = sorted
+    .map(([t, n]) => `${'▓'.repeat(Math.max(1, Math.round((n / top) * 10)))} ${t} — ${n}`)
+    .join('\n');
+  await send(user.chat_id, `О чём твой дневник — ${all.length} ${plural(all.length, 'запись', 'записи', 'записей')}:\n\n${lines}`);
+}
+
+async function letter(user: User) {
+  const { data } = await db.from('letters').select('text').eq('user_id', user.id)
+    .order('period', { ascending: false }).limit(1);
+  const l = (data ?? [])[0] as { text: string } | undefined;
+  if (!l) return void send(user.chat_id, 'Письма пока нет — первое придёт в начале месяца.');
+  await send(user.chat_id, l.text);
 }
 
 async function weekSummary(user: User) {

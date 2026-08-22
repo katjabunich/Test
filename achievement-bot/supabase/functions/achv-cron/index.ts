@@ -119,7 +119,10 @@ async function processUser(u: User) {
     await db.from('users').update({ last_weekly_on: date }).eq('id', u.id);
     return;
   }
-  // Вечерний вопрос в выбранный час (раз в день максимум).
+  // 1-го числа в 12:00 — письмо за прошлый месяц (текст готовится заранее).
+  if (date.slice(8) === '01' && hour === 12) await monthlyLetter(u, date);
+
+  // Вечернее сообщение в выбранный час (раз в день максимум).
   if (hour === u.reminder_hour && u.last_reminded_on !== date) {
     await eveningNudge(u, date);
     await db.from('users').update({ last_reminded_on: date }).eq('id', u.id);
@@ -140,6 +143,17 @@ async function eveningNudge(u: User, today: string) {
   }
   await db.from('insights').update({ last_sent_on: today }).eq('id', ins.id);
   await send(u.chat_id, `${ins.text}\n\n${pick(TAIL)}`, HARD_DAY_BTN);
+}
+
+async function monthlyLetter(u: User, today: string) {
+  const [y, m] = today.split('-').map(Number);
+  const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`;
+  const { data } = await db.from('letters').select('id, text')
+    .eq('user_id', u.id).eq('period', prev).is('sent_on', null).limit(1);
+  const l = (data ?? [])[0] as { id: string; text: string } | undefined;
+  if (!l) return;
+  await db.from('letters').update({ sent_on: today }).eq('id', l.id);
+  await send(u.chat_id, l.text);
 }
 
 async function weekly(u: User) {
