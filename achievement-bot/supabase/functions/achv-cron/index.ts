@@ -18,12 +18,15 @@ async function config(): Promise<Config> {
   return _cfg;
 }
 
-async function send(chat: number, text: string) {
+async function send(chat: number, text: string, buttons?: { text: string; callback_data: string }[][]) {
   const { telegram_bot_token } = await config();
   await fetch(`https://api.telegram.org/bot${telegram_bot_token}/sendMessage`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ chat_id: chat, text, parse_mode: 'Markdown' }),
+    body: JSON.stringify({
+      chat_id: chat, text, parse_mode: 'Markdown',
+      ...(buttons ? { reply_markup: { inline_keyboard: buttons } } : {}),
+    }),
   });
 }
 
@@ -38,7 +41,7 @@ const EVENING = [
   'Привет 🌙 Что хорошего случилось сегодня? Даже маленькое считается.',
   'Вечерний вопрос: чем ты можешь гордиться сегодня — пусть чуть-чуть? ✨',
   'Как прошёл день? Напиши одну вещь, которая получилась 💛',
-  'Что сегодня было хорошего — и в чём тут есть твоя заслуга? 🌱',
+  'Что сегодня было хорошего? 🌱',
   'Ловлю твой день: одно достижение, большое или крошечное?',
 ];
 
@@ -64,6 +67,16 @@ function renderByDay(entries: { body: string; agency_note: string | null; create
   }
   return out.join('\n').trim();
 }
+
+const TAIL = [
+  'Если сегодня было что-то хорошее — напиши, сохраню.',
+  'Что сегодня? Пиши сколько есть, каждое с новой строки.',
+  'Если есть что записать за сегодня — я тут.',
+  'Захочешь добавить сегодняшнее — просто напиши.',
+];
+const HARD_DAY_BTN = [[{ text: 'Сегодня тяжёлый день', callback_data: 'hard_day' }]];
+
+type Insight = { id: string; text: string };
 
 type User = {
   id: string; chat_id: number; reminder_hour: number; timezone: string;
@@ -108,9 +121,25 @@ async function processUser(u: User) {
   }
   // Вечерний вопрос в выбранный час (раз в день максимум).
   if (hour === u.reminder_hour && u.last_reminded_on !== date) {
-    await send(u.chat_id, pick(EVENING));
+    await eveningNudge(u, date);
     await db.from('users').update({ last_reminded_on: date }).eq('id', u.id);
   }
+}
+
+// Вечером бот отдаёт обобщение о ней, а не требует отчёта. Запас обобщений
+// генерируется заранее отдельной сессией — здесь только ротация, без ИИ.
+async function eveningNudge(u: User, today: string) {
+  const { data } = await db.from('insights').select('id, text')
+    .eq('user_id', u.id)
+    .order('last_sent_on', { ascending: true, nullsFirst: true })
+    .limit(1);
+  const ins = (data ?? [])[0] as Insight | undefined;
+  if (!ins) {
+    await send(u.chat_id, pick(EVENING), HARD_DAY_BTN);
+    return;
+  }
+  await db.from('insights').update({ last_sent_on: today }).eq('id', ins.id);
+  await send(u.chat_id, `${ins.text}\n\n${pick(TAIL)}`, HARD_DAY_BTN);
 }
 
 async function weekly(u: User) {
@@ -119,9 +148,9 @@ async function weekly(u: User) {
     .eq('user_id', u.id).gte('created_at', since).order('created_at', { ascending: true });
   const entries = (data ?? []) as Entry[];
   if (!entries.length) {
-    await send(u.chat_id, 'Неделя прошла без записей 🌙 Ничего страшного — давай начнём новую с одного хорошего момента? Просто напиши мне.');
+    await send(u.chat_id, 'Неделя прошла без записей 🌙 Напиши, когда будет что — я тут.');
     return;
   }
   const head = `Воскресный итог 💛 За неделю ты собрала ${entries.length} ${plural(entries.length, 'хорошую вещь', 'хорошие вещи', 'хороших вещей')}:\n`;
-  await send(u.chat_id, head + renderByDay(entries) + '\n\nГорда тобой. Хочешь разбор сильных сторон — /итоги');
+  await send(u.chat_id, head + renderByDay(entries) + '\n\nРазбор сильных сторон — /итоги');
 }

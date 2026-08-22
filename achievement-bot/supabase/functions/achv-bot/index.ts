@@ -64,29 +64,29 @@ function plural(n: number, one: string, few: string, many: string) {
 const SAVED = ['Записала ✨', 'Сохранила 🌱', 'Есть, записала 💛', 'Зафиксировала ✨', 'Поймала момент 📌'];
 const WELCOME = `Привет 🤗
 
-Я твой личный дневник достижений. Сюда ты записываешь хорошее, что случилось — *в том числе и благодаря тебе*. Даже маленькое. Даже то, что кажется «само получилось».
+Я твой личный дневник достижений. Сюда ты записываешь хорошее, что случилось. Даже маленькое.
 
 Как пользоваться — проще некуда:
 • Просто *напиши мне* что произошло. Можно сразу несколько штук — каждое с новой строки.
-• Каждый вечер я мягко спрошу сам, чтобы ты не забывала.
-• Раз в неделю пришлю список — посмотреть, сколько всего ты сделала.
+• Каждый вечер пришлю наблюдение о тебе из твоих же записей.
+• Раз в неделю — список за неделю.
 
 Команды (по желанию):
 /week — что было за неделю
+/hard — тяжёлый день: ничего не пишешь, просто смотришь на своё
 /итоги — разбор: какие у тебя повторяются сильные стороны
 /export — выгрузить все записи
-/time 21:00 — поменять время вечернего вопроса
+/time 21:00 — поменять время вечернего сообщения
 /pause — пауза напоминаний  /resume — вернуть
-/help — это меню
-
-Попробуй прямо сейчас: напиши одно хорошее, что было сегодня ✨`;
+/help — это меню`;
 const HELP = `Что я умею:
 
 • Просто напиши мне — сохраню как достижение. Несколько штук — каждое с новой строки.
 /week — список за последние 7 дней
+/hard — тяжёлый день: ничего писать не надо, покажу твоё прошлое
 /итоги — AI-разбор твоих сильных сторон и паттернов
 /export — выгрузить всё текстом
-/time 21:00 — время вечернего вопроса
+/time 21:00 — время вечернего сообщения
 /pause — пауза напоминаний  /resume — включить
 /help — это меню`;
 const PRIVATE_BOT = 'Это личный бот 🙅 Он работает только со своим владельцем.';
@@ -187,13 +187,15 @@ async function onText(user: User, text: string) {
       case '/итоги':
       case '/insights': return void insights(user);
       case '/export': return void exportAll(user);
+      case '/тяжело':
+      case '/hard':   return void hardDay(user);
       case '/time':   return void setTime(user, arg);
       case '/pause':
         await db.from('users').update({ reminder_enabled: false }).eq('id', user.id);
         return void send(user.chat_id, 'Поставила напоминания на паузу. Включить — /resume 🌙');
       case '/resume':
         await db.from('users').update({ reminder_enabled: true }).eq('id', user.id);
-        return void send(user.chat_id, 'Готово, снова буду напоминать по вечерам ✨');
+        return void send(user.chat_id, 'Готово, снова буду писать по вечерам ✨');
       case '/skip':
         if (user.awaiting_agency_for) {
           await db.from('users').update({ awaiting_agency_for: null }).eq('id', user.id);
@@ -232,9 +234,24 @@ async function onText(user: User, text: string) {
 async function onCallback(user: User, cb: any) {
   const data: string = cb.data ?? '';
   await tg('answerCallbackQuery', { callback_query_id: cb.id });
-  if (data === 'skip') {
-    await send(user.chat_id, AGENCY_SKIPPED);
+  if (data === 'hard_day') await hardDay(user);
+  else if (data === 'skip') await send(user.chat_id, AGENCY_SKIPPED);
+}
+
+// Тяжёлый день: ничего не просим, показываем то, что у неё уже есть.
+async function hardDay(user: User) {
+  const { data } = await db.from('entries').select('id, body, agency_note, created_at').eq('user_id', user.id);
+  const all = (data ?? []) as Entry[];
+  if (!all.length)
+    return void send(user.chat_id, 'Тогда ничего не надо записывать. Я тут, если что.');
+
+  const picks: Entry[] = [];
+  const pool = [...all];
+  for (let i = 0; i < 3 && pool.length; i++) {
+    picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
   }
+  const lines = picks.map((e) => `• ${e.body}\n  _${dayLabel(e.created_at)}_`).join('\n');
+  await send(user.chat_id, `Тогда ничего не надо записывать.\n\nВот что у тебя уже есть:\n\n${lines}`);
 }
 
 async function weekSummary(user: User) {
@@ -243,7 +260,7 @@ async function weekSummary(user: User) {
     .eq('user_id', user.id).gte('created_at', since).order('created_at', { ascending: true });
   const entries = (data ?? []) as Entry[];
   if (!entries.length)
-    return void send(user.chat_id, 'За последнюю неделю записей пока нет. Это не «ничего не было» — просто ещё не пойманное. Напиши хоть одно 💛');
+    return void send(user.chat_id, 'За последнюю неделю записей нет. Напиши, когда будет что — я тут 💛');
   const head = `Вот что ты сделала за неделю — ${entries.length} ${plural(entries.length, 'хорошая вещь', 'хорошие вещи', 'хороших вещей')} 💛\n`;
   await send(user.chat_id, head + renderByDay(entries));
 }
@@ -264,18 +281,18 @@ async function insights(user: User) {
   const cfg = await config();
   if (!cfg.anthropic_api_key)
     return void send(user.chat_id,
-      'AI-разбор пока не подключён (нужен ключ Claude API). Запись и сводки работают и без него. А пока можешь сделать /export и закинуть текст в обычный Claude по подписке.');
+      'AI-разбор по запросу пока не подключён. Но наблюдения о тебе приходят каждый вечер сами — они готовятся заранее.');
   const since = new Date(Date.now() - 31 * 864e5).toISOString();
   const { data } = await db.from('entries').select('*')
     .eq('user_id', user.id).gte('created_at', since).order('created_at', { ascending: true });
   const entries = (data ?? []) as Entry[];
   if (entries.length < 3)
-    return void send(user.chat_id, 'Пока маловато записей для разбора — добавь ещё несколько, и я найду в них паттерны ✨');
+    return void send(user.chat_id, 'Пока маловато записей для разбора.');
   await send(user.chat_id, 'Читаю твои записи и ищу закономерности… 🔎');
   try {
     await send(user.chat_id, await analyze(cfg, entries));
   } catch {
-    await send(user.chat_id, 'Не получилось сделать разбор сейчас, попробуй позже 🙏');
+    await send(user.chat_id, 'Не получилось сделать разбор сейчас, попробуй позже.');
   }
 }
 
@@ -284,20 +301,24 @@ function setTime(user: User, arg: string) {
   const h = m ? Number(m[1]) : NaN;
   if (!m || h < 0 || h > 23) return send(user.chat_id, 'Не разобрала время. Формат: /time 21:00');
   return db.from('users').update({ reminder_hour: h }).eq('id', user.id)
-    .then(() => send(user.chat_id, `Хорошо, буду спрашивать в ${String(h).padStart(2, '0')}:00 🌙`));
+    .then(() => send(user.chat_id, `Хорошо, буду писать в ${String(h).padStart(2, '0')}:00 🌙`));
 }
 
 // ── AI-разбор ─────────────────────────────────────────────────────────────────
-const AI_SYSTEM = `Ты — тёплый, проницательный наблюдатель. Тебе дают дневник достижений человека, который склонен себя обесценивать и считать свои успехи случайностью.
+// Тон задан TONE.md: никаких призывов меняться, вердиктов о ней и выводов
+// масштабом в год — только наблюдаемые повторы с её же цитатами.
+const AI_SYSTEM = `Ты — тёплый, проницательный наблюдатель. Тебе дают дневник достижений человека, который склонен себя обесценивать.
 
-Твоя задача — НЕ пересказывать записи, а отразить человеку закономерности, которые он сам не замечает:
-— какие сильные стороны / качества повторяются из записи в запись (называй их прямо: смелость, доведение до конца, забота, инициатива…);
-— где видно, что результат случился именно БЛАГОДАРЯ его действиям, а не «повезло»;
-— 2–4 конкретных наблюдения, каждое со ссылкой на примеры из записей.
+Твоя задача — НЕ пересказывать записи, а назвать закономерности, которые повторяются, и подпереть их её же цитатами. 2–4 наблюдения.
 
-Тон: тёплый, конкретный, без сюсюканья и без пафоса. Обращайся на «ты». Пиши по-русски.
-Не выдумывай того, чего нет в записях. В конце — одна короткая фраза-итог, которую человеку приятно и честно про себя услышать.
-Ответ — обычный текст для мессенджера (без markdown-заголовков), 150–250 слов.`;
+ЖЁСТКИЕ ЗАПРЕТЫ:
+— НЕ призывать её что-то менять, пробовать, беречь себя или «заметить, что…». Никаких советов, даже добрых.
+— НЕ выносить вердикты о ней как о человеке и оценки её прошлого.
+— НЕ делать выводов масштабом в год или в жизнь. Только период, за который есть записи.
+— НЕ достраивать того, чего в записях нет.
+— Без пафоса и сюсюканья.
+
+Тон: тёплый, конкретный. На «ты», по-русски. Обычный текст для мессенджера, 150–250 слов.`;
 
 async function analyze(cfg: Config, entries: Entry[]): Promise<string> {
   const lines = entries.map((e) => {
