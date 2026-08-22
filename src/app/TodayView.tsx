@@ -8,7 +8,7 @@ import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
 import { Icons } from "@/components/Icons";
 import { snack } from "@/components/Snackbar";
-import { Card, FocusCard, PillButton, ScreenHeader } from "@/components/ui";
+import { Card, PillButton, ScreenHeader } from "@/components/ui";
 import {
   rescheduleAllOverdueToToday,
   spreadOverdueAcrossWeek,
@@ -28,101 +28,8 @@ function pickGreeting(t: (k: string) => string): string {
   return t("today.evening");
 }
 
-/** Russian plural — 1 → одна, 2-4 → две/три/четыре, 5+ → много. */
-function pluralRu(n: number): "one" | "few" | "many" {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return "one";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "few";
-  return "many";
-}
-
-/** Sand focus card offering batch actions for a big overdue backlog.
-    Rendered only when overdueCount >= 3 — one or two stragglers live
-    quietly in the "waiting" section instead. */
-function ReturnCard({ overdueCount }: { overdueCount: number }) {
-  const t = useT();
-  const [isPending, startTransition] = useTransition();
-  const [dismissed, setDismissed] = useState(false);
-
-  if (overdueCount < 3 || dismissed) return null;
-
-  function act(fn: () => Promise<void>, msg: string) {
-    startTransition(async () => {
-      try {
-        await fn();
-        snack(msg);
-        setDismissed(true);
-      } catch { /* fall through */ }
-    });
-  }
-
-  const plural = pluralRu(overdueCount);
-  const subKey =
-    plural === "one"
-      ? "today.return_sub_one"
-      : plural === "few"
-      ? "today.return_sub_few"
-      : "today.return_sub_many";
-  const subContent = t(subKey, { n: overdueCount });
-
-  return (
-    <div style={{ padding: "0 20px 14px" }}>
-      <FocusCard bg="#F1DDC9">
-        <div
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: 24,
-            fontWeight: 800,
-            color: "var(--ink-strong)",
-            letterSpacing: "-0.02em",
-            lineHeight: 1.15,
-            marginBottom: 6,
-          }}
-        >
-          {t("today.return_title")}
-        </div>
-        <div
-          style={{
-            fontSize: 14,
-            fontWeight: 600,
-            color: "var(--ink-80)",
-            lineHeight: 1.4,
-            marginBottom: 18,
-          }}
-        >
-          {subContent}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <PillButton
-            onClick={() => act(rescheduleAllOverdueToToday, "✓")}
-            disabled={isPending}
-            className="press-tint"
-            style={{ width: "100%", padding: "14px 16px" }}
-          >
-            {t("today.return_today")}
-          </PillButton>
-          <PillButton
-            onClick={() => act(spreadOverdueAcrossWeek, "✓")}
-            disabled={isPending}
-            className="press-tint"
-            style={{ width: "100%", padding: "14px 16px" }}
-          >
-            {t("today.return_week")}
-          </PillButton>
-          <PillButton
-            onClick={() => act(archiveAllOverdue, "✓")}
-            disabled={isPending}
-            className="press-tint"
-            style={{ width: "100%", padding: "14px 16px" }}
-          >
-            {t("today.return_clean")}
-          </PillButton>
-        </div>
-      </FocusCard>
-    </div>
-  );
-}
+/* ReturnCard removed by Katja's request — bulk overdue actions now live
+   as a compact pill row inside the expanded «Ждут своего часа» section. */
 
 export default function TodayView({
   todayTasks,
@@ -158,6 +65,19 @@ export default function TodayView({
   const [waitingOpen, setWaitingOpen] = useState(false);
   const [movedIds, setMovedIds] = useState<ReadonlySet<string>>(new Set());
   const [isMovePending, startMoveTransition] = useTransition();
+  const [isBulkPending, startBulkTransition] = useTransition();
+
+  /* Bulk overdue actions (ex-ReturnCard) — a compact pill row inside the
+     expanded waiting section. */
+  function bulkAct(fn: () => Promise<void>) {
+    startBulkTransition(async () => {
+      try {
+        await fn();
+        snack("✓");
+        setWaitingOpen(false);
+      } catch { /* server revalidate will reconcile */ }
+    });
+  }
 
   useEffect(() => {
     if (editingName) nameInputRef.current?.focus();
@@ -283,10 +203,10 @@ export default function TodayView({
           aria-hidden
           style={{
             position: "absolute",
-            top: 0,
+            top: -8, /* cancel the container's top padding — the sky starts at the very top of the screen */
             left: 0,
             right: 0,
-            height: 360,
+            height: 368,
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: -1,
@@ -353,8 +273,8 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: -139,
-                  right: -143,
+                  top: -155,
+                  right: -151,
                   width: 460,
                   height: 460,
                   borderRadius: "50%",
@@ -365,10 +285,10 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: 26,
-                  right: 22,
-                  width: 130,
-                  height: 130,
+                  top: 14,
+                  right: 18,
+                  width: 122,
+                  height: 122,
                   borderRadius: "50%",
                   background:
                     "radial-gradient(circle at 46% 44%, #F7C88E 0%, #F0AE6C 58%, rgba(240,174,108,0) 76%)",
@@ -378,8 +298,10 @@ export default function TodayView({
           )}
         </div>
 
-        {/* Header: tiny date + big plump greeting */}
+        {/* Header: tiny date + big plump greeting. paddingRight keeps the
+           greeting from running under the sun disc (right ~140px zone). */}
         <ScreenHeader
+          style={{ paddingRight: 120 }}
           label={
             lang === "en" ? (
               <>
@@ -485,9 +407,6 @@ export default function TodayView({
             ))}
           </div>
         )}
-
-        {/* Return card — batch actions, only for a real backlog (3+) */}
-        <ReturnCard overdueCount={overdueCount} />
 
         {/* Progress bar — done/total includes tasks already completed today */}
         {totalToday > 0 && (
@@ -657,6 +576,41 @@ export default function TodayView({
                     </div>
                   </div>
                 ))}
+
+                {/* Bulk actions for the whole backlog (ex-ReturnCard) */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    paddingTop: 2,
+                  }}
+                >
+                  <PillButton
+                    onClick={() => bulkAct(rescheduleAllOverdueToToday)}
+                    disabled={isBulkPending}
+                    className="press-tint"
+                    style={{ padding: "9px 14px", fontSize: 13 }}
+                  >
+                    {t("today.return_today")}
+                  </PillButton>
+                  <PillButton
+                    onClick={() => bulkAct(spreadOverdueAcrossWeek)}
+                    disabled={isBulkPending}
+                    className="press-tint"
+                    style={{ padding: "9px 14px", fontSize: 13 }}
+                  >
+                    {t("today.return_week")}
+                  </PillButton>
+                  <PillButton
+                    onClick={() => bulkAct(archiveAllOverdue)}
+                    disabled={isBulkPending}
+                    className="press-tint"
+                    style={{ padding: "9px 14px", fontSize: 13 }}
+                  >
+                    {t("today.return_clean")}
+                  </PillButton>
+                </div>
                 </div>
               </div>
             </div>

@@ -7,6 +7,7 @@ import { today } from "@/lib/date";
 import { HabitIcon } from "@/components/Icons";
 import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
+import { warmBase } from "@/lib/palette";
 
 /** Ring per v4: thin 2px stroke, no surrounding container. Centre disk
     fills with the habit colour when done; otherwise its built-in icon /
@@ -30,9 +31,10 @@ export default function HabitRing({
   const [burst, setBurst] = useState(false);
   const [isPending, startTransition] = useTransition();
   const color = habit.color || "var(--mint)";
-  /* Same muting rule as HabitCard: candy DB colours pulled toward warm
-     ink so strokes/fills stay inside the adult "dawn" palette. */
-  const mutedColor = `color-mix(in srgb, ${color} 80%, #3B2E26)`;
+  /* Same rule as HabitCard: candy DB colours pass through the warm
+     caramel blend (full-strength, no white tint) so strokes/fills stay
+     saturated but inside the warm «Рассвет» family. */
+  const mutedColor = warmBase(color);
 
   function handleClick() {
     const wasDone = optimistic;

@@ -8,6 +8,7 @@ import DatePicker from "@/components/DatePicker";
 import { fromIsoDate, today as todayIso } from "@/lib/date";
 import { feedbackModalOpen } from "@/lib/feedback";
 import { useT, useLang } from "@/lib/i18n/client";
+import { warmTint } from "@/lib/palette";
 
 const RECURRENCE_KEYS: Record<NonNullable<Recurrence>, string> = {
   daily: "task.repeat_daily",
@@ -605,13 +606,13 @@ function SphereChipButton({
         borderRadius: 999,
         background: active
           ? color
-            ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+            ? warmTint(color)
             : "rgba(196,103,63,0.12)"
           : "#FFFFFF",
         border: `1.5px solid ${
           active
             ? color
-              ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+              ? warmTint(color)
               : "rgba(196,103,63,0.35)"
             : "var(--ink-10)"
         }`,

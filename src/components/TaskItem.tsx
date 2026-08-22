@@ -9,6 +9,7 @@ import { useT, useLang, useMonths, useWeekdaysShort } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 import { Icons } from "@/components/Icons";
 import { snack } from "@/components/Snackbar";
+import { warmStrong, warmTint } from "@/lib/palette";
 
 /* Swipe behaviour constants. */
 const COMMIT_THRESHOLD = 80; // px past which release commits the action
@@ -224,12 +225,11 @@ export default function TaskItem({
      left colour bar is gone); a task without a sphere sits on warm
      paper. Overdue gets no red anywhere (--alert is reserved for
      destructive actions). */
-  const cardBg = sphere
-    ? `color-mix(in srgb, #FFFFFF 82%, ${sphere.color})`
-    : "var(--paper-warm)";
-  /* Muted version of the (often bright, DB-seeded) sphere colour for the
-     check-circle border and chip — calmer on the tinted surface. */
-  const sphereMuted = `color-mix(in srgb, ${sphereColor} 70%, #3B2E26)`;
+  const cardBg = sphere ? warmTint(sphere.color) : "var(--paper-warm)";
+  /* Warmed, darkened version of the (often bright, DB-seeded) sphere
+     colour for the check-circle border and chip — calmer on the tinted
+     surface and inside the warm «Рассвет» family. */
+  const sphereMuted = warmStrong(sphereColor);
 
   /* Reveal-action progress: 0 = idle, 1 = at COMMIT_THRESHOLD. Used to fade
      the action chip in as the row slides off it. */

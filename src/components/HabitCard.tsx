@@ -10,6 +10,7 @@ import { fireConfetti, isStreakMilestone } from "@/lib/celebrate";
 import { feedbackHabitComplete, feedbackStreakMilestone } from "@/lib/feedback";
 import { useT, useDaysWord } from "@/lib/i18n/client";
 import { Card } from "@/components/ui";
+import { warmBase } from "@/lib/palette";
 
 /** Habit list row: white Card (--radius-lg, --shadow-card) with thin ring
     on the left, name + 14-day heatmap in the middle, plump streak number
@@ -26,10 +27,11 @@ export default function HabitCard({
   const t = useT();
   const daysWord = useDaysWord();
   const color = habit.color || "var(--mint)";
-  /* Candy seed colours from the DB get pulled toward warm ink so strokes
-     and fills sit inside the adult "dawn" palette without losing the
-     habit's own hue. */
-  const mutedColor = `color-mix(in srgb, ${color} 80%, #3B2E26)`;
+  /* Candy seed colours from the DB pass through the warm caramel blend
+     (full-strength, no white tint) so strokes, fills and heatmap dots
+     stay saturated but sit inside the warm «Рассвет» family without
+     losing the habit's own hue. */
+  const mutedColor = warmBase(color);
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
   /* One-shot ring-burst on toggle-on; cleared when the animation ends. */

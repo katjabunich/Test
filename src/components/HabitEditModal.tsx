@@ -8,9 +8,11 @@ import { feedbackModalOpen } from "@/lib/feedback";
 import { useT, useLang } from "@/lib/i18n/client";
 import { PillButton, SectionLabel } from "@/components/ui";
 
+/* Warm-harmonized swatches (same set as SphereEditModal): caramel, clay,
+   terracotta, sage-olive, warm dusty blue, plum-mauve, ochre, blush. */
 const COLORS = [
-  "#86c79a", "#f4936e", "#f5c563", "#6ba4c2",
-  "#b5a3df", "#e89bb0", "#0ABAB5", "#4f9c6a",
+  "#C98A4B", "#C4746B", "#C4673F", "#9A9B6F",
+  "#7E97A6", "#9C7B8F", "#D9A05B", "#D89C8E",
 ];
 
 const WEEKDAYS_RU = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];

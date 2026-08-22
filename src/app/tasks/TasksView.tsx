@@ -8,6 +8,7 @@ import TaskEditModal from "@/components/TaskEditModal";
 import { Card, ScreenHeader, SectionLabel } from "@/components/ui";
 import { isPast, isToday, today, addDays, fromIsoDate } from "@/lib/date";
 import { useT, useLang, useWeekdaysShort } from "@/lib/i18n/client";
+import { warmStrong, warmTint } from "@/lib/palette";
 
 type Group = {
   key: "today" | "week" | "later" | "nodate" | "overdue";
@@ -496,15 +497,12 @@ function FilterChip({
   active: boolean;
   onClick: () => void;
 }) {
-  /* Active chip: sphere colour muted to an adult tint (bright DB seed
-     colours washed 75% white), ink text; «Все» wears a quiet terra tint.
-     Inactive chip: white pill with a hairline border. Text always ink. */
-  const activeBg = color
-    ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
-    : "rgba(196,103,63,0.12)";
-  const activeBorder = color
-    ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
-    : "rgba(196,103,63,0.35)";
+  /* Active chip: sphere colour warmed and muted to an adult tint (bright
+     DB seed colours pass through the warm caramel blend, then washed
+     white), ink text; «Все» wears a quiet terra tint. Inactive chip:
+     white pill with a hairline border. Text always ink. */
+  const activeBg = color ? warmTint(color) : "rgba(196,103,63,0.12)";
+  const activeBorder = color ? warmTint(color) : "rgba(196,103,63,0.35)";
   const bg = active ? activeBg : "#FFFFFF";
   const border = active ? activeBorder : "var(--ink-10)";
 
@@ -532,7 +530,7 @@ function FilterChip({
             width: 7,
             height: 7,
             borderRadius: 4,
-            background: color,
+            background: warmStrong(color),
           }}
         />
       )}

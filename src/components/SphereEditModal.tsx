@@ -8,15 +8,17 @@ import { feedbackModalOpen } from "@/lib/feedback";
 import { useT } from "@/lib/i18n/client";
 import { SectionLabel } from "@/components/ui";
 
+/* Warm-harmonized swatches native to the «Рассвет» palette — every hue
+   family kept, but pulled into the cream+terracotta temperature. */
 const COLORS = [
-  "#86c79a", // mint
-  "#f4936e", // peach
-  "#f5c563", // butter
-  "#6ba4c2", // pool
-  "#b5a3df", // lilac
-  "#e89bb0", // blush
-  "#0ABAB5", // tiffany
-  "#d96a52", // alert (use carefully)
+  "#C98A4B", // caramel
+  "#C4746B", // clay
+  "#C4673F", // terracotta
+  "#9A9B6F", // sage-olive
+  "#7E97A6", // dusty blue (kept slightly warm)
+  "#9C7B8F", // plum-mauve
+  "#D9A05B", // ochre
+  "#D89C8E", // blush
 ];
 
 /* Curated emoji shortlist for life-area spheres. Picked to cover the
