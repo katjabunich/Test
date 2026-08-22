@@ -11,6 +11,44 @@ import type { CSSProperties, ReactNode } from "react";
    - radii, shadows (warm brown-tinted) and type come from globals.css;
    - display font = M PLUS Rounded 1c (var(--font-display)), body = Nunito. */
 
+/** Full-height warm gradient backdrop for a screen — the same mechanics
+    as Today's sky: absolutely positioned, pulled up past the container's
+    top padding AND the iOS safe-area so the colour truly starts at the
+    physical top edge in standalone PWA, first-screen tall, melting into
+    --paper well before its own bottom edge (no seam into the cream).
+
+    MUST live inside a parent with `position: relative` AND
+    `isolation: "isolate"` — without the isolation stacking context the
+    z-index -1 layer paints behind body's background and is invisible
+    (the «куда делось солнце» trap, see CLAUDE.md). `topOffset` is the
+    parent container's own top padding in px (0 if none). */
+export function ScreenBackdrop({
+  gradient,
+  topOffset = 0,
+}: {
+  /** Full CSS gradient, ending in #FBF7F1 (--paper) at ~80% or earlier. */
+  gradient: string;
+  /** The parent container's top padding in px. */
+  topOffset?: number;
+}) {
+  return (
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: `calc(-${topOffset}px - env(safe-area-inset-top, 0px))`,
+        left: 0,
+        right: 0,
+        height: "calc(100dvh + env(safe-area-inset-top, 0px))",
+        overflow: "hidden",
+        pointerEvents: "none",
+        zIndex: -1,
+        background: gradient,
+      }}
+    />
+  );
+}
+
 /** Plain white card: --radius-lg (24), warm --shadow-card. Reads as a
     soft card on the cream page. The workhorse surface for lists,
     settings rows, stat blocks. */

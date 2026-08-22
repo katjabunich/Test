@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { Sphere, Task } from "@/lib/data";
 import TaskItem from "@/components/TaskItem";
 import TaskEditModal from "@/components/TaskEditModal";
-import { Card, ScreenHeader, SectionLabel } from "@/components/ui";
+import { Card, ScreenBackdrop, ScreenHeader, SectionLabel } from "@/components/ui";
 import { isPast, isToday, today, addDays, fromIsoDate } from "@/lib/date";
 import { useT, useLang, useWeekdaysShort } from "@/lib/i18n/client";
 import { warmStrong, warmTint } from "@/lib/palette";
@@ -147,6 +147,13 @@ export default function TasksView({
 
   return (
     <>
+      {/* isolation: isolate — required stacking context for the z-index -1
+         backdrop (see CLAUDE.md trap note / ScreenBackdrop docs). */}
+      <div style={{ position: "relative", isolation: "isolate" }}>
+      {/* Sand sky — calmer sibling of Today's dawn, from the physical
+         top edge, melting into the cream ground with no seam. */}
+      <ScreenBackdrop gradient="linear-gradient(180deg, #F4E6D2 0%, #F8F0E4 38%, #FBF7F1 80%)" />
+
       {/* Heading */}
       <ScreenHeader
         label={t("tasks.sub")}
@@ -170,12 +177,14 @@ export default function TasksView({
         </div>
       )}
 
-      {/* Filter chips */}
+      {/* Filter chips — one consistent 36px row height, same 8px gap and
+         14px bottom rhythm as the week strip below. */}
       <div
         style={{
           display: "flex",
+          alignItems: "center",
           gap: 8,
-          padding: "0 0 16px 20px",
+          padding: "0 0 14px 20px",
           overflowX: "auto",
           flexShrink: 0,
           scrollbarWidth: "none",
@@ -290,7 +299,7 @@ export default function TasksView({
                   display: "flex",
                   alignItems: "baseline",
                   gap: 8,
-                  padding: "0 6px 10px",
+                  padding: "0 4px 10px",
                 }}
               >
                 <SectionLabel>
@@ -334,6 +343,7 @@ export default function TasksView({
           ))
         )}
       </div>
+      </div>
 
       <TaskEditModal
         open={modalOpen}
@@ -365,7 +375,7 @@ function WeekStrip({
   onPick: (iso: string) => void;
 }) {
   return (
-    <div style={{ padding: "0 20px 16px" }}>
+    <div style={{ padding: "0 20px 18px" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
         {days.map((d) => {
           const dayLabel = weekdays[d.date.getDay()];
@@ -381,7 +391,7 @@ function WeekStrip({
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 6,
-                padding: "9px 0 11px",
+                padding: "10px 0",
                 borderRadius: "var(--radius-sm)",
                 background: isActive
                   ? "rgba(196,103,63,0.12)"

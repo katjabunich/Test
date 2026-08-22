@@ -14,7 +14,7 @@ import { setDigestTime } from "@/lib/profile";
 import { reorderSpheres } from "@/lib/actions";
 import { useT, useLang, useSetLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
-import { Card, ScreenHeader, SectionLabel } from "@/components/ui";
+import { Card, ScreenBackdrop, ScreenHeader, SectionLabel } from "@/components/ui";
 import {
   DndContext,
   PointerSensor,
@@ -183,6 +183,13 @@ export default function SettingsView({
 
   return (
     <>
+      {/* isolation: isolate — required stacking context for the z-index -1
+         backdrop (see CLAUDE.md trap note / ScreenBackdrop docs). */}
+      <div style={{ position: "relative", isolation: "isolate" }}>
+      {/* The quietest sky of the four — a barely-there warm wash from the
+         physical top edge, melting into the cream ground with no seam. */}
+      <ScreenBackdrop gradient="linear-gradient(180deg, #F3EADF 0%, #FBF7F1 62%)" />
+
       <div
         style={{
           display: "flex",
@@ -536,6 +543,7 @@ export default function SettingsView({
           </div>
         )}
       </div>
+      </div>
 
       <SphereEditModal
         open={modalOpen}
@@ -669,6 +677,9 @@ function SettingsToggleRow({
       type="button"
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
+      /* .press — the row visibly sinks under the finger (globals.css);
+         gentler than .tap's scale+fade, right for full-width list rows. */
+      className={disabled ? undefined : "press"}
       style={{
         display: "flex",
         alignItems: "center",

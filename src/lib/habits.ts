@@ -39,7 +39,12 @@ export function computeStreak(habit: Habit, logged: Set<string>): number {
   if (!logged.has(cursor)) {
     cursor = addDays(cursor, -1);
   }
-  while (true) {
+  /* Iteration cap, not just a streak cap: a habit that is never scheduled
+     (e.g. schedule_type "weekdays" with an empty/null days list) keeps
+     streak at 0 forever, so a `streak > 365` check alone never fires and
+     the loop spins the server at 100% CPU. Seen in the wild via a mock
+     habit; cheap to guard against for real data too. */
+  for (let i = 0; i < 400; i++) {
     if (isScheduledOn(habit, cursor)) {
       if (logged.has(cursor)) {
         streak += 1;

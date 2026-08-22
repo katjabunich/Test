@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { Sphere, Task } from "@/lib/data";
-import { Card, ScreenHeader } from "@/components/ui";
+import { Card, ScreenBackdrop, ScreenHeader } from "@/components/ui";
 import { useT, useLang } from "@/lib/i18n/client";
 import type { Lang } from "@/lib/i18n/dict";
 import { fromIsoDate, toIsoDate } from "@/lib/date";
@@ -344,14 +344,25 @@ export default function StatsView({
   }
 
   return (
-    <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      /* isolation: isolate — required stacking context for the z-index -1
+         backdrop (see CLAUDE.md trap note / ScreenBackdrop docs). */
+      style={{ position: "relative", isolation: "isolate" }}
+    >
+      {/* Caramel-amber sky from the physical top edge, melting into the
+         cream ground with no seam. No sun — that stays on Today. */}
+      <ScreenBackdrop gradient="linear-gradient(180deg, #F5E7CC 0%, #F9F0DF 38%, #FBF7F1 80%)" />
+
       {/* Heading */}
       <ScreenHeader style={{ paddingBottom: 14 }}>
         {t("stats.title")}
       </ScreenHeader>
 
-      {/* Hero — big animated count + comparison */}
-      <div style={{ padding: "0 20px 20px" }}>
+      {/* Hero — big animated count + comparison; 18px bottom keeps the
+         hero→tabs rhythm in step with the other screens' blocks. */}
+      <div style={{ padding: "0 20px 18px" }}>
         <div
           className="tnum"
           style={{
@@ -387,7 +398,7 @@ export default function StatsView({
           gap: 24,
           padding: "0 20px",
           position: "relative",
-          marginBottom: 22,
+          marginBottom: 20,
         }}
       >
         {PERIODS.map((p, i) => {

@@ -13,6 +13,7 @@ import {
   Card,
   FocusCard,
   PillButton,
+  ScreenBackdrop,
   ScreenHeader,
   SectionLabel,
 } from "@/components/ui";
@@ -114,15 +115,21 @@ export default function HabitsView({
 
   return (
     <>
+      {/* isolation: isolate — required stacking context for the z-index -1
+         backdrop (see CLAUDE.md trap note / ScreenBackdrop docs). */}
+      <div style={{ position: "relative", isolation: "isolate" }}>
+      {/* Warm blush-peach sky from the physical top edge, melting into
+         the cream ground with no seam. No sun — that stays on Today. */}
+      <ScreenBackdrop gradient="linear-gradient(180deg, #F5E1D6 0%, #F9EFE6 38%, #FBF7F1 80%)" />
+
       <ScreenHeader label={t("habits.sub")}>{t("habits.title")}</ScreenHeader>
 
       {/* Hero — best streak: the app's one loud block (terra, cream text) */}
       {top && top.streak > 0 && (
-        <div style={{ padding: "0 0 18px" }}>
+        <div style={{ padding: "0 20px 18px" }}>
           <FocusCard
             bg="var(--terra)"
             style={{
-              margin: "0 20px",
               padding: "22px 22px 24px",
               position: "relative",
               overflow: "hidden",
@@ -289,7 +296,9 @@ export default function HabitsView({
           </Card>
         ) : (
           <>
-            <SectionLabel style={{ padding: "0 4px 4px" }}>
+            {/* 0 bottom padding: the column's own 10px gap sets the
+               label→cards distance, matching /tasks group headers. */}
+            <SectionLabel style={{ padding: "0 4px" }}>
               {t("habits.title")}
             </SectionLabel>
             <DndContext
@@ -342,6 +351,7 @@ export default function HabitsView({
             </button>
           </>
         )}
+      </div>
       </div>
 
       <HabitEditModal
