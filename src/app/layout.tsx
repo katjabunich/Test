@@ -35,7 +35,11 @@ export const metadata: Metadata = {
   title: "DoIt",
   description: "Tasks and habits for today",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "DoIt" },
+  /* black-translucent = the web view extends under the iOS status bar
+     (true full-screen); the clock renders in white on top of our content,
+     so a subtle scrim in the body + safe-area padding on main keep it
+     legible and the layout clear of it. */
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "DoIt" },
   icons: { apple: "/icon-192.png", icon: "/icon-512.png" },
 };
 
@@ -56,6 +60,23 @@ export default async function RootLayout({
     <html lang={lang} className={`${sans.variable} ${rounded.variable}`}>
       <body>
         <LanguageProvider initial={lang}>
+          {/* Status-bar scrim: only visible in standalone PWA (safe-area
+             inset > 0). A soft dark gradient under the white iOS clock so
+             it stays readable over the light sky/cream content. */}
+          <div
+            aria-hidden
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "env(safe-area-inset-top, 0px)",
+              background:
+                "linear-gradient(180deg, rgba(59,46,38,0.30) 0%, rgba(59,46,38,0) 100%)",
+              zIndex: 60,
+              pointerEvents: "none",
+            }}
+          />
           <main>
             <PageTransition>{children}</PageTransition>
           </main>

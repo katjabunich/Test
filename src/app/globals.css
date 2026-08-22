@@ -85,6 +85,10 @@ main {
   max-width: 460px;
   margin: 0 auto;
   min-height: 100dvh;
+  /* black-translucent PWA: the webview extends under the iOS status bar,
+     so every screen's content starts below the clock; Today's sky decor
+     deliberately reaches back up into that zone. */
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
