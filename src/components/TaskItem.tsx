@@ -49,9 +49,11 @@ function dueLabel(
   };
 }
 
-/** Task row per v4: paper-warm card, mint-bordered checkbox left, sphere
-    chip + due label below the title. Swipe-left commits "Готово", swipe-
-    right defers to tomorrow. */
+/** Task row per «Рассвет» A2: sphere-tinted card (white mixed with the
+    sphere colour carries the sphere identity — no left colour bar),
+    muted sphere-bordered checkbox left, sphere chip + due label below
+    the title. Swipe-left commits "Готово", swipe-right defers to
+    tomorrow. */
 export default function TaskItem({
   task,
   sphere,
@@ -218,9 +220,16 @@ export default function TaskItem({
     }
   }, [optimisticDone, optimisticDeferred, dx, isDragging]);
 
-  /* White card; the left bar is ALWAYS the sphere colour — overdue gets
-     no red anywhere (--alert is reserved for destructive actions). */
-  const cardBg = "#FFFFFF";
+  /* Sphere-tinted card — the tint carries the sphere colour (the old
+     left colour bar is gone); a task without a sphere sits on warm
+     paper. Overdue gets no red anywhere (--alert is reserved for
+     destructive actions). */
+  const cardBg = sphere
+    ? `color-mix(in srgb, #FFFFFF 82%, ${sphere.color})`
+    : "var(--paper-warm)";
+  /* Muted version of the (often bright, DB-seeded) sphere colour for the
+     check-circle border and chip — calmer on the tinted surface. */
+  const sphereMuted = `color-mix(in srgb, ${sphereColor} 70%, #3B2E26)`;
 
   /* Reveal-action progress: 0 = idle, 1 = at COMMIT_THRESHOLD. Used to fade
      the action chip in as the row slides off it. */
@@ -250,7 +259,7 @@ export default function TaskItem({
             position: "absolute",
             inset: 0,
             background:
-              swipeDir === "left" ? "var(--mint-deep)" : "var(--butter)",
+              swipeDir === "left" ? "var(--terra)" : "var(--butter)",
             borderRadius: "var(--radius-lg)",
             display: "flex",
             alignItems: "center",
@@ -309,10 +318,11 @@ export default function TaskItem({
         style={{
           background: cardBg,
           border: "none",
-          borderLeft: `4px solid ${sphereColor}`,
           borderRadius: "var(--radius-lg)",
-          boxShadow: "var(--shadow-card)",
-          padding: "14px 16px 14px 14px",
+          /* Tinted surfaces need almost no lift — a whisper of warm
+             shadow keeps the edge without the floating-card look. */
+          boxShadow: "0 1px 3px rgba(105,74,50,0.05)",
+          padding: "14px 16px",
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -336,8 +346,8 @@ export default function TaskItem({
           width: 26,
           height: 26,
           borderRadius: 13,
-          border: `2.5px solid ${sphereColor}`,
-          background: optimisticDone ? sphereColor : "transparent",
+          border: `2.5px solid ${optimisticDone ? "var(--terra)" : sphereMuted}`,
+          background: optimisticDone ? "var(--terra)" : "transparent",
           padding: 0,
           cursor: "pointer",
           flexShrink: 0,
@@ -394,7 +404,7 @@ export default function TaskItem({
                   gap: 5,
                   fontSize: 12,
                   fontWeight: 600,
-                  color: sphereColor,
+                  color: sphereMuted,
                   letterSpacing: "-0.005em",
                 }}
               >
@@ -403,7 +413,7 @@ export default function TaskItem({
                     width: 7,
                     height: 7,
                     borderRadius: 4,
-                    background: sphereColor,
+                    background: sphereMuted,
                   }}
                 />
                 {sphere.name}

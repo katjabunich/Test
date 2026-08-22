@@ -1,29 +1,36 @@
 @import "tailwindcss";
 
-/* v4 — Tiffany mint accent + warm paper palette */
+/* v8 «Рассвет» (A2) — adult warm dawn palette: cream surfaces,
+   warm brown ink, terracotta primary, muted secondary set. */
 :root {
-  /* Surfaces — clean white + neutral gray */
-  --paper:       #FFFFFF;
-  --paper-warm:  #FAFAFA;
-  --paper-deep:  #F0F0F0;
-  --ink:         #1A1A1A;
-  --ink-strong:  #000000;
-  --ink-80:      rgba(0,0,0,0.78);
-  --ink-60:      rgba(0,0,0,0.55);
-  --ink-40:      rgba(0,0,0,0.35);
-  --ink-20:      rgba(0,0,0,0.14);
-  --ink-10:      rgba(0,0,0,0.06);
-  --ink-05:      rgba(0,0,0,0.03);
+  /* Surfaces — warm cream (page background is NOT white) */
+  --paper:       #FBF7F1;
+  --paper-warm:  #F5EBDF;
+  --paper-deep:  #EDDFCD;
+  --ink:         #3B2E26;
+  --ink-strong:  #2B211B;
+  --ink-80:      rgba(59,46,38,0.78);
+  --ink-60:      rgba(59,46,38,0.55);
+  --ink-40:      rgba(59,46,38,0.38);
+  --ink-20:      rgba(59,46,38,0.16);
+  --ink-10:      rgba(59,46,38,0.08);
+  --ink-05:      rgba(59,46,38,0.04);
 
-  /* Accent — pastel Tiimo palette */
-  --mint:        #A8D8B9;
-  --mint-deep:   #6BBF8A;
-  --lilac:       #C4B8E8;
-  --peach:       #F9C4A8;
-  --blush:       #F2B5C8;
-  --butter:      #F5D76E;
-  --pool:        #A1C9E0;
-  --alert:       #E8756A;
+  /* Primary accent — terracotta (CTAs, FAB, active states, check fills) */
+  --terra:       #C4673F;
+  --terra-deep:  #B85C3A;
+  /* Secondary warm accent */
+  --caramel:     #D9A05B;
+
+  /* Muted accent set (same names as before, dawn values) */
+  --mint:        #C9D8C2;
+  --mint-deep:   #7C9473;
+  --lilac:       #B9A6D6;
+  --peach:       #E8C4A8;
+  --blush:       #E0B9B3;
+  --butter:      #E8CD9A;
+  --pool:        #A9C3D6;
+  --alert:       #C05B4A;
 
   /* Type stacks — plump rounded display for headings/hero numbers,
      rounded sans (Nunito) for body/UI/meta. No serif anywhere.
@@ -40,12 +47,12 @@
   --radius-xl: 28px;
   --radius-2xl: 32px;
 
-  /* Shadows — soft ambient on white */
-  --shadow-card: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  --shadow-card-lg: 0 8px 32px rgba(0,0,0,0.08);
-  --shadow-elevated: 0 16px 48px rgba(0,0,0,0.12);
-  --shadow-nav: 0 -2px 24px rgba(0,0,0,0.08);
-  --shadow-modal: 0 -16px 56px rgba(0,0,0,0.12);
+  /* Shadows — calm, warm brown-tinted ambient on cream */
+  --shadow-card: 0 2px 16px rgba(105,74,50,0.07), 0 1px 4px rgba(105,74,50,0.05);
+  --shadow-card-lg: 0 8px 32px rgba(105,74,50,0.10);
+  --shadow-elevated: 0 16px 48px rgba(105,74,50,0.14);
+  --shadow-nav: 0 -2px 24px rgba(105,74,50,0.16);
+  --shadow-modal: 0 -16px 56px rgba(105,74,50,0.14);
 
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -103,9 +110,9 @@ select {
   font-feature-settings: "tnum";
 }
 
-/* Butter highlight — editorial marker for key words */
+/* Butter highlight — editorial marker for key words (warm dawn butter) */
 .mark-butter {
-  background: linear-gradient(180deg, transparent 60%, rgba(245,197,99,0.55) 60%);
+  background: linear-gradient(180deg, transparent 60%, rgba(232,205,154,0.65) 60%);
   padding: 0 2px;
   border-radius: 1px;
   box-decoration-break: clone;
@@ -181,11 +188,12 @@ select {
   to   { background-position: -200% 0; }
 }
 .skel {
+  /* Warm neutral shimmer on the cream ground */
   background: linear-gradient(
     90deg,
-    rgba(0,0,0,0.04) 0%,
-    rgba(0,0,0,0.10) 50%,
-    rgba(0,0,0,0.04) 100%
+    rgba(105,74,50,0.06) 0%,
+    rgba(105,74,50,0.13) 50%,
+    rgba(105,74,50,0.06) 100%
   );
   background-size: 200% 100%;
   animation: skel 1.4s linear infinite;

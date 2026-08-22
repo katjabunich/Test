@@ -208,10 +208,10 @@ export default function TaskEditModal({
           {isEdit ? t("task.title_edit") : t("task.title_new")}
         </div>
 
-        {/* Title input with mintDeep underline */}
+        {/* Title input with terra underline */}
         <div
           style={{
-            borderBottom: "2px solid var(--mint-deep)",
+            borderBottom: "2px solid var(--terra)",
             paddingBottom: 12,
             marginBottom: 18,
           }}
@@ -296,7 +296,7 @@ export default function TaskEditModal({
               color: !dueDate
                 ? "var(--ink-40)"
                 : dueDate === todayIso()
-                ? "var(--mint-deep)"
+                ? "var(--terra)"
                 : "var(--ink-80)",
               letterSpacing: "-0.005em",
             }}
@@ -458,7 +458,7 @@ export default function TaskEditModal({
               marginTop: 14,
               padding: "10px 14px",
               borderRadius: "var(--radius-sm)",
-              background: "rgba(245,215,110,0.35)",
+              background: "rgba(232,205,154,0.45)",
               color: "var(--ink)",
               fontSize: 13,
               fontWeight: 600,
@@ -512,7 +512,7 @@ export default function TaskEditModal({
               padding: "15px 0",
               borderRadius: 999,
               background: title.trim()
-                ? "var(--mint-deep)"
+                ? "var(--terra)"
                 : "var(--ink-20)",
               color: "#FFFFFF",
               border: "none",
@@ -521,7 +521,7 @@ export default function TaskEditModal({
               fontWeight: 800,
               letterSpacing: "-0.01em",
               boxShadow: title.trim()
-                ? "0 6px 16px rgba(107,191,138,0.35)"
+                ? "0 6px 16px rgba(184,92,58,0.35)"
                 : "none",
             }}
           >
@@ -603,8 +603,18 @@ function SphereChipButton({
       style={{
         padding: "8px 14px",
         borderRadius: 999,
-        background: active ? color ?? "var(--mint)" : "#FFFFFF",
-        border: `1.5px solid ${active ? color ?? "var(--mint)" : "var(--ink-10)"}`,
+        background: active
+          ? color
+            ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+            : "rgba(196,103,63,0.12)"
+          : "#FFFFFF",
+        border: `1.5px solid ${
+          active
+            ? color
+              ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+              : "rgba(196,103,63,0.35)"
+            : "var(--ink-10)"
+        }`,
         color: "var(--ink-strong)",
         fontSize: 13,
         fontWeight: 700,
@@ -662,7 +672,7 @@ function Toggle({
         width: 40,
         height: 24,
         borderRadius: 12,
-        background: on ? "var(--mint-deep)" : "var(--ink-20)",
+        background: on ? "var(--terra)" : "var(--ink-20)",
         position: "relative",
         border: "none",
         cursor: "pointer",

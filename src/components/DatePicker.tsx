@@ -206,9 +206,9 @@ export default function DatePicker({
                 padding: "8px 14px",
                 borderRadius: 999,
                 border: p.active
-                  ? "1.5px solid var(--mint)"
+                  ? "1.5px solid rgba(196,103,63,0.35)"
                   : "1.5px solid var(--ink-10)",
-                background: p.active ? "var(--mint)" : "#FFFFFF",
+                background: p.active ? "rgba(196,103,63,0.12)" : "#FFFFFF",
                 color: "var(--ink-strong)",
                 fontSize: 13,
                 fontWeight: 700,
@@ -340,16 +340,16 @@ export default function DatePicker({
                   borderRadius: "var(--radius-sm)",
                   border: "none",
                   background: isSelected
-                    ? "var(--mint-deep)"
+                    ? "var(--terra)"
                     : isToday
-                    ? "rgba(107,191,138,0.14)"
+                    ? "rgba(196,103,63,0.12)"
                     : "transparent",
                   color: isSelected
                     ? "#FFFFFF"
                     : !inMonth
                     ? "var(--ink-40)"
                     : isToday
-                    ? "var(--mint-deep)"
+                    ? "var(--terra)"
                     : "var(--ink)",
                   fontSize: 14,
                   fontWeight: isSelected || isToday ? 800 : 600,

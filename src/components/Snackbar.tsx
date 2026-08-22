@@ -118,7 +118,9 @@ export default function Snackbar() {
             background: "rgba(255,255,255,0.12)",
             border: "none",
             borderRadius: 999,
-            color: "var(--mint)",
+            /* Cream-lightened terra: warm accent that stays readable on
+               the dark ink pill (raw --terra is too dim there). */
+            color: "color-mix(in srgb, var(--terra) 55%, #FBF3EA)",
             fontSize: 13.5,
             fontWeight: 800,
             letterSpacing: "-0.01em",

@@ -132,9 +132,9 @@ export default function TimePicker({
                   padding: "12px 0",
                   borderRadius: "var(--radius-sm)",
                   border: active
-                    ? "1.5px solid var(--mint-deep)"
+                    ? "1.5px solid var(--terra)"
                     : "1.5px solid var(--ink-10)",
-                  background: active ? "var(--mint-deep)" : "#FFFFFF",
+                  background: active ? "var(--terra)" : "#FFFFFF",
                   color: active ? "#FFFFFF" : "var(--ink)",
                   fontSize: 15,
                   fontWeight: active ? 800 : 600,

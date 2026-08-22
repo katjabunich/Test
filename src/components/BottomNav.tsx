@@ -50,7 +50,7 @@ export default function BottomNav() {
         right: 12,
         maxWidth: 460,
         margin: "0 auto",
-        background: "#FFFFFF",
+        background: "#FFFCF8",
         borderRadius: "var(--radius-xl)",
         boxShadow: "var(--shadow-nav)",
         padding: "10px 20px",
@@ -77,14 +77,14 @@ export default function BottomNav() {
                 height: 54,
                 borderRadius: 27,
                 border: "none",
-                background: "var(--mint-deep)",
+                background: "linear-gradient(135deg, #C4673F, #B85C3A)",
                 color: "white",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
-                /* Tinted glow derived from --mint-deep #6BBF8A */
-                boxShadow: "0 8px 24px rgba(107,191,138,0.35)",
+                /* Tinted glow derived from --terra-deep #B85C3A */
+                boxShadow: "0 8px 24px rgba(184,92,58,0.35)",
               }}
             >
               <Icons.Plus size={22} stroke="#fff" strokeWidth={2.4} />
@@ -106,7 +106,7 @@ export default function BottomNav() {
               alignItems: "center",
               justifyContent: "center",
               gap: 3,
-              color: isActive ? "var(--ink)" : "var(--ink-40)",
+              color: isActive ? "var(--terra)" : "var(--ink-40)",
               textDecoration: "none",
             }}
           >

@@ -1,17 +1,19 @@
 import type { CSSProperties, ReactNode } from "react";
 
-/* Small reusable inline-style primitives for the "plump pastel" design
+/* Small reusable inline-style primitives for the «Рассвет» (dawn) design
    language. Every screen-level agent should compose these instead of
    re-declaring card/pill/heading styles inline.
 
-   Ground rules baked in here (see design brief):
-   - page background stays pure white; pastel colour lives only in focus
-     elements (FocusCard, pills, accents);
-   - radii, shadows and type come from the tokens in globals.css;
+   Ground rules baked in here (see design brief, final section A2):
+   - page background is warm cream (--paper #FBF7F1); plain cards stay
+     white so they read as soft surfaces on the cream ground;
+   - colour lives in focus elements (FocusCard, pills, terra accents);
+   - radii, shadows (warm brown-tinted) and type come from globals.css;
    - display font = M PLUS Rounded 1c (var(--font-display)), body = Nunito. */
 
-/** Plain white card: --radius-lg (24), --shadow-card. The workhorse
-    surface for lists, settings rows, stat blocks. */
+/** Plain white card: --radius-lg (24), warm --shadow-card. Reads as a
+    soft card on the cream page. The workhorse surface for lists,
+    settings rows, stat blocks. */
 export function Card({
   children,
   style,

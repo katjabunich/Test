@@ -37,7 +37,7 @@ function pluralRu(n: number): "one" | "few" | "many" {
   return "many";
 }
 
-/** Mint focus card offering batch actions for a big overdue backlog.
+/** Sand focus card offering batch actions for a big overdue backlog.
     Rendered only when overdueCount >= 3 — one or two stragglers live
     quietly in the "waiting" section instead. */
 function ReturnCard({ overdueCount }: { overdueCount: number }) {
@@ -68,7 +68,7 @@ function ReturnCard({ overdueCount }: { overdueCount: number }) {
 
   return (
     <div style={{ padding: "0 20px 14px" }}>
-      <FocusCard bg="var(--mint)">
+      <FocusCard bg="#F1DDC9">
         <div
           style={{
             fontFamily: "var(--font-display)",
@@ -261,7 +261,50 @@ export default function TodayView({
 
   return (
     <>
-      <div style={{ padding: "8px 0 0" }}>
+      <div style={{ padding: "8px 0 0", position: "relative" }}>
+        {/* Dawn decor — soft gradient zone behind the header plus a large
+           warm radial glow bleeding off the top-right edge. Purely
+           decorative, only on this screen; the clipping wrapper keeps the
+           glow from widening the page, and z-index -1 keeps it behind all
+           in-flow content while staying above the cream page ground. */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 280,
+            overflow: "hidden",
+            pointerEvents: "none",
+            zIndex: -1,
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 240,
+              background:
+                "linear-gradient(180deg, #F7E7D3 0%, rgba(247,231,211,0) 100%)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: -140,
+              right: -110,
+              width: 340,
+              height: 340,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(232,179,126,0.5) 0%, rgba(232,179,126,0) 68%)",
+            }}
+          />
+        </div>
+
         {/* Header: tiny date + big plump greeting */}
         <ScreenHeader
           label={
@@ -300,7 +343,7 @@ export default function TodayView({
                 border: "none",
                 outline: "none",
                 font: "inherit",
-                color: "var(--mint-deep)",
+                color: "var(--terra)",
                 width: `${Math.max(4, nameDraft.length || 5)}ch`,
                 padding: 0,
                 letterSpacing: "inherit",
@@ -317,7 +360,7 @@ export default function TodayView({
                 padding: 0,
                 font: "inherit",
                 letterSpacing: "inherit",
-                color: "var(--mint-deep)",
+                color: "var(--terra)",
                 cursor: "pointer",
                 textDecoration: name ? "none" : "underline",
                 textDecorationStyle: name ? undefined : "dotted",
@@ -387,7 +430,7 @@ export default function TodayView({
                   style={{
                     height: "100%",
                     borderRadius: 999,
-                    background: "var(--mint-deep)",
+                    background: "linear-gradient(90deg, #C4673F, #D9A05B)",
                     width: `${Math.round((doneToday / totalToday) * 100)}%`,
                     transition: "width 400ms var(--ease-out)",
                   }}
@@ -506,7 +549,9 @@ export default function TodayView({
                       <PillButton
                         onClick={() => moveToToday(task.id)}
                         disabled={isMovePending}
-                        style={{ padding: "8px 16px", fontSize: 13 }}
+                        variant="filled"
+                        color="var(--terra)"
+                        style={{ padding: "8px 16px", fontSize: 13, color: "#FBF3EA" }}
                       >
                         {t("today.move_to_today")}
                       </PillButton>

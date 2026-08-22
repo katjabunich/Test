@@ -383,7 +383,7 @@ function WeekStrip({
                 padding: "9px 0 11px",
                 borderRadius: "var(--radius-sm)",
                 background: isActive
-                  ? "var(--mint)"
+                  ? "rgba(196,103,63,0.12)"
                   : d.isToday
                   ? "var(--paper-warm)"
                   : "transparent",
@@ -445,9 +445,9 @@ function WeekStrip({
                         height: 4,
                         borderRadius: 2,
                         background: isActive
-                          ? "var(--ink)"
+                          ? "var(--terra)"
                           : d.isToday
-                          ? "var(--mint-deep)"
+                          ? "var(--terra)"
                           : "var(--ink-40)",
                       }}
                     />
@@ -460,9 +460,9 @@ function WeekStrip({
                       fontSize: 9,
                       fontWeight: 700,
                       color: isActive
-                        ? "var(--ink)"
+                        ? "var(--terra)"
                         : d.isToday
-                        ? "var(--mint-deep)"
+                        ? "var(--terra)"
                         : "var(--ink-40)",
                       letterSpacing: "-0.005em",
                     }}
@@ -479,7 +479,7 @@ function WeekStrip({
   );
 }
 
-/** Sphere chips wear their sphere colour only when active (pastel fill);
+/** Sphere chips wear their sphere colour only when active (muted tint);
     inactive chips are quiet white pills with a coloured marker dot, so the
     colour "fires" once — in the active filter and the task cards below. */
 function FilterChip({
@@ -496,12 +496,17 @@ function FilterChip({
   active: boolean;
   onClick: () => void;
 }) {
-  /* Active chip: pastel fill (sphere colour, or mint for «Все»), ink text.
-     Inactive chip: white pill with a hairline border. No dark-ink fills —
-     the plump-pastel language keeps colour soft and text always ink. */
-  const activeBg = color ?? "var(--mint)";
+  /* Active chip: sphere colour muted to an adult tint (bright DB seed
+     colours washed 75% white), ink text; «Все» wears a quiet terra tint.
+     Inactive chip: white pill with a hairline border. Text always ink. */
+  const activeBg = color
+    ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+    : "rgba(196,103,63,0.12)";
+  const activeBorder = color
+    ? `color-mix(in srgb, #FFFFFF 75%, ${color})`
+    : "rgba(196,103,63,0.35)";
   const bg = active ? activeBg : "#FFFFFF";
-  const border = active ? activeBg : "var(--ink-10)";
+  const border = active ? activeBorder : "var(--ink-10)";
 
   return (
     <button

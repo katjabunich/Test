@@ -182,8 +182,9 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               width: 56,
               height: 56,
               borderRadius: "var(--radius-sm)",
-              background: color,
-              border: `1px solid ${color}`,
+              /* Mute the candy DB colour when it paints a surface. */
+              background: `color-mix(in srgb, #FFFFFF 75%, ${color})`,
+              border: `1px solid color-mix(in srgb, ${color} 60%, #FFFFFF)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -359,12 +360,12 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
                     height: 36,
                     borderRadius: 999,
                     border: days.includes(idx)
-                      ? "1.5px solid var(--mint-deep)"
+                      ? "1.5px solid var(--terra)"
                       : "1px solid var(--ink-10)",
                     background: days.includes(idx)
-                      ? "rgba(107,191,138,0.14)"
+                      ? "rgba(196,103,63,0.12)"
                       : "var(--paper-warm)",
-                    color: days.includes(idx) ? "var(--mint-deep)" : "var(--ink)",
+                    color: days.includes(idx) ? "var(--terra-deep)" : "var(--ink)",
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: "pointer",
@@ -402,7 +403,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
           )}
           <PillButton
             variant="filled"
-            color={name.trim() ? "var(--mint-deep)" : "var(--ink-20)"}
+            color={name.trim() ? "var(--terra)" : "var(--ink-20)"}
             onClick={submit}
             disabled={isPending || !name.trim()}
             style={{
@@ -412,7 +413,7 @@ export default function HabitEditModal({ open, onClose, habit }: Props) {
               fontSize: 15,
               fontWeight: 800,
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(107,191,138,0.35)"
+                ? "0 6px 16px rgba(184,92,58,0.35)"
                 : "none",
             }}
           >
@@ -442,10 +443,10 @@ function ScheduleChip({
         padding: "8px 14px",
         borderRadius: 999,
         border: active
-          ? "1.5px solid var(--mint-deep)"
+          ? "1.5px solid var(--terra)"
           : "1px solid var(--ink-10)",
-        background: active ? "rgba(107,191,138,0.14)" : "#FFFFFF",
-        color: active ? "var(--mint-deep)" : "var(--ink)",
+        background: active ? "rgba(196,103,63,0.12)" : "#FFFFFF",
+        color: active ? "var(--terra-deep)" : "var(--ink)",
         fontSize: 12,
         fontWeight: 700,
         cursor: "pointer",

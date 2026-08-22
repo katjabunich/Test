@@ -27,6 +27,9 @@ export default function HabitRing({
   const [optimistic, setOptimistic] = useState(doneToday);
   const [isPending, startTransition] = useTransition();
   const color = habit.color || "var(--mint)";
+  /* Same muting rule as HabitCard: candy DB colours pulled toward warm
+     ink so strokes/fills stay inside the adult "dawn" palette. */
+  const mutedColor = `color-mix(in srgb, ${color} 80%, #3B2E26)`;
 
   function handleClick() {
     const wasDone = optimistic;
@@ -100,7 +103,7 @@ export default function HabitRing({
             cy={size / 2}
             r={r}
             fill="none"
-            stroke={color}
+            stroke={mutedColor}
             strokeWidth={stroke}
             strokeDasharray={c}
             strokeDashoffset={offset}
@@ -113,12 +116,13 @@ export default function HabitRing({
             position: "absolute",
             inset: 6,
             borderRadius: "50%",
-            background: optimistic ? color : "transparent",
+            background: optimistic ? mutedColor : "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "background 220ms var(--ease-out)",
-            color: optimistic ? "var(--ink)" : color,
+            /* Muted fill trends dark — cream icon keeps contrast when done. */
+            color: optimistic ? "#FBF3EA" : mutedColor,
           }}
         >
           <HabitIcon

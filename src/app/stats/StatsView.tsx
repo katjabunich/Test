@@ -426,7 +426,7 @@ export default function StatsView({
             left: underline.left,
             width: underline.width,
             height: 2,
-            background: "var(--mint-deep)",
+            background: "var(--terra)",
             borderRadius: 2,
             transition:
               "left 280ms cubic-bezier(0.22, 1, 0.36, 1), width 280ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -761,7 +761,7 @@ function WeekCalendar({
                 width: 16,
                 height: 2,
                 borderRadius: 2,
-                background: "var(--mint-deep)",
+                background: "var(--terra)",
               }}
             />
           )}
@@ -800,17 +800,17 @@ function MonthCalendar({
 
   const maxCount = Math.max(1, ...days.map((d) => d.tasks.length));
 
-  /* Warm watercolor interpolation: pale butter tint → butter → peach.
-     Anchors derived from the pastel tokens in globals.css (--butter
-     #F5D76E, --peach #F9C4A8), starting from a near-white butter wash so
-     low-activity cells stay clean on the pure white page. */
+  /* Warm watercolor interpolation: near-cream → muted butter → muted
+     peach. Anchors derived from the dawn tokens in globals.css (--butter
+     #E8CD9A, --peach #E8C4A8), starting from a near-cream wash so
+     low-activity cells stay quiet on the warm cream page. */
   function cellBackground(count: number): string {
     if (count === 0) return "var(--paper-deep)";
     const ratio = count / maxCount;
     const stops = [
-      { r: 252, g: 244, b: 217 }, // butter washed toward white
-      { r: 245, g: 215, b: 110 }, // --butter
-      { r: 249, g: 196, b: 168 }, // --peach
+      { r: 247, g: 238, b: 221 }, // butter washed toward cream
+      { r: 232, g: 205, b: 154 }, // --butter (dawn)
+      { r: 232, g: 196, b: 168 }, // --peach (dawn)
     ];
     const t = Math.min(1, Math.max(0, ratio));
     const seg = t < 0.5 ? 0 : 1;
@@ -905,7 +905,7 @@ function MonthCalendar({
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    background: "var(--mint-deep)",
+                    background: "var(--terra)",
                   }}
                 />
               )}

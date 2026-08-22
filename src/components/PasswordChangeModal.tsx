@@ -154,7 +154,7 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               marginBottom: 14,
               padding: "11px 14px",
               borderRadius: "var(--radius-sm)",
-              background: "rgba(232,117,106,0.10)",
+              background: "rgba(192,91,74,0.10)",
               color: "var(--alert)",
               fontSize: 13,
               fontWeight: 600,
@@ -173,7 +173,9 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               marginBottom: 14,
               padding: "11px 14px",
               borderRadius: "var(--radius-sm)",
-              background: "rgba(107,191,138,0.14)",
+              /* Success stays sage — recomputed from the dawn --mint-deep
+                 #7C9473 so the tint matches the muted token. */
+              background: "rgba(124,148,115,0.16)",
               color: "var(--mint-deep)",
               fontSize: 13.5,
               fontWeight: 700,
@@ -214,14 +216,14 @@ export default function PasswordChangeModal({ open, onClose }: Props) {
               flex: 1,
               padding: "14px 0",
               borderRadius: 999,
-              background: "var(--mint-deep)",
+              background: "var(--terra)",
               color: "#FFFFFF",
               border: "none",
               cursor: pending ? "default" : "pointer",
               fontSize: 14.5,
               fontWeight: 800,
               letterSpacing: "-0.01em",
-              boxShadow: "0 6px 16px rgba(107,191,138,0.35)",
+              boxShadow: "0 6px 16px rgba(184,92,58,0.35)",
               opacity: pending ? 0.7 : 1,
             }}
           >

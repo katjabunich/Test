@@ -8,7 +8,8 @@ export default function Loading() {
         <Skeleton h={13} w={110} />
         <Skeleton h={44} w="62%" br={12} />
       </div>
-      {/* Mint hero FocusCard */}
+      {/* Terra hero FocusCard — skeleton stays a warm neutral shimmer
+          (.skel) rather than pre-painting the loud terra block. */}
       <div style={{ padding: "0 20px 18px" }}>
         <div className="skel" style={{ height: 180, borderRadius: "var(--radius-xl)" }} />
       </div>

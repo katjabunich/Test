@@ -116,11 +116,11 @@ export default function HabitsView({
     <>
       <ScreenHeader label={t("habits.sub")}>{t("habits.title")}</ScreenHeader>
 
-      {/* Hero — best streak (full-bleed mint, emotional centre) */}
+      {/* Hero — best streak: the app's one loud block (terra, cream text) */}
       {top && top.streak > 0 && (
         <div style={{ padding: "0 0 18px" }}>
           <FocusCard
-            bg="var(--mint)"
+            bg="var(--terra)"
             style={{
               margin: "0 20px",
               padding: "22px 22px 24px",
@@ -140,7 +140,7 @@ export default function HabitsView({
                   bottom: -28,
                   opacity: 0.25,
                   pointerEvents: "none",
-                  color: "var(--paper)",
+                  color: "#FBF3EA",
                 }}
               >
                 <HabitIcon
@@ -173,7 +173,7 @@ export default function HabitsView({
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: "var(--paper)",
+                color: "#FBF3EA",
                 opacity: 0.9,
                 letterSpacing: "0.04em",
                 textTransform: "uppercase",
@@ -196,7 +196,7 @@ export default function HabitsView({
                   width: 118,
                   height: 118,
                   borderRadius: "50%",
-                  border: "2.5px solid var(--paper)",
+                  border: "2.5px solid #FBF3EA",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -211,7 +211,7 @@ export default function HabitsView({
                     fontWeight: 800,
                     letterSpacing: "-0.03em",
                     lineHeight: 0.9,
-                    color: "var(--paper)",
+                    color: "#FBF3EA",
                   }}
                 >
                   {top.streak}
@@ -222,7 +222,7 @@ export default function HabitsView({
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "var(--paper)",
+                    color: "#FBF3EA",
                     opacity: 0.85,
                     letterSpacing: "-0.005em",
                   }}
@@ -234,7 +234,7 @@ export default function HabitsView({
                     marginTop: 4,
                     fontSize: 16,
                     fontWeight: 700,
-                    color: "var(--paper)",
+                    color: "#FBF3EA",
                     letterSpacing: "-0.01em",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -272,13 +272,13 @@ export default function HabitsView({
             <div style={{ marginTop: 14 }}>
               <PillButton
                 variant="filled"
-                color="var(--mint-deep)"
+                color="var(--terra)"
                 onClick={() => {
                   setEditing(null);
                   setModalOpen(true);
                 }}
                 style={{
-                  color: "#FFFFFF",
+                  color: "#FBF3EA",
                   fontWeight: 800,
                   padding: "10px 20px",
                 }}

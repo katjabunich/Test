@@ -177,7 +177,8 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               width: 56,
               height: 56,
               borderRadius: "var(--radius-sm)",
-              background: color,
+              /* Mute the candy DB colour when it paints a surface. */
+              background: `color-mix(in srgb, #FFFFFF 75%, ${color})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -379,7 +380,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               padding: "15px 0",
               borderRadius: 999,
               background: name.trim()
-                ? "var(--mint-deep)"
+                ? "var(--terra)"
                 : "var(--ink-20)",
               color: "#FFFFFF",
               border: "none",
@@ -388,7 +389,7 @@ export default function SphereEditModal({ open, onClose, sphere }: Props) {
               fontWeight: 800,
               letterSpacing: "-0.01em",
               boxShadow: name.trim()
-                ? "0 6px 16px rgba(107,191,138,0.35)"
+                ? "0 6px 16px rgba(184,92,58,0.35)"
                 : "none",
             }}
           >

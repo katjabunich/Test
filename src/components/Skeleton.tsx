@@ -40,10 +40,11 @@ export function SkeletonRow() {
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "14px 16px 14px 14px",
-        background: "#FFFFFF",
+        padding: "14px 16px",
+        /* Matches the warm, whisper-shadow task cards of «Рассвет». */
+        background: "var(--paper-warm)",
         borderRadius: "var(--radius-lg)",
-        boxShadow: "var(--shadow-card)",
+        boxShadow: "0 1px 3px rgba(105,74,50,0.05)",
       }}
     >
       <div

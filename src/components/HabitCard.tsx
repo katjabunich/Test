@@ -26,6 +26,10 @@ export default function HabitCard({
   const t = useT();
   const daysWord = useDaysWord();
   const color = habit.color || "var(--mint)";
+  /* Candy seed colours from the DB get pulled toward warm ink so strokes
+     and fills sit inside the adult "dawn" palette without losing the
+     habit's own hue. */
+  const mutedColor = `color-mix(in srgb, ${color} 80%, #3B2E26)`;
 
   const [localLogged, setLocalLogged] = useState<Set<string>>(new Set(logged));
   const [, startTransition] = useTransition();
@@ -143,7 +147,7 @@ export default function HabitCard({
             cy={size / 2}
             r={r}
             fill="none"
-            stroke={color}
+            stroke={mutedColor}
             strokeWidth={stroke}
             strokeDasharray={c}
             strokeDashoffset={offset}
@@ -156,12 +160,13 @@ export default function HabitCard({
             position: "absolute",
             inset: 6,
             borderRadius: "50%",
-            background: doneToday ? color : "transparent",
+            background: doneToday ? mutedColor : "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             transition: "background 220ms var(--ease-out)",
-            color: doneToday ? "var(--ink)" : color,
+            /* Muted fill trends dark — cream icon keeps contrast when done. */
+            color: doneToday ? "#FBF3EA" : mutedColor,
           }}
         >
           <HabitIcon
@@ -204,7 +209,7 @@ export default function HabitCard({
                 height: 7,
                 borderRadius: 1.5,
                 background: c.done
-                  ? color
+                  ? mutedColor
                   : c.scheduled
                   ? "var(--ink-10)"
                   : "transparent",

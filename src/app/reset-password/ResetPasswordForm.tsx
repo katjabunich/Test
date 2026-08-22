@@ -150,7 +150,7 @@ export default function ResetPasswordForm() {
                 marginBottom: 14,
                 padding: "11px 13px",
                 borderRadius: 12,
-                background: "rgba(79,156,106,0.14)",
+                background: "rgba(196,103,63,0.12)",
                 color: "var(--mint-deep)",
                 fontSize: 13,
                 fontWeight: 500,

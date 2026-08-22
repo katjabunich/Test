@@ -223,7 +223,7 @@ export default function LoginForm({ next }: { next: string }) {
                 background:
                   banner.kind === "error"
                     ? "rgba(217,106,82,0.10)"
-                    : "rgba(79,156,106,0.14)",
+                    : "rgba(196,103,63,0.12)",
                 color:
                   banner.kind === "error"
                     ? "var(--alert, #c25a44)"
