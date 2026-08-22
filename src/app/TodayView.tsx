@@ -189,6 +189,11 @@ export default function TodayView({
     return m;
   }, [spheres]);
 
+  /* Sun decor variant: Katja picked "c" (full visible disc + glow,
+     «солнце не отрезай»). ?sun=a|b stay available for future tuning. */
+  const sunParam = search.get("sun");
+  const sunVariant = sunParam === "a" || sunParam === "b" ? sunParam : "c";
+
   const todayIso = today();
   const dateObj = fromIsoDate(todayIso);
   const habitsToday = habits.filter((h) => isScheduledOn(h, todayIso));
@@ -261,7 +266,11 @@ export default function TodayView({
 
   return (
     <>
-      <div style={{ padding: "8px 0 0", position: "relative" }}>
+      {/* isolation: isolate gives this container its own stacking context —
+         without it the z-index:-1 decor paints BEHIND body's background
+         and the sun is simply invisible (the original "куда делось солнце"
+         bug). */}
+      <div style={{ padding: "8px 0 0", position: "relative", isolation: "isolate" }}>
         {/* Dawn decor — soft gradient zone behind the header plus a large
            warm radial glow bleeding off the top-right edge. Purely
            decorative, only on this screen; the clipping wrapper keeps the
@@ -274,35 +283,96 @@ export default function TodayView({
             top: 0,
             left: 0,
             right: 0,
-            height: 280,
+            height: 360,
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: -1,
           }}
         >
+          {/* Sky band — must clearly separate from the cream ground. */}
           <div
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              height: 240,
+              height: sunVariant === "a" ? 260 : 320,
               background:
-                "linear-gradient(180deg, #F7E7D3 0%, rgba(247,231,211,0) 100%)",
+                "linear-gradient(180deg, #F6DFC2 0%, rgba(246,223,194,0) 100%)",
             }}
           />
-          <div
-            style={{
-              position: "absolute",
-              top: -140,
-              right: -110,
-              width: 340,
-              height: 340,
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle, rgba(232,179,126,0.5) 0%, rgba(232,179,126,0) 68%)",
-            }}
-          />
+          {sunVariant === "a" && (
+            <div
+              style={{
+                position: "absolute",
+                top: -120,
+                right: -90,
+                width: 420,
+                height: 420,
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle, rgba(238,178,116,0.68) 0%, rgba(238,178,116,0) 70%)",
+              }}
+            />
+          )}
+          {sunVariant === "b" && (
+            <>
+              <div
+                style={{
+                  position: "absolute",
+                  top: -230,
+                  right: -180,
+                  width: 640,
+                  height: 640,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(240,178,110,0.55) 0%, rgba(240,178,110,0) 72%)",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: -60,
+                  right: -30,
+                  width: 260,
+                  height: 260,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(244,166,92,0.5) 0%, rgba(244,166,92,0) 65%)",
+                }}
+              />
+            </>
+          )}
+          {sunVariant === "c" && (
+            <>
+              {/* Glow centred on the disc; the disc itself sits FULLY
+                 inside the viewport («солнце не отрезай»). */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: -139,
+                  right: -143,
+                  width: 460,
+                  height: 460,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(240,178,110,0.5) 0%, rgba(240,178,110,0) 70%)",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 26,
+                  right: 22,
+                  width: 130,
+                  height: 130,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle at 46% 44%, #F7C88E 0%, #F0AE6C 58%, rgba(240,174,108,0) 76%)",
+                }}
+              />
+            </>
+          )}
         </div>
 
         {/* Header: tiny date + big plump greeting */}
