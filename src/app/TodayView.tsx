@@ -209,22 +209,23 @@ export default function TodayView({
             top: "calc(-8px - env(safe-area-inset-top, 0px))",
             left: 0,
             right: 0,
-            height: "calc(368px + env(safe-area-inset-top, 0px))",
+            height: "calc(100dvh + env(safe-area-inset-top, 0px))",
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: -1,
           }}
         >
-          {/* Sky band — must clearly separate from the cream ground. */}
+          {/* Sky — fills the whole first screen and melts seamlessly into
+             the cream ground (Katja: «продлить градиент на весь экран»). */}
           <div
             style={{
               position: "absolute",
               top: 0,
               left: 0,
               right: 0,
-              height: sunVariant === "a" ? "calc(260px + env(safe-area-inset-top, 0px))" : "calc(320px + env(safe-area-inset-top, 0px))",
+              height: "calc(100dvh + env(safe-area-inset-top, 0px))",
               background:
-                "linear-gradient(180deg, #F6DFC2 0%, rgba(246,223,194,0) 100%)",
+                "linear-gradient(180deg, #F6DFC2 0%, #F9EDDC 36%, #FBF7F1 82%)",
             }}
           />
           {sunVariant === "a" && (
