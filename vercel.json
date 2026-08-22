@@ -1,0 +1,7 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "claude/task-tracker-redesign-c526rt": false
+    }
+  }
+}
