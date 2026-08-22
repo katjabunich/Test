@@ -202,11 +202,14 @@ export default function TodayView({
         <div
           aria-hidden
           style={{
+            /* Extend up past the container padding AND the iOS safe-area
+               (status bar) so the sky truly starts at the physical top of
+               the screen in standalone PWA mode. */
             position: "absolute",
-            top: -8, /* cancel the container's top padding — the sky starts at the very top of the screen */
+            top: "calc(-8px - env(safe-area-inset-top, 0px))",
             left: 0,
             right: 0,
-            height: 368,
+            height: "calc(368px + env(safe-area-inset-top, 0px))",
             overflow: "hidden",
             pointerEvents: "none",
             zIndex: -1,
@@ -219,7 +222,7 @@ export default function TodayView({
               top: 0,
               left: 0,
               right: 0,
-              height: sunVariant === "a" ? 260 : 320,
+              height: sunVariant === "a" ? "calc(260px + env(safe-area-inset-top, 0px))" : "calc(320px + env(safe-area-inset-top, 0px))",
               background:
                 "linear-gradient(180deg, #F6DFC2 0%, rgba(246,223,194,0) 100%)",
             }}
@@ -228,7 +231,7 @@ export default function TodayView({
             <div
               style={{
                 position: "absolute",
-                top: -120,
+                top: "calc(-120px + env(safe-area-inset-top, 0px))",
                 right: -90,
                 width: 420,
                 height: 420,
@@ -243,7 +246,7 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: -230,
+                  top: "calc(-230px + env(safe-area-inset-top, 0px))",
                   right: -180,
                   width: 640,
                   height: 640,
@@ -255,7 +258,7 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: -60,
+                  top: "calc(-60px + env(safe-area-inset-top, 0px))",
                   right: -30,
                   width: 260,
                   height: 260,
@@ -273,7 +276,7 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: -155,
+                  top: "calc(-155px + env(safe-area-inset-top, 0px))",
                   right: -151,
                   width: 460,
                   height: 460,
@@ -285,7 +288,7 @@ export default function TodayView({
               <div
                 style={{
                   position: "absolute",
-                  top: 14,
+                  top: "calc(14px + env(safe-area-inset-top, 0px))",
                   right: 18,
                   width: 122,
                   height: 122,

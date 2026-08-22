@@ -33,14 +33,16 @@ export default function SettingsTrigger() {
       aria-label="Настройки"
       className="tap"
       style={{
+        /* No white disc: on Today the gear sits on the sun and a solid
+           circle punched a hole in it. A quiet ink glyph reads fine on
+           both the sun and the plain cream screens. */
         position: "fixed",
         top: "calc(env(safe-area-inset-top, 0px) + 12px)",
-        right: 20,
+        right: 16,
         width: 44,
         height: 44,
         borderRadius: 999,
-        background: "#FFFFFF",
-        boxShadow: "var(--shadow-card)",
+        background: "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -49,7 +51,7 @@ export default function SettingsTrigger() {
         textDecoration: "none",
       }}
     >
-      <Icons.Settings size={18} stroke="currentColor" strokeWidth={1.8} />
+      <Icons.Settings size={20} stroke="currentColor" strokeWidth={1.9} />
     </Link>
   );
 }
