@@ -129,12 +129,14 @@ async function processUser(u: User) {
   }
 }
 
-// Вечером бот отдаёт обобщение о ней, а не требует отчёта. Запас обобщений
-// генерируется заранее отдельной сессией — здесь только ротация, без ИИ.
+// Вечером бот отдаёт наблюдение о ней. КАЖДОЕ — РОВНО ОДИН РАЗ: повторять уже
+// прочитанное бессмысленно. Кончился запас — возвращаемся к простому вопросу,
+// пока не подготовлена новая партия из свежих записей.
 async function eveningNudge(u: User, today: string) {
   const { data } = await db.from('insights').select('id, text')
     .eq('user_id', u.id)
-    .order('last_sent_on', { ascending: true, nullsFirst: true })
+    .is('last_sent_on', null)
+    .order('created_at', { ascending: true })
     .limit(1);
   const ins = (data ?? [])[0] as Insight | undefined;
   if (!ins) {
