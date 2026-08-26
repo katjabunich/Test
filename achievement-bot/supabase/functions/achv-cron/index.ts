@@ -76,23 +76,6 @@ const TAIL = [
   'Если есть что записать за сегодня — я тут.',
   'Захочешь добавить сегодняшнее — просто напиши.',
 ];
-// Если за сегодня уже есть записи, просить нечего — наблюдение всё равно
-// отправляем, но без приглашения писать.
-// Вечернее сообщение, когда наблюдений не осталось, а за сегодня уже написано.
-// Бот всё равно приходит: без напоминания практика глохнет.
-const EVENING_DONE = [
-  'Вечер 🌙 За сегодня у тебя уже всё записано.',
-  'Заглянула. Сегодня записи есть — ничего не нужно 💛',
-  'Сегодня ты уже отметилась. Просто вечерний привет 🌱',
-  'На сегодня всё записано. Я тут ✨',
-  'Добрый вечер 🌙 Сегодня всё уже поймано.',
-];
-const TAIL_DONE = [
-  'Сегодня ты уже записала — просто оставлю это здесь.',
-  'За сегодня всё уже записано. Это просто тебе.',
-  'Сегодня ты уже отметилась, ничего не нужно.',
-  'Записи за сегодня есть. Это без повода.',
-];
 const HARD_DAY_BTN = [[{ text: 'Сегодня тяжёлый день', callback_data: 'hard_day' }]];
 
 type Insight = { id: string; text: string };
@@ -148,19 +131,21 @@ async function processUser(u: User) {
   }
 }
 
-// Вечером бот отдаёт наблюдение о ней. КАЖДОЕ — РОВНО ОДИН РАЗ: повторять уже
-// прочитанное бессмысленно. Кончился запас — возвращаемся к простому вопросу,
-// пока не подготовлена новая партия из свежих записей.
+// Записи лежат в UTC, а «сегодня» у неё локальное — сравниваем по локальной дате.
 async function wroteToday(u: User, today: string): Promise<boolean> {
-  // Записи лежат в UTC, а «сегодня» у неё локальное — сравниваем по локальной дате.
   const since = new Date(Date.now() - 36 * 3600e3).toISOString();
   const { data } = await db.from('entries').select('created_at')
     .eq('user_id', u.id).gte('created_at', since);
   return (data ?? []).some((e: { created_at: string }) => dayKey(e.created_at) === today);
 }
 
+// Вечернее сообщение приходит только в день, когда она ещё ничего не записала.
+// Уже написала — бот молчит: дёргать не за чем. Наблюдений не осталось — всё
+// равно пишет, обычным вопросом: без напоминания практика глохнет.
+// Наблюдение отдаётся РОВНО ОДИН РАЗ — повторять прочитанное бессмысленно.
 async function eveningNudge(u: User, today: string) {
-  const done = await wroteToday(u, today);
+  if (await wroteToday(u, today)) return;
+
   const { data } = await db.from('insights').select('id, text')
     .eq('user_id', u.id)
     .is('last_sent_on', null)
@@ -168,12 +153,11 @@ async function eveningNudge(u: User, today: string) {
     .limit(1);
   const ins = (data ?? [])[0] as Insight | undefined;
   if (!ins) {
-    // Запас наблюдений кончился — но вечернее сообщение приходит всё равно.
-    await send(u.chat_id, pick(done ? EVENING_DONE : EVENING), HARD_DAY_BTN);
+    await send(u.chat_id, pick(EVENING), HARD_DAY_BTN);
     return;
   }
   await db.from('insights').update({ last_sent_on: today }).eq('id', ins.id);
-  await send(u.chat_id, `${ins.text}\n\n${pick(done ? TAIL_DONE : TAIL)}`, HARD_DAY_BTN);
+  await send(u.chat_id, `${ins.text}\n\n${pick(TAIL)}`, HARD_DAY_BTN);
 }
 
 async function monthlyLetter(u: User, today: string) {
